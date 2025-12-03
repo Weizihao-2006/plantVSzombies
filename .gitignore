@@ -1,0 +1,15 @@
+# 屏蔽 build 里的编译垃圾（保留 .sln）
+build/bin/
+build/obj/
+build/*.exe
+build/*.pdb
+build/.vs/
+build/*.user
+build/*.suo
+build/CMakeFiles/  # 之前推上去的垃圾文件夹
+build/ALL_BUILD.vcxproj  # 冗余编译文件
+
+# 其他冗余文件
+*.log
+*.tmp
+*.cache
