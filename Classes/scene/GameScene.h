@@ -25,7 +25,7 @@ private:
 
 public:
 
-    static GameScene* createWithLevel(int level_id);
+    static GameScene* createWithLevel(int level_id=1);
     bool initWithLevel(int level_id);
 
 

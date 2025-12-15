@@ -2,9 +2,11 @@
 #define GLOBAL_H
 
 #include<vector>
+#include"cocos2d.h"
+
 
 struct SelectedPlantCard {
-	Node* cardNode;
+	cocos2d::Node* cardNode;
 	int id;
 };
 

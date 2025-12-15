@@ -30,5 +30,8 @@ void PlantMgr::createPlantAt(const Vec2& rowCol, int plantId)
     // 通知 CardMgr 开始冷却
     auto cardMgr = CardMgr::getInstance();
     for (size_t i = 0; i < LEVEL1_DECK.size(); ++i)
-        if (LEVEL1_DECK[i] == plantId) { cardMgr->startCool(i); break; }
+        if (LEVEL1_DECK[i] == plantId) { 
+            cardMgr->startCool(i); 
+            break; 
+        }
 }

@@ -4,6 +4,10 @@
 
 #include "cocos2d.h"
 
+#ifdef WIN32
+#pragma execution_character_set("utf-8")
+#endif
+
 class MainMenu :public cocos2d::Scene
 {
 public:
@@ -18,6 +22,7 @@ public:
 
     // 手动调用create()函数
     CREATE_FUNC(MainMenu);
+
 };
 
 #endif // __MAINMENU_H__
