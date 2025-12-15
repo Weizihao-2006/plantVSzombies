@@ -13,3 +13,4 @@ build/ALL_BUILD.vcxproj  # 冗余编译文件
 *.log
 *.tmp
 *.cache
+/Resources/种植触摸梳理.png
