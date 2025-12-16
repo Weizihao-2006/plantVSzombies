@@ -2,12 +2,13 @@
 
 #include <vector>
 #include <functional>
-#include"util/Global.h"
+#include "util/Global.h"
 
 /*
-展示卡牌->点击卡牌 → CardBarLayer::onCardClicked → CardMgr::onCardSelected →
-PlantInputLayer 进入预览 → 移动鼠标 → onTouchEnded →
-PlantMgr::createPlantAt → 真正生成植物 + CardMgr::startCool
+流程说明：
+展示卡牌-> 等待点击 (in CardBarLayer:: onCardClicked) -> CardMgr::onCardSelected ->
+PlantInputLayer 处理预览 -> 移动鼠标 -> onTouchEnded ->
+PlantMgr::createPlantAt (创建植物播放) + CardMgr::onPlantConfirmed (启动冷却)
 */
 
 struct CardDef {
@@ -16,50 +17,93 @@ struct CardDef {
     int   sunCost;
     float coolTime;
 };
+
 const std::vector<CardDef> g_cardAtlas = {
-    {0, "icon_pea.png",   100, 7.5f},
-    {1, "icon_sun.png",    50, 7.5f},
-    {2, "icon_wall.png",   50, 30.0f},
-    {3, "icon_potato.png", 25, 30.0f},
-    {4, "icon_snow.png",  150, 7.5f},
-    {5, "icon_cherry.png",150, 35.0f},
-    {6, "icon_repeat.png",200, 7.5f},
-    {7, "icon_torch.png", 175, 7.5f}
+    {0, "plantCard/SunFlower.png",    50, 7.5f},
+    {1, "plantCard/CherryBomb.png",  150, 30.0f},
+    {2, "plantCard/PeaShooter.png",  100, 7.5f},
+    {3, "plantCard/Repeater.png",    200, 7.5f},
+    {4, "plantCard/SnowPea.png",     175, 7.5f},
+    {5, "plantCard/Wallnut.png",      50, 35.0f},
+    {6, "plantCard/Wallnut.png",      50, 35.0f},
+    {7, "plantCard/Wallnut.png",      50, 35.0f}
 };
 
-//初始化逻辑有点问题,需要修改
+// 初始化逻辑中的卡组，如需修改
 class CardMgr {
 public:
     static CardMgr* getInstance();
-    void initWithDeck(const std::vector<int>& deck);  // 仅限本关
-    void update(float dt);                            // 每帧减冷却
-    bool canPlant(int idx) const;                     // 阳光 & 冷却
-    void startCool(int idx);                          // 种下即调用
-    float getCoolPercent(int idx) const;              // 0~100
 
-    //判断阳光是否足够,不看冷却时间
+    // 初始化卡组
+    void initWithDeck(const std::vector<int>& deck);
+
+    // 每帧更新冷却
+    void update(float dt);
+
+    // 检查是否能种植（阳光 & 冷却）
+    bool canPlant(int idx) const;
+
+    // 启动冷却计时
+    void startCool(int idx);
+
+    // 获取冷却进度 0~100
+    float getCoolPercent(int idx) const;
+
+    // 获取冷却时间（剩余秒数）
+    float getCoolTimeLeft(int idx) const;
+
+    // 判断是否在冷却中
+    bool isInCoolDown(int idx) const {
+        return _rt[idx].inCD;
+    }
+
+    // 检查阳光是否足够
     bool canAfford(int idx) const {
+        if (idx < 0 || idx >= _deck.size()) return false;
         return Global::getInstance()->getSun() >= g_cardAtlas[_deck[idx]].sunCost;
     }
 
-    //开始冷却+减少阳光总量
-    void onPlantConfirmed(int idx) 
-    {     // 真正种下才调用
-        startCool(idx);                  // 这里才进冷却
-        Global::getInstance()->getSun() -= g_cardAtlas[_deck[idx]].sunCost;
+    // 植物确认种植后调用（扣阳光 + 启动冷却）
+    void CardMgr::onPlantConfirmed(int idx) {
+        if (idx < 0 || idx >= _deck.size()) return;
+
+        const auto& cardDef = g_cardAtlas[_deck[idx]];
+        auto* global = Global::getInstance();
+
+        // 检查并消耗阳光（更安全的做法）
+        if (global->consumeSun(cardDef.sunCost)) {
+            // 阳光足够，启动冷却
+            startCool(idx);
+            CCLOG("CardMgr:  Plant [%d] confirmed, cooldown started", idx);
+        }
+        else {
+            // 阳光不足（这种情况不应该发生，因为 canPlant 已经检查过）
+            CCLOG("CardMgr:  ERROR - Not enough sun for plant [%d]", idx);
+        }
     }
-    
-    //这个会被赋值为PlantInput中的void onCardSelected(int plantId)
-    //auto* cardMgr = CardMgr::getInstance();
-    //cardMgr->initWithDeck(LEVEL1_DECK);
-    //cardMgr->onCardSelected = [this](int plantId) {
-    //   _plantInput->onCardSelected(plantId);
-    //   };
-    //在CardBarLayer中用来通知PlantInputLayer进行种植
+
+    // 当卡牌被点击时调用
+    // 由 CardBarLayer::onCardClicked 调用
+    // 参数 idx:  卡牌在卡组中的索引
     std::function<void(int)> onCardSelected;
+
+    // 获取卡牌定义
+    const CardDef& getCardDef(int idx) const {
+        return g_cardAtlas[_deck[idx]];
+    }
+
+    // 获取卡组大小
+    size_t getDeckSize() const {
+        return _deck.size();
+    }
+
 private:
-    std::vector<int> _deck;
-    struct Runtime { bool inCD = false; float cdLeft = 0.f; };
-    std::vector<Runtime> _rt;
-    int _sun = 0;
+    std::vector<int> _deck;  // 卡组（存储卡牌ID）
+
+    struct Runtime {
+        bool inCD = false;      // 是否在冷却中
+        float cdLeft = 0.f;     // 剩余冷却时间
+    };
+
+    std::vector<Runtime> _rt;  // 运行时状态（与 _deck 对应）
 };

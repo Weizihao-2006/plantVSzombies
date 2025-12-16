@@ -38,13 +38,6 @@ CardMgr 扣除种植该植物所需的阳光。
 #include "cocos2d.h"
 #include<vector>
 
-
-
-
-
-
-
-
 struct GameMapInformation 
 {
     GameMapInformation() : rowNumbers(5), columnNumbers(9) {
@@ -69,6 +62,8 @@ public:
 
     /*--- 外部调用 ---*/
     void setPlantMapCanPlant(const unsigned int colum, const unsigned int row);
+    // 设置选中的植物ID（替代PlantInputLayer的选择逻辑）
+    void setSelectedPlantId(int plantId);
 
 private:
     void createSchedule(); // 创建定时器
@@ -81,6 +76,16 @@ private:
     bool judgeTouchPositionIsInMap(); // 判断触摸位置是否在地图内
     bool judgeTouchPositionIsCanPlant(); // 判断触摸位置是否可以种植植物
     bool judgeTouchPositionHavePlant(); // 判断触摸位置是否有植物
+
+
+    // 植物预览相关方法
+    void showPlantPreview();    // 显示植物预览
+    void hidePlantPreview();    // 隐藏植物预览
+    void updatePreviewPosition(); // 更新预览位置
+
+    // 植物预览相关变量
+    cocos2d::Sprite* _plantPreview = nullptr; // 预览精灵
+    bool _isPreviewShowing = false;           // 预览是否显示
 
     /*--- 数据成员 ---*/
     GameMapInformation _gameMapInformation; // 游戏地图信息

@@ -5,8 +5,10 @@
 #include "layer/ZombieLayer.h"
 #include "layer/BulletLayer.h"
 #include "layer/GameUILayer.h"
+#include "layer/ControlLayer.h"
+#include "manager/CardMgr.h"
 #include "util/Global.h"
-#include"cocos2d.h"
+#include "cocos2d.h"
 USING_NS_CC;
 
 GameScene* GameScene::createWithLevel(int level_id)
@@ -23,14 +25,40 @@ GameScene* GameScene::createWithLevel(int level_id)
 bool GameScene::initWithLevel(int level_id)
 {
 	if (!Scene::init())
-		return nullptr;
+		return false;
+
 	_levelID = level_id;
 	Global::getInstance()->setLevelID(level_id);
 
 	createLayers();
+	bindLayerSignals();
+
+	// 初始化 CardMgr 的卡组
+	std::vector<int> LEVEL1_DECK = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	CardMgr::getInstance()->initWithDeck(LEVEL1_DECK);
+
+	// 添加每帧更新
+	scheduleUpdate();
+
+	return true;
 }
 
-//按顺序创建各Layers
+// 每帧更新
+void GameScene::update(float dt) {
+	auto mgr = CardMgr::getInstance();
+	mgr->update(dt);  // 更新卡牌冷却
+
+	// 更新卡牌栏显示
+	if (_cardBarLayer) {
+		for (size_t i = 0; i < mgr->getDeckSize(); ++i) {
+			float percent = mgr->getCoolPercent(i);
+			_cardBarLayer->updateCoolDown(i, percent);
+			_cardBarLayer->updateCardState(i, mgr->canPlant(i));
+		}
+	}
+}
+
+// 按顺序创建 Layers
 void GameScene::createLayers()
 {
 	auto visibleSize = Director::getInstance()->getVisibleSize();
@@ -39,68 +67,98 @@ void GameScene::createLayers()
 	_bgLayer = BgLayer::create();
 	_bgLayer->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
 	this->addChild(_bgLayer, 0);
-#if 0
-	
-	_sunLayer = SunLayer::create();
-	_cardBarLayer = CardBarLayer::create();
-	_plantLayer = PlantLayer::create();
-	_zombieLayer = ZombieLayer::create();
-	_bulletLayer = BulletLayer::create();
-	_uiLayer = GameUILayer::create();
 
-	// 全部挂到场景树上
-	
-	this->addChild(_sunLayer, 10);
+	// 初始化各个 Layer
+	// _sunLayer = SunLayer::create();
+	_cardBarLayer = CardBarLayer::createWithFixedDeck({ 0, 1, 2, 3, 4, 5, 6, 7 });
+	_controlLayer = ControlLayer::create();
+	// _zombieLayer = ZombieLayer::create();
+	// _bulletLayer = BulletLayer::create();
+	// _uiLayer = GameUILayer::create();
+
+	// 按优先级添加
+	// this->addChild(_sunLayer, 10);
 	this->addChild(_cardBarLayer, 20);
-	this->addChild(_plantLayer, 30);
-	this->addChild(_zombieLayer, 40);
-	this->addChild(_bulletLayer, 50);
-	this->addChild(_uiLayer, 100);
-
-#endif
-
-	
+	_controlLayer->setName("ControlLayer");
+	this->addChild(_controlLayer, 30);
+	// this->addChild(_plantLayer, 30);
+	// this->addChild(_zombieLayer, 40);
+	// this->addChild(_bulletLayer, 50);
+	// this->addChild(_uiLayer, 100);
 }
+
 void GameScene::bindLayerSignals()
 {
+	auto cardMgr = CardMgr::getInstance();
 
 #if 0
-	// 1. UI 层 -> 本场景：暂停/加速
-	_uiLayer->onPauseBtnClicked = [this](bool p) { onPause(p); };
-	_uiLayer->onSpeedBtnClicked = [this](float s) { onSpeedChanged(s); };
+	// 1. UI 层 -> 游戏逻辑（暂停/加速）
+	if (_uiLayer) {
+		_uiLayer->onPauseBtnClicked = [this](bool p) { onPause(p); };
+		_uiLayer->onSpeedBtnClicked = [this](float s) { onSpeedChanged(s); };
+	}
 
-	// 2. 僵尸层 -> 本场景：失败/胜利
-	_zombieLayer->onZombieReachHouse = [this]() { onZombieEnterHouse(); };
-	_zombieLayer->onAllZombieDead = [this]() { onAllZombieClear(); };
+	// 2. 僵尸层 -> 游戏结束（失败/胜利）
+	if (_zombieLayer) {
+		_zombieLayer->onZombieReachHouse = [this]() { onZombieEnterHouse(); };
+		_zombieLayer->onAllZombieDead = [this]() { onAllZombieClear(); };
+	}
 
-	// 3. 阳光层 -> 植物层：阳光变化
-	_sunLayer->onSunChanged = [this](int val) {
-		_cardBarLayer->refreshSun(val);   // 更新卡槽灰化
-		_plantLayer->setSun(val);         // 种下时二次判定
+	// 3. 阳光层 -> 卡牌栏（显示阳光变化）
+	if (_sunLayer && _cardBarLayer) {
+		_sunLayer->onSunChanged = [this](int val) {
+			auto mgr = CardMgr::getInstance();
+			// 更新所有卡牌的可用状态
+			for (size_t i = 0; i < mgr->getDeckSize(); ++i) {
+				_cardBarLayer->updateCardState(i, mgr->canPlant(i));
+			}
+			CCLOG("GameScene: Sun changed to %d", val);
+			};
+	}
+
+	// 4. 卡牌栏 -> 种植处理
+	// CardMgr:: onCardSelected 被 CardBarLayer::onCardClicked 调用
+	cardMgr->onCardSelected = [this](int cardIdx) {
+		CCLOG("GameScene: Card [%d] selected", cardIdx);
+
+		// TODO: 通知 PlantInputLayer 开始种植预览
+		// 如果有 PlantInputLayer，应该在这里调用
+		// if (_plantInput) {
+		//     _plantInput->onCardSelected(cardIdx);
+		// }
+
+		// 种植完成后（在 PlantInputLayer 或其他地方调用）
+		// CardMgr::getInstance()->onPlantConfirmed(cardIdx);
 		};
-
-
 #endif
-
-	
 }
 
 void GameScene::onZombieEnterHouse()
 {
-	//log("GameScene: zombie entered house -> fail");
-	//Director::getInstance()->replaceScene(MenuScene::create()); // 先简单跳回菜单
+	CCLOG("GameScene: zombie entered house -> fail");
+	// Director::getInstance()->replaceScene(MenuScene::create());
 }
+
 void GameScene::onAllZombieClear()
 {
-	//log("GameScene: all zombies cleared -> win");
-	//Director::getInstance()->replaceScene(MenuScene::create());
+	CCLOG("GameScene: all zombies cleared -> win");
+	// Director::getInstance()->replaceScene(MenuScene:: create());
 }
+
 void GameScene::onPause(bool pause)
 {
-	//if (pause) Director::getInstance()->pause();
-	//else       Director::getInstance()->resume();
+	if (pause) {
+		CCLOG("Game paused");
+		Director::getInstance()->pause();
+	}
+	else {
+		CCLOG("Game resumed");
+		Director::getInstance()->resume();
+	}
 }
+
 void GameScene::onSpeedChanged(float s)
 {
+	CCLOG("GameScene:  speed changed to %. 1fx", s);
 	Director::getInstance()->getScheduler()->setTimeScale(s);
 }
