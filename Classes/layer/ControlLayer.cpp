@@ -156,9 +156,9 @@ void ControlLayer::createTouchListener() {
                 hidePlantPreview();
                 clearHighlightBars();
 
-                _isPreviewSpriteCreated = false;
                 _selectedPlantId = -1; // 重置选中状态，退出幽灵模式
             }
+            _isPreviewSpriteCreated = false;
         }
         };
 
