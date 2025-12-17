@@ -37,6 +37,7 @@ CardMgr 扣除种植该植物所需的阳光。
 
 #include "cocos2d.h"
 #include<vector>
+#include<string>
 
 struct GameMapInformation 
 {
@@ -54,6 +55,7 @@ struct GameMapInformation
     float mapBottom; // 地图下边界
 };
 
+extern std::vector<std::string> _CardPreview;
 
 class ControlLayer : public cocos2d::Layer {
 public:
@@ -86,6 +88,13 @@ private:
     // 植物预览相关变量
     cocos2d::Sprite* _plantPreview = nullptr; // 预览精灵
     bool _isPreviewShowing = false;           // 预览是否显示
+    bool _isPreviewSpriteCreated = false;     // 检查精灵是否已创建
+
+    // 高亮条相关处理
+    cocos2d::DrawNode* _highlightRow = nullptr; // 横向高亮条
+    cocos2d::DrawNode* _highlightCol = nullptr; // 纵向高亮条
+    void updateHighlightBars(int row, int col); // 更新高亮条位置的方法
+    void clearHighlightBars();                  // 隐藏/清除高亮条
 
     /*--- 数据成员 ---*/
     GameMapInformation _gameMapInformation; // 游戏地图信息
