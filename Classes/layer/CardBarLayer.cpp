@@ -4,14 +4,14 @@
 #include "manager/PlantMgr.h"
 USING_NS_CC;
 
-CardBarLayer* CardBarLayer::createWithFixedDeck(const std::vector<int>& deck)
+CardBarLayer* CardBarLayer::create()
 {
     auto p = new (std::nothrow) CardBarLayer();
-    if (p && p->initWithFixedDeck(deck)) { p->autorelease(); return p; }
+    if (p && p->init()) { p->autorelease(); return p; }
     CC_SAFE_DELETE(p); return nullptr;
 }
 
-bool CardBarLayer::initWithFixedDeck(const std::vector<int>& deck) {
+bool CardBarLayer::init() {
     if (!Layer::init()) return false;
 
     // 把layer的锚点设置在可视区域左下角
@@ -25,8 +25,8 @@ bool CardBarLayer::initWithFixedDeck(const std::vector<int>& deck) {
 
     addChild(_menu);
     auto* mgr = CardMgr::getInstance();
-    for (size_t i = 0; i < deck.size(); ++i) {
-        const auto& def = g_cardAtlas[deck[i]];
+    for (size_t i = 0; i < g_cardAtlas.size(); ++i) {
+        const auto& def = g_cardAtlas[i];
 
         // 创建卡牌按钮
         auto btn = MenuItemImage::create(def.icon, def.icon,
@@ -105,7 +105,7 @@ void CardBarLayer::onCardClicked(int idx)
     // 暂不考虑冷却，直接选中植物
     auto controlLayer = this->getParent()->getChildByName("ControlLayer"); // 获取控制层
     if (controlLayer) {
-        // 通过deck映射真实植物ID（LEVEL1_DECK中存储的是植物ID）
+        //根据
         int plantId = idx;
         static_cast<ControlLayer*>(controlLayer)->setSelectedPlantId(plantId);
     }

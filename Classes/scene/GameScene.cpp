@@ -33,9 +33,8 @@ bool GameScene::initWithLevel(int level_id)
 	createLayers();
 	bindLayerSignals();
 
-	// 初始化 CardMgr 的卡组
-	std::vector<int> LEVEL1_DECK = { 0, 1, 2, 3, 4, 5, 6, 7 };
-	CardMgr::getInstance()->initWithDeck(LEVEL1_DECK);
+	// 初始化 CardMgr,确实已经初始化了,写在构造函数了
+	CardMgr::getInstance();
 
 	// 添加每帧更新
 	scheduleUpdate();
@@ -70,7 +69,7 @@ void GameScene::createLayers()
 
 	// 初始化各个 Layer
 	// _sunLayer = SunLayer::create();
-	_cardBarLayer = CardBarLayer::createWithFixedDeck({ 0, 1, 2, 3, 4, 5, 6, 7 });
+	_cardBarLayer = CardBarLayer::create();
 	_controlLayer = ControlLayer::create();
 	// _zombieLayer = ZombieLayer::create();
 	// _bulletLayer = BulletLayer::create();

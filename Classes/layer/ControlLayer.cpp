@@ -1,20 +1,11 @@
 ﻿#include "ControlLayer.h"
 #include "manager/PlantMgr.h"
+#include"manager/CardMgr.h"
 #include <string>
 #include "MapCoordinate.h"
 
 using namespace cocos2d;
 
-std::vector<std::string> _CardPreview = {
-    "cardPreview/SunFlower_0.png",
-    "cardPreview/CherryBomb_0.png",
-    "cardPreview/Peashooter_0.png",
-    "cardPreview/Repeater_0.png",
-    "cardPreview/SnowPea_0.png",
-    "cardPreview/WallNut_0.png",
-    "cardPreview/WallNut_0.png",
-    "cardPreview/WallNut_0.png"
-};
 
 bool ControlLayer::init()
 {
@@ -110,7 +101,9 @@ void ControlLayer::createTouchListener() {
 
             // 关键新增：如果幽灵精灵还未创建，现在创建它！
             if (!_isPreviewSpriteCreated) {
-                std::string filename = _CardPreview[_selectedPlantId];
+                
+                //现在改成从哈希表中读取预览图,这样随便是什么顺序都可以快速访问到对应的植物类型
+                std::string filename = _CardPreview.at(CardMgr::getInstance()->getPlantType(_selectedPlantId));
                 _plantPreview = Sprite::create(filename);
                 if (_plantPreview) {
                     _plantPreview->setOpacity(128); // 半透明效果

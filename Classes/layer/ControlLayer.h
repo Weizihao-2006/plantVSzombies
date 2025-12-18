@@ -55,7 +55,6 @@ struct GameMapInformation
     float mapBottom; // 地图下边界
 };
 
-extern std::vector<std::string> _CardPreview;
 
 class ControlLayer : public cocos2d::Layer {
 public:
@@ -75,6 +74,8 @@ private:
     bool touchBegan(cocos2d::Touch* touch, cocos2d::Event* event); // 触摸开始
     void touchMoved(cocos2d::Touch* touch, cocos2d::Event* event); // 触摸移动
     void touchEnded(cocos2d::Touch* touch, cocos2d::Event* event); // 触摸结束
+
+
     bool judgeTouchPositionIsInMap(); // 判断触摸位置是否在地图内
     bool judgeTouchPositionIsCanPlant(); // 判断触摸位置是否可以种植植物
     bool judgeTouchPositionHavePlant(); // 判断触摸位置是否有植物

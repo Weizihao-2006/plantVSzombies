@@ -9,17 +9,7 @@ CardMgr* CardMgr::getInstance()
     return &mgr;
 }
 
-void CardMgr::initWithDeck(const std::vector<int>& deck)
-{
-    _deck = deck;
-    _rt.resize(deck.size());
 
-    // 初始化运行时状态
-    for (auto& rt : _rt) {
-        rt.inCD = false;
-        rt.cdLeft = 0.f;
-    }
-}
 
 void CardMgr::update(float dt)
 {
@@ -47,10 +37,10 @@ bool CardMgr::canPlant(int idx) const
 
 void CardMgr::startCool(int idx)
 {
-    if (idx < 0 || idx >= _deck.size()) return;
+    if (idx < 0 || idx >= g_cardAtlas.size()) return;
 
     _rt[idx].inCD = true;
-    _rt[idx].cdLeft = g_cardAtlas[_deck[idx]].coolTime;
+    _rt[idx].cdLeft = g_cardAtlas[idx].coolTime;
     CCLOG("CardMgr: Card [%d] cooldown started, coolTime=%.2f", idx, _rt[idx].cdLeft);
 }
 
@@ -60,7 +50,7 @@ float CardMgr::getCoolPercent(int idx) const
         return 0.f;
     }
 
-    const float total = g_cardAtlas[_deck[idx]].coolTime;
+    const float total = g_cardAtlas[idx].coolTime;
     if (total <= 0) return 0.f;
 
     return 100.f * (_rt[idx].cdLeft / total);

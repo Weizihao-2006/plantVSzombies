@@ -4,8 +4,8 @@
 class CardBarLayer : public cocos2d::Layer
 {
 public:
-    static CardBarLayer* createWithFixedDeck(const std::vector<int>& deck);
-    bool initWithFixedDeck(const std::vector<int>& deck);
+    static CardBarLayer* create();
+    bool init();
 
     // 更新冷却条显示
     void updateCoolDown(int idx, float percent);

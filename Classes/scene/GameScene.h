@@ -2,7 +2,7 @@
 #define GAME_SCENE_H
 
 #include "cocos2d.h"
-
+#include"layer/PlantLayer.h"
 class BgLayer;
 class CardBarLayer;
 class SunLayer;
@@ -20,8 +20,10 @@ private:
     SunLayer* _sunLayer = nullptr;
     ControlLayer* _controlLayer = nullptr;
     ZombieLayer* _zombieLayer = nullptr;
+    PlantLayer* _plantLayer = nullptr;
     BulletLayer* _bulletLayer = nullptr;
     GameUILayer* _uiLayer = nullptr;
+
 
 public:
     static GameScene* createWithLevel(int level_id = 1);

@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <functional>
+#include <unordered_map>
+#include"plant/Plant.h"
 #include "util/Global.h"
 
 /*
@@ -12,30 +14,37 @@ PlantMgr::createPlantAt (创建植物播放) + CardMgr::onPlantConfirmed (启动冷却)
 */
 
 struct CardDef {
-    int   id;
+    PlantType type;     // 使用枚举代替 int id
     const char* icon;
-    int   sunCost;
+    int sunCost;
     float coolTime;
 };
 
 const std::vector<CardDef> g_cardAtlas = {
-    {0, "plantCard/SunFlower.png",    50, 7.5f},
-    {1, "plantCard/CherryBomb.png",  150, 30.0f},
-    {2, "plantCard/PeaShooter.png",  100, 7.5f},
-    {3, "plantCard/Repeater.png",    200, 7.5f},
-    {4, "plantCard/SnowPea.png",     175, 7.5f},
-    {5, "plantCard/Wallnut.png",      50, 35.0f},
-    {6, "plantCard/Wallnut.png",      50, 35.0f},
-    {7, "plantCard/Wallnut.png",      50, 35.0f}
+    {PlantType::SunFlower, "plantCard/SunFlower.png",    50, 7.5f},
+    {PlantType::CherryBomb, "plantCard/CherryBomb.png",  150, 30.0f},
+    {PlantType::PeaShooter, "plantCard/PeaShooter.png",  100, 7.5f},
+    {PlantType::ReaPeater, "plantCard/Repeater.png",    200, 7.5f},
+    {PlantType::SnowPea, "plantCard/SnowPea.png",     175, 7.5f},
+    {PlantType::WallNut, "plantCard/Wallnut.png",      50, 35.0f},
+    {PlantType::WallNut, "plantCard/Wallnut.png",      50, 35.0f},
+    {PlantType::WallNut, "plantCard/Wallnut.png",      50, 35.0f}
 };
+
+const std::unordered_map<PlantType, std::string> _CardPreview = {
+    {PlantType::SunFlower,  "cardPreview/SunFlower_0.png"},
+    {PlantType::CherryBomb, "cardPreview/CherryBomb_0.png"},
+    {PlantType::PeaShooter, "cardPreview/Peashooter_0.png"},
+    {PlantType::ReaPeater,  "cardPreview/Repeater_0.png"},
+    {PlantType::SnowPea,    "cardPreview/SnowPea_0.png"},
+    {PlantType::WallNut,    "cardPreview/WallNut_0.png"}
+};
+
 
 // 初始化逻辑中的卡组，如需修改
 class CardMgr {
 public:
     static CardMgr* getInstance();
-
-    // 初始化卡组
-    void initWithDeck(const std::vector<int>& deck);
 
     // 每帧更新冷却
     void update(float dt);
@@ -59,15 +68,15 @@ public:
 
     // 检查阳光是否足够
     bool canAfford(int idx) const {
-        if (idx < 0 || idx >= _deck.size()) return false;
-        return Global::getInstance()->getSun() >= g_cardAtlas[_deck[idx]].sunCost;
+        if (idx < 0 || idx >= g_cardAtlas.size()) return false;
+        return Global::getInstance()->getSun() >= g_cardAtlas[idx].sunCost;
     }
 
     // 植物确认种植后调用（扣阳光 + 启动冷却）
-    void CardMgr::onPlantConfirmed(int idx) {
-        if (idx < 0 || idx >= _deck.size()) return;
+    void onPlantConfirmed(int idx) {
+        if (idx < 0 || idx >= g_cardAtlas.size()) return;
 
-        const auto& cardDef = g_cardAtlas[_deck[idx]];
+        const auto& cardDef = g_cardAtlas[idx];
         auto* global = Global::getInstance();
 
         // 检查并消耗阳光（更安全的做法）
@@ -82,6 +91,11 @@ public:
         }
     }
 
+    PlantType getPlantType(int idx) const {
+        if (idx < 0 || idx >= g_cardAtlas.size())
+            return PlantType::Error; //返回Error
+        return g_cardAtlas[idx].type; // 从配置表中查出对应的枚举
+    }
     // 当卡牌被点击时调用
     // 由 CardBarLayer::onCardClicked 调用
     // 参数 idx:  卡牌在卡组中的索引
@@ -89,16 +103,15 @@ public:
 
     // 获取卡牌定义
     const CardDef& getCardDef(int idx) const {
-        return g_cardAtlas[_deck[idx]];
+        return g_cardAtlas[idx];
     }
 
     // 获取卡组大小
     size_t getDeckSize() const {
-        return _deck.size();
+        return g_cardAtlas.size();
     }
 
 private:
-    std::vector<int> _deck;  // 卡组（存储卡牌ID）
 
     struct Runtime {
         bool inCD = false;      // 是否在冷却中
@@ -106,4 +119,14 @@ private:
     };
 
     std::vector<Runtime> _rt;  // 运行时状态（与 _deck 对应）
+
+protected:
+    CardMgr(){
+        _rt.resize(g_cardAtlas.size());
+        // 初始化运行时状态
+        for (auto& rt : _rt) {
+            rt.inCD = false;
+            rt.cdLeft = 0.f;
+        }
+    }
 };
