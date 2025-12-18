@@ -1,4 +1,4 @@
-ï»¿#include "ControlLayer.h"
+#include "ControlLayer.h"
 #include "manager/PlantMgr.h"
 #include <string>
 #include "MapCoordinate.h"
@@ -21,144 +21,144 @@ bool ControlLayer::init()
     if (!Layer::init()) return false;
 
     this->setPosition(Vec2::ZERO);
-    // ä¿å­˜åœ°å›¾è¾¹ç•Œå€¼
+    // ±£´æµØÍ¼±ß½çÖµ
     _gameMapInformation.mapLeft = 490.0f;
     _gameMapInformation.mapRight = 1900.0f;
     _gameMapInformation.mapTop = 1150.0f;
     _gameMapInformation.mapBottom = 287.0f;
 
-    // è®¾ç½®åœ°å›¾çš„è¡Œæ•°å’Œåˆ—æ•°
+    // ÉèÖÃµØÍ¼µÄĞĞÊıºÍÁĞÊı
     _gameMapInformation.columnNumbers = 9;
     _gameMapInformation.rowNumbers = 5;
 
-    createSchedule();      // åˆ›å»ºå®šæ—¶å™¨ (ç”¨äºå®æ—¶è®¡ç®—ç½‘æ ¼ä½ç½®)
-    createTouchListener(); // åˆ›å»ºè§¦æ‘¸å’Œé¼ æ ‡ç›‘å¬
+    createSchedule();      // ´´½¨¶¨Ê±Æ÷ (ÓÃÓÚÊµÊ±¼ÆËãÍø¸ñÎ»ÖÃ)
+    createTouchListener(); // ´´½¨´¥ÃşºÍÊó±ê¼àÌı
     return true;
 }
 
 void ControlLayer::createSchedule() {
-    // ä¿ç•™å®šæ—¶å™¨ç”¨äºæŒç»­è®¡ç®—å½“å‰çš„ç½‘æ ¼åæ ‡ (_plantsPosition)ï¼Œä¾›æ‰€æœ‰è¾“å…¥äº‹ä»¶ä½¿ç”¨
+    // ±£Áô¶¨Ê±Æ÷ÓÃÓÚ³ÖĞø¼ÆËãµ±Ç°µÄÍø¸ñ×ø±ê (_plantsPosition)£¬¹©ËùÓĞÊäÈëÊÂ¼şÊ¹ÓÃ
     schedule([this](float dt) {
         calculatePlantPosition();
-        // ç§»é™¤åŸæœ‰çš„æ›´æ–°é¢„è§ˆä½ç½®é€»è¾‘ï¼Œæ”¹ç”± EventListenerMouse::onMouseMove å¤„ç†
+        // ÒÆ³ıÔ­ÓĞµÄ¸üĞÂÔ¤ÀÀÎ»ÖÃÂß¼­£¬¸ÄÓÉ EventListenerMouse::onMouseMove ´¦Àí
         }, 0.1f, "calculatePosUpdate");
 }
 
 void ControlLayer::createTouchListener() {
-    // 1. è§¦æ‘¸ç›‘å¬å™¨ï¼šå¤„ç†è§¦æ‘¸å±è¾“å…¥æˆ–é¼ æ ‡æ‹–åŠ¨ï¼ˆæŒ‰ä¸‹æ—¶ï¼‰
+    // 1. ´¥Ãş¼àÌıÆ÷£º´¦Àí´¥ÃşÆÁÊäÈë»òÊó±êÍÏ¶¯£¨°´ÏÂÊ±£©
     auto touchListener = EventListenerTouchOneByOne::create();
 
-    // è§¦æ‘¸å¼€å§‹ (æŒ‰ä¸‹)
+    // ´¥Ãş¿ªÊ¼ (°´ÏÂ)
     touchListener->onTouchBegan = [this](Touch* touch, Event* event) {
         _cur = touch->getLocation();
-        // æŒ‰ä¸‹æ—¶ï¼Œä¸ç«‹å³æ˜¾ç¤ºé¢„è§ˆï¼Œè®© onMouseMove/onTouchMoved æ§åˆ¶
+        // °´ÏÂÊ±£¬²»Á¢¼´ÏÔÊ¾Ô¤ÀÀ£¬ÈÃ onMouseMove/onTouchMoved ¿ØÖÆ
         return true;
         };
 
-    // è§¦æ‘¸ç§»åŠ¨ (æ‹–åŠ¨)
+    // ´¥ÃşÒÆ¶¯ (ÍÏ¶¯)
     touchListener->onTouchMoved = [this](Touch* touch, Event* event) {
-        _cur = touch->getLocation(); // æ›´æ–°å½“å‰è§¦æ‘¸ä½ç½®
+        _cur = touch->getLocation(); // ¸üĞÂµ±Ç°´¥ÃşÎ»ÖÃ
         if (_selectedPlantId != -1) {
             if (judgeTouchPositionIsInMap()) {
-                showPlantPreview();      // åœ°å›¾å†…æ˜¾ç¤ºé¢„è§ˆ
-                updatePreviewPosition(); // å®æ—¶æ›´æ–°ä½ç½®ï¼ˆè·Ÿéšé¼ æ ‡/æ‰‹æŒ‡ï¼‰
+                showPlantPreview();      // µØÍ¼ÄÚÏÔÊ¾Ô¤ÀÀ
+                updatePreviewPosition(); // ÊµÊ±¸üĞÂÎ»ÖÃ£¨¸úËæÊó±ê/ÊÖÖ¸£©
             }
             else {
-                hidePlantPreview(); // åœ°å›¾å¤–éšè—
+                hidePlantPreview(); // µØÍ¼ÍâÒş²Ø
             }
         }
         };
 
-    // è§¦æ‘¸ç»“æŸ (æ¾å¼€)
+    // ´¥Ãş½áÊø (ËÉ¿ª)
     touchListener->onTouchEnded = [this](Touch* touch, Event* event) {
         _cur = touch->getLocation();
-        hidePlantPreview(); // ç»“æŸè§¦æ‘¸æ—¶éšè—é¢„è§ˆ
+        hidePlantPreview(); // ½áÊø´¥ÃşÊ±Òş²ØÔ¤ÀÀ
 
         if (judgeTouchPositionIsInMap()) {
             if (_selectedPlantId != -1 && judgeTouchPositionIsCanPlant()) {
-                // ç§æ¤æ¤ç‰©é€»è¾‘
+                // ÖÖÖ²Ö²ÎïÂß¼­
                 _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantId;
-                PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantId); // é€šçŸ¥PlantMgrå®é™…åˆ›å»ºæ¤ç‰©
-                _selectedPlantId = -1; // é‡ç½®é€‰ä¸­çŠ¶æ€
+                PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantId); // Í¨ÖªPlantMgrÊµ¼Ê´´½¨Ö²Îï
+                _selectedPlantId = -1; // ÖØÖÃÑ¡ÖĞ×´Ì¬
             }
             else if (judgeTouchPositionHavePlant()) {
-                // ç§»é™¤æ¤ç‰©é€»è¾‘
+                // ÒÆ³ıÖ²ÎïÂß¼­
                 _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
-                // TODO: é€šçŸ¥PlantMgrç§»é™¤æ¤ç‰©
-                _selectedPlantId = -1; // é‡ç½®é€‰ä¸­çŠ¶æ€ï¼Œé˜²æ­¢è¯¯æ“ä½œ
+                // TODO: Í¨ÖªPlantMgrÒÆ³ıÖ²Îï
+                _selectedPlantId = -1; // ÖØÖÃÑ¡ÖĞ×´Ì¬£¬·ÀÖ¹Îó²Ù×÷
             }
             else {
-                _selectedPlantId = -1; // å¦‚æœåªæ˜¯æ‹–åŠ¨ï¼Œç»“æŸæ—¶é‡ç½®é€‰ä¸­çŠ¶æ€
+                _selectedPlantId = -1; // Èç¹ûÖ»ÊÇÍÏ¶¯£¬½áÊøÊ±ÖØÖÃÑ¡ÖĞ×´Ì¬
             }
         }
         else {
-            _selectedPlantId = -1; // å¦‚æœåœ¨åœ°å›¾å¤–æ¾å¼€ï¼Œé‡ç½®é€‰ä¸­çŠ¶æ€
+            _selectedPlantId = -1; // Èç¹ûÔÚµØÍ¼ÍâËÉ¿ª£¬ÖØÖÃÑ¡ÖĞ×´Ì¬
         }
         };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
 
 
-    // 2. é¼ æ ‡ç›‘å¬å™¨ï¼šå¤„ç†æ¡Œé¢ç«¯é¼ æ ‡çš„éæŒ‰ä¸‹ç§»åŠ¨ (å¹½çµè·Ÿéš) å’Œç‚¹å‡» (ç§æ¤)
+    // 2. Êó±ê¼àÌıÆ÷£º´¦Àí×ÀÃæ¶ËÊó±êµÄ·Ç°´ÏÂÒÆ¶¯ (ÓÄÁé¸úËæ) ºÍµã»÷ (ÖÖÖ²)
     auto mouseListener = EventListenerMouse::create();
 
-    // é¼ æ ‡ç§»åŠ¨ (æœªæŒ‰ä¸‹æ—¶)
+    // Êó±êÒÆ¶¯ (Î´°´ÏÂÊ±)
     mouseListener->onMouseMove = [this](EventMouse* event) {
-        _cur = event->getLocation(); // è·å–é¼ æ ‡å½“å‰ä½ç½®
+        _cur = event->getLocation(); // »ñÈ¡Êó±êµ±Ç°Î»ÖÃ
 
-        // ä»…åœ¨é€‰ä¸­æ¤ç‰©ä¸”é¼ æ ‡æœªæŒ‰ä¸‹æ—¶ï¼Œæ›´æ–°é¢„è§ˆä½ç½®ï¼ˆå®ç°æ¾å¼€çŠ¶æ€ä¸‹çš„å¹½çµè·Ÿéšï¼‰
+        // ½öÔÚÑ¡ÖĞÖ²ÎïÇÒÊó±êÎ´°´ÏÂÊ±£¬¸üĞÂÔ¤ÀÀÎ»ÖÃ£¨ÊµÏÖËÉ¿ª×´Ì¬ÏÂµÄÓÄÁé¸úËæ£©
         if (_selectedPlantId != -1 && event->getMouseButton() == EventMouse::MouseButton::BUTTON_UNSET) {
 
-            // å…³é”®æ–°å¢ï¼šå¦‚æœå¹½çµç²¾çµè¿˜æœªåˆ›å»ºï¼Œç°åœ¨åˆ›å»ºå®ƒï¼
+            // ¹Ø¼üĞÂÔö£ºÈç¹ûÓÄÁé¾«Áé»¹Î´´´½¨£¬ÏÖÔÚ´´½¨Ëü£¡
             if (!_isPreviewSpriteCreated) {
                 std::string filename = _CardPreview[_selectedPlantId];
                 _plantPreview = Sprite::create(filename);
                 if (_plantPreview) {
-                    _plantPreview->setOpacity(128); // åŠé€æ˜æ•ˆæœ
-                    _plantPreview->setScale(1.5f); // æ”¾å¤§1.5å€
+                    _plantPreview->setOpacity(128); // °ëÍ¸Ã÷Ğ§¹û
+                    _plantPreview->setScale(1.5f); // ·Å´ó1.5±¶
                     this->addChild(_plantPreview, 10);
                     _isPreviewSpriteCreated = true;
                     _isPreviewShowing = true;
                 }
             }
 
-            if (judgeTouchPositionIsInMap()) {
-                updatePreviewPosition(); // æ›´æ–°ä½ç½® (æ­¤æ—¶ä½ç½®å°±æ˜¯å‡†ç¡®çš„é¼ æ ‡ä½ç½®)
-                showPlantPreview();      // æ˜¾ç¤ºé¢„è§ˆï¼ˆå¦‚æœä¹‹å‰éšè—äº†ï¼‰
+            if (judgeTouchPositionIsInMap() && judgeTouchPositionIsCanPlant()) {
+                updatePreviewPosition(); // ¸üĞÂÎ»ÖÃ (´ËÊ±Î»ÖÃ¾ÍÊÇ×¼È·µÄÊó±êÎ»ÖÃ)
+                showPlantPreview();      // ÏÔÊ¾Ô¤ÀÀ£¨Èç¹ûÖ®Ç°Òş²ØÁË£©
                 updateHighlightBars(_plantsPosition.y, _plantsPosition.x);
             }
             else {
-                hidePlantPreview();      // åœ°å›¾å¤–éšè—
-                clearHighlightBars();    // åœ°å›¾å¤–æ¸…é™¤é«˜äº®
+                hidePlantPreview();      // µØÍ¼ÍâÒş²Ø
+                clearHighlightBars();    // µØÍ¼ÍâÇå³ı¸ßÁÁ
             }
         }
-    };
+        };
 
-    // é¼ æ ‡æŒ‰ä¸‹ (ç”¨äºåœ¨å¹½çµæ¨¡å¼ä¸‹ç‚¹å‡»ç§æ¤)
+    // Êó±ê°´ÏÂ (ÓÃÓÚÔÚÓÄÁéÄ£Ê½ÏÂµã»÷ÖÖÖ²)
     mouseListener->onMouseDown = [this](EventMouse* event) {
         if (event->getMouseButton() == EventMouse::MouseButton::BUTTON_LEFT) {
             _cur = event->getLocation();
 
-            // åªæœ‰åœ¨å¹½çµæ¨¡å¼ä¸‹ç‚¹å‡»åœ°å›¾ï¼Œæ‰æ‰§è¡Œç§æ¤/ç§»é™¤é€»è¾‘å¹¶é€€å‡ºå¹½çµæ¨¡å¼
+            // Ö»ÓĞÔÚÓÄÁéÄ£Ê½ÏÂµã»÷µØÍ¼£¬²ÅÖ´ĞĞÖÖÖ²/ÒÆ³ıÂß¼­²¢ÍË³öÓÄÁéÄ£Ê½
             if (_selectedPlantId != -1 && judgeTouchPositionIsInMap()) {
-                // calculatePlantPosition åœ¨ schedule ä¸­æŒç»­è¿è¡Œï¼Œ_plantsPosition åº”è¯¥æ˜¯æœ€æ–°çš„
+                // calculatePlantPosition ÔÚ schedule ÖĞ³ÖĞøÔËĞĞ£¬_plantsPosition Ó¦¸ÃÊÇ×îĞÂµÄ
 
                 if (judgeTouchPositionIsCanPlant()) {
-                    // ç§æ¤æ¤ç‰©é€»è¾‘
+                    // ÖÖÖ²Ö²ÎïÂß¼­
                     _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantId;
-                    PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantId); // é€šçŸ¥PlantMgrå®é™…åˆ›å»ºæ¤ç‰©
+                    PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantId); // Í¨ÖªPlantMgrÊµ¼Ê´´½¨Ö²Îï
                 }
                 else if (judgeTouchPositionHavePlant()) {
-                    // ç§»é™¤æ¤ç‰©é€»è¾‘
-                    _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
-                    // TODO: é€šçŸ¥PlantMgrç§»é™¤æ¤ç‰©
+                    // ÒÆ³ıÖ²ÎïÂß¼­
+                    
+                    // TODO: Í¨ÖªPlantMgrÒÆ³ıÖ²Îï
                 }
 
                 hidePlantPreview();
                 clearHighlightBars();
 
-                _selectedPlantId = -1; // é‡ç½®é€‰ä¸­çŠ¶æ€ï¼Œé€€å‡ºå¹½çµæ¨¡å¼
+                _isPreviewSpriteCreated = false;
+                _selectedPlantId = -1; // ÖØÖÃÑ¡ÖĞ×´Ì¬£¬ÍË³öÓÄÁéÄ£Ê½
             }
-            _isPreviewSpriteCreated = false;
         }
         };
 
@@ -166,29 +166,29 @@ void ControlLayer::createTouchListener() {
 }
 
 
-// è®¾ç½®é€‰ä¸­çš„æ¤ç‰©IDï¼ˆä»å¡ç‰‡ç‚¹å‡»äº‹ä»¶è°ƒç”¨ï¼‰
+// ÉèÖÃÑ¡ÖĞµÄÖ²ÎïID£¨´Ó¿¨Æ¬µã»÷ÊÂ¼şµ÷ÓÃ£©
 void ControlLayer::setSelectedPlantId(int plantId) {
     _selectedPlantId = plantId;
 
     if (plantId != -1) {
-        //// å¦‚æœç²¾çµå·²ç»å­˜åœ¨ï¼Œæ˜¾ç¤ºå®ƒï¼ˆä½†åˆå§‹ä½ç½®å¯èƒ½ä¸æ­£ç¡®ï¼Œä¼šåœ¨ onMouseMove ä¸­ç«‹å³ä¿®æ­£ï¼‰
+        //// Èç¹û¾«ÁéÒÑ¾­´æÔÚ£¬ÏÔÊ¾Ëü£¨µ«³õÊ¼Î»ÖÃ¿ÉÄÜ²»ÕıÈ·£¬»áÔÚ onMouseMove ÖĞÁ¢¼´ĞŞÕı£©
         //if (_plantPreview) {
         //    _plantPreview->setVisible(true);
         //    _isPreviewShowing = true;
         //}
-        //// å¦‚æœç²¾çµä¸å­˜åœ¨ï¼Œä»€ä¹ˆéƒ½ä¸åšï¼Œç­‰å¾… onMouseMove åˆ›å»ºå®ƒã€‚
+        //// Èç¹û¾«Áé²»´æÔÚ£¬Ê²Ã´¶¼²»×ö£¬µÈ´ı onMouseMove ´´½¨Ëü¡£
     }
     else {
         hidePlantPreview();
     }
 }
 
-// æ›´æ–°é«˜äº®æ¡
+// ¸üĞÂ¸ßÁÁÌõ
 void ControlLayer::updateHighlightBars(int row, int col) {
-    // å¦‚æœè¿˜æ²¡åˆ›å»ºï¼Œå…ˆåˆ›å»º
+    // Èç¹û»¹Ã»´´½¨£¬ÏÈ´´½¨
     if (!_highlightRow) {
         _highlightRow = DrawNode::create();
-        this->addChild(_highlightRow, 5); // å±‚çº§åœ¨åœ°å›¾ä¹‹ä¸Šï¼Œæ¤ç‰©é¢„è§ˆä¹‹ä¸‹
+        this->addChild(_highlightRow, 5); // ²ã¼¶ÔÚµØÍ¼Ö®ÉÏ£¬Ö²ÎïÔ¤ÀÀÖ®ÏÂ
     }
     if (!_highlightCol) {
         _highlightCol = DrawNode::create();
@@ -198,38 +198,38 @@ void ControlLayer::updateHighlightBars(int row, int col) {
     _highlightRow->clear();
     _highlightCol->clear();
 
-    // è®¾ç½®é«˜äº®é¢œè‰²ï¼šåŠé€æ˜ç™½è‰²
+    // ÉèÖÃ¸ßÁÁÑÕÉ«£º°ëÍ¸Ã÷°×É«
     Color4F highlightColor(1.0f, 1.0f, 1.0f, 0.2f);
 
-    // è·å–å½“å‰æ ¼å­çš„ä¸­å¿ƒç‚¹
+    // »ñÈ¡µ±Ç°¸ñ×ÓµÄÖĞĞÄµã
     Vec2 center = MapCoordinate[row][col];
 
-    // --- ç»˜åˆ¶æ¨ªæ¡ (Row) ---
-    // å‡è®¾åœ°å›¾æ¨ªå‘èŒƒå›´æ˜¯ä» mapLeft åˆ° mapRight
+    // --- »æÖÆºáÌõ (Row) ---
+    // ¼ÙÉèµØÍ¼ºáÏò·¶Î§ÊÇ´Ó mapLeft µ½ mapRight
     float rowLeft = _gameMapInformation.mapLeft;
     float rowRight = _gameMapInformation.mapRight;
-    float rowHeight = 140.0f; // é«˜äº®æ¡çš„é«˜åº¦ï¼Œå¯ä»¥æ ¹æ®æ„Ÿè§‚è°ƒæ•´
+    float rowHeight = 140.0f; // ¸ßÁÁÌõµÄ¸ß¶È£¬¿ÉÒÔ¸ù¾İ¸Ğ¹Ûµ÷Õû
     _highlightRow->drawSolidRect(Vec2(rowLeft, center.y - rowHeight / 2),
         Vec2(rowRight, center.y + rowHeight / 2),
         highlightColor);
 
-    // --- ç»˜åˆ¶ç«–æ¡ (Col) ---
-    // å‡è®¾åœ°å›¾çºµå‘èŒƒå›´æ˜¯ä» mapBottom åˆ° mapTop
+    // --- »æÖÆÊúÌõ (Col) ---
+    // ¼ÙÉèµØÍ¼×İÏò·¶Î§ÊÇ´Ó mapBottom µ½ mapTop
     float colBottom = _gameMapInformation.mapBottom;
     float colTop = _gameMapInformation.mapTop;
-    float colWidth = 140.0f; // é«˜äº®æ¡çš„å®½åº¦
+    float colWidth = 140.0f; // ¸ßÁÁÌõµÄ¿í¶È
     _highlightCol->drawSolidRect(Vec2(center.x - colWidth / 2, colBottom),
         Vec2(center.x + colWidth / 2, colTop),
         highlightColor);
 }
 
-// éšè—é«˜äº®æ¡
+// Òş²Ø¸ßÁÁÌõ
 void ControlLayer::clearHighlightBars() {
     if (_highlightRow) _highlightRow->clear();
     if (_highlightCol) _highlightCol->clear();
 }
 
-// æ˜¾ç¤ºæ¤ç‰©é¢„è§ˆ
+// ÏÔÊ¾Ö²ÎïÔ¤ÀÀ
 void ControlLayer::showPlantPreview() {
     if (_plantPreview && !_isPreviewShowing) {
         _plantPreview->setVisible(true);
@@ -237,22 +237,22 @@ void ControlLayer::showPlantPreview() {
     }
 }
 
-// éšè—æ¤ç‰©é¢„è§ˆ
+// Òş²ØÖ²ÎïÔ¤ÀÀ
 void ControlLayer::hidePlantPreview() {
-    // ä»…éšè—ï¼Œä¸ç§»é™¤ç²¾çµï¼Œä»¥ä¾¿ä¸‹æ¬¡ç§»åŠ¨æ—¶å¯ä»¥ç«‹å³æ˜¾ç¤º
+    // ½öÒş²Ø£¬²»ÒÆ³ı¾«Áé£¬ÒÔ±ãÏÂ´ÎÒÆ¶¯Ê±¿ÉÒÔÁ¢¼´ÏÔÊ¾
     if (_plantPreview && _isPreviewShowing) {
         _plantPreview->setVisible(false);
         _isPreviewShowing = false;
     }
 }
 
-// æ›´æ–°é¢„è§ˆä½ç½®åˆ°å½“å‰è§¦æ‘¸/é¼ æ ‡ä½ç½®
+// ¸üĞÂÔ¤ÀÀÎ»ÖÃµ½µ±Ç°´¥Ãş/Êó±êÎ»ÖÃ
 void ControlLayer::updatePreviewPosition() {
     if (!_plantPreview) return;
 
     // CCLOG("%f %f", _cur.x, targetY);
 
-    // å¯é€‰ï¼šé™åˆ¶é¢„è§ˆå›¾åªèƒ½åœ¨åœ°å›¾èŒƒå›´å†…æ˜¾ç¤º
+    // ¿ÉÑ¡£ºÏŞÖÆÔ¤ÀÀÍ¼Ö»ÄÜÔÚµØÍ¼·¶Î§ÄÚÏÔÊ¾
     // float x = std::max(_gameMapInformation.mapLeft, std::min(_cur.x, _gameMapInformation.mapRight));
     // float y = std::max(_gameMapInformation.mapBottom, std::min(_cur.y, _gameMapInformation.mapTop));
     int row = _plantsPosition.y;
@@ -260,62 +260,62 @@ void ControlLayer::updatePreviewPosition() {
     _plantPreview->setPosition(MapCoordinate[row][col]);
 }
 
-// å…¼æœ‰æ›´æ–°ç½‘ç»œåæ ‡ç´¢å¼•çš„åŠŸèƒ½
+// ¼æÓĞ¸üĞÂÍøÂç×ø±êË÷ÒıµÄ¹¦ÄÜ
 bool ControlLayer::judgeTouchPositionIsInMap() {
     float screenHeight = Director::getInstance()->getVisibleSize().height;
-    // ç»Ÿä¸€è½¬æ¢ Y åæ ‡ï¼Œç¡®ä¿å’Œ MapCoordinate åæ ‡ç³»ä¸€è‡´
+    // Í³Ò»×ª»» Y ×ø±ê£¬È·±£ºÍ MapCoordinate ×ø±êÏµÒ»ÖÂ
     float targetY = screenHeight - _cur.y;
     Vec2 currentPos(_cur.x, targetY);
 
-    // å®šä¹‰é‚»åŸŸé˜ˆå€¼ï¼šæ¯”å¦‚ 80 åƒç´ ï¼ˆä½ å¯ä»¥æ ¹æ®æ ¼å­å¤§å°è°ƒæ•´è¿™ä¸ªå€¼ï¼‰
+    // ¶¨ÒåÁÚÓòãĞÖµ£º±ÈÈç 80 ÏñËØ£¨Äã¿ÉÒÔ¸ù¾İ¸ñ×Ó´óĞ¡µ÷ÕûÕâ¸öÖµ£©
     const float threshold = 75.0f;
 
     for (int row = 0; row < MapRow; ++row) {
         for (int col = 0; col < MapCol; ++col) {
-            // è®¡ç®—å½“å‰ç‚¹ä¸ä¸­å¿ƒç‚¹çš„è·ç¦»
+            // ¼ÆËãµ±Ç°µãÓëÖĞĞÄµãµÄ¾àÀë
             float distance = currentPos.distance(MapCoordinate[row][col]);
 
             if (distance < threshold) {
-                // å¦‚æœåœ¨é‚»åŸŸå†…ï¼Œé¡ºä¾¿æ›´æ–°ç½‘æ ¼åæ ‡ç´¢å¼•
+                // Èç¹ûÔÚÁÚÓòÄÚ£¬Ë³±ã¸üĞÂÍø¸ñ×ø±êË÷Òı
                 _plantsPosition.x = col;
                 _plantsPosition.y = row;
                 return true;
             }
         }
     }
-    return false; // ä¸åœ¨ä»»ä½•æ ¼å­çš„é‚»åŸŸå†…
+    return false; // ²»ÔÚÈÎºÎ¸ñ×ÓµÄÁÚÓòÄÚ
 }
 
 bool ControlLayer::judgeTouchPositionIsCanPlant() {
-    // åˆ¤æ–­æ˜¯å¦å¯ä»¥ç§æ¤æ¤ç‰© (æ ¼å­ä¸ºç©º)
+    // ÅĞ¶ÏÊÇ·ñ¿ÉÒÔÖÖÖ²Ö²Îï (¸ñ×ÓÎª¿Õ)
     if (!judgeTouchPositionIsInMap()) return false;
     return _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] == -1;
 }
 
 bool ControlLayer::judgeTouchPositionHavePlant() {
-    // åˆ¤æ–­æ˜¯å¦æœ‰æ¤ç‰©
+    // ÅĞ¶ÏÊÇ·ñÓĞÖ²Îï
     if (!judgeTouchPositionIsInMap()) return false;
     return _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] != -1;
 }
 
 void ControlLayer::calculatePlantPosition() {
-    // å°†è§¦æ‘¸åæ ‡è½¬æ¢ä¸ºæ ¼å­åæ ‡
+    // ½«´¥Ãş×ø±ê×ª»»Îª¸ñ×Ó×ø±ê
 
-    // æ£€æŸ¥ _cur æ˜¯å¦å·²è¢«åˆå§‹åŒ–ï¼ˆé¿å…åœ¨æ²¡æœ‰è§¦æ‘¸/é¼ æ ‡äº‹ä»¶å‰è¿è¡Œï¼‰
+    // ¼ì²é _cur ÊÇ·ñÒÑ±»³õÊ¼»¯£¨±ÜÃâÔÚÃ»ÓĞ´¥Ãş/Êó±êÊÂ¼şÇ°ÔËĞĞ£©
     if (_cur.x == 0 && _cur.y == 0) return;
 
-    // è®¡ç®—æ¯ä¸ªæ ¼å­çš„å®½å’Œé«˜
+    // ¼ÆËãÃ¿¸ö¸ñ×ÓµÄ¿íºÍ¸ß
     float cellWidth = (_gameMapInformation.mapRight - _gameMapInformation.mapLeft) / _gameMapInformation.columnNumbers;
     float cellHeight = (_gameMapInformation.mapTop - _gameMapInformation.mapBottom) / _gameMapInformation.rowNumbers;
 
-    // è®¡ç®—æ ¼å­åæ ‡ï¼Œå·¦ä¸‹è§’ä¸º(0,0)
+    // ¼ÆËã¸ñ×Ó×ø±ê£¬×óÏÂ½ÇÎª(0,0)
     float rawX = (_cur.x - _gameMapInformation.mapLeft) / cellWidth;
     float rawY = (_cur.y - _gameMapInformation.mapBottom) / cellHeight;
 
     _plantsPosition.x = std::floor(rawX);
     _plantsPosition.y = std::floor(rawY);
 
-    // ç¡®ä¿åæ ‡åœ¨åœ°å›¾èŒƒå›´å†…
+    // È·±£×ø±êÔÚµØÍ¼·¶Î§ÄÚ
     _plantsPosition.x = std::max(0.0f, std::min(_plantsPosition.x, static_cast<float>(_gameMapInformation.columnNumbers - 1)));
     _plantsPosition.y = std::max(0.0f, std::min(_plantsPosition.y, static_cast<float>(_gameMapInformation.rowNumbers - 1)));
 }

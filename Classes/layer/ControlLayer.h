@@ -2,8 +2,6 @@
 #ifndef CONTROL_LAYER_H
 #define CONTROL_LAYER_H
 
-
-
 /*
 完整流程梳理
 1. 点击植物卡槽
@@ -39,7 +37,7 @@ CardMgr 扣除种植该植物所需的阳光。
 #include<vector>
 #include<string>
 
-struct GameMapInformation 
+struct GameMapInformation
 {
     GameMapInformation() : rowNumbers(5), columnNumbers(9) {
         plantsMap.resize(rowNumbers, std::vector<int>(columnNumbers, -1));
