@@ -2,7 +2,6 @@
 #include "manager/PlantMgr.h"
 #include"manager/CardMgr.h"
 #include <string>
-#include "MapCoordinate.h"
 
 using namespace cocos2d;
 
@@ -12,28 +11,12 @@ bool ControlLayer::init()
     if (!Layer::init()) return false;
 
     this->setPosition(Vec2::ZERO);
-    // 保存地图边界值
-    _gameMapInformation.mapLeft = 490.0f;
-    _gameMapInformation.mapRight = 1900.0f;
-    _gameMapInformation.mapTop = 1150.0f;
-    _gameMapInformation.mapBottom = 287.0f;
-
-    // 设置地图的行数和列数
-    _gameMapInformation.columnNumbers = 9;
-    _gameMapInformation.rowNumbers = 5;
-
-    createSchedule();      // 创建定时器 (用于实时计算网格位置)
+    
+    _mapManager = MapManager::getInstance();
     createTouchListener(); // 创建触摸和鼠标监听
     return true;
 }
 
-void ControlLayer::createSchedule() {
-    // 保留定时器用于持续计算当前的网格坐标 (_plantsPosition)，供所有输入事件使用
-    schedule([this](float dt) {
-        calculatePlantPosition();
-        // 移除原有的更新预览位置逻辑，改由 EventListenerMouse::onMouseMove 处理
-        }, 0.1f, "calculatePosUpdate");
-}
 
 void ControlLayer::createTouchListener() {
     // 1. 触摸监听器：处理触摸屏输入或鼠标拖动（按下时）
@@ -50,7 +33,7 @@ void ControlLayer::createTouchListener() {
     touchListener->onTouchMoved = [this](Touch* touch, Event* event) {
         _cur = touch->getLocation(); // 更新当前触摸位置
         if (_selectedPlantId != -1) {
-            if (judgeTouchPositionIsInMap()) {
+            if (judgeTouchPositionIsInMap()) {//原来是judgeScreenPositionIsInMap,顺便修改了plantPosition,先不改
                 showPlantPreview();      // 地图内显示预览
                 updatePreviewPosition(); // 实时更新位置（跟随鼠标/手指）
             }
@@ -65,16 +48,18 @@ void ControlLayer::createTouchListener() {
         _cur = touch->getLocation();
         hidePlantPreview(); // 结束触摸时隐藏预览
 
-        if (judgeTouchPositionIsInMap()) {
+        if (judgeTouchPositionIsInMap()) {//注重数据成员的修改
             if (_selectedPlantId != -1 && judgeTouchPositionIsCanPlant()) {
                 // 种植植物逻辑
-                _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantId;
+                _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, _selectedPlantId);
+               // _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantId;
                 PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantId); // 通知PlantMgr实际创建植物
                 _selectedPlantId = -1; // 重置选中状态
             }
             else if (judgeTouchPositionHavePlant()) {
                 // 移除植物逻辑
-                _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
+                _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, -1);
+                //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
                 // TODO: 通知PlantMgr移除植物
                 _selectedPlantId = -1; // 重置选中状态，防止误操作
             }
@@ -101,7 +86,7 @@ void ControlLayer::createTouchListener() {
 
             // 关键新增：如果幽灵精灵还未创建，现在创建它！
             if (!_isPreviewSpriteCreated) {
-                
+
                 //现在改成从哈希表中读取预览图,这样随便是什么顺序都可以快速访问到对应的植物类型
                 std::string filename = _CardPreview.at(CardMgr::getInstance()->getPlantType(_selectedPlantId));
                 _plantPreview = Sprite::create(filename);
@@ -124,7 +109,7 @@ void ControlLayer::createTouchListener() {
                 clearHighlightBars();    // 地图外清除高亮
             }
         }
-    };
+        };
 
     // 鼠标按下 (用于在幽灵模式下点击种植)
     mouseListener->onMouseDown = [this](EventMouse* event) {
@@ -137,12 +122,14 @@ void ControlLayer::createTouchListener() {
 
                 if (judgeTouchPositionIsCanPlant()) {
                     // 种植植物逻辑
-                    _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantId;
+                    _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, _selectedPlantId);
+                    //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantId;
                     PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantId); // 通知PlantMgr实际创建植物
                 }
                 else if (judgeTouchPositionHavePlant()) {
                     // 移除植物逻辑
-                    _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
+                    _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, -1);
+                    //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
                     // TODO: 通知PlantMgr移除植物
                 }
 
@@ -176,12 +163,12 @@ void ControlLayer::setSelectedPlantId(int plantId) {
     }
 }
 
-// 更新高亮条
+
 void ControlLayer::updateHighlightBars(int row, int col) {
-    // 如果还没创建，先创建
+    // 1. 延迟初始化 DrawNode
     if (!_highlightRow) {
         _highlightRow = DrawNode::create();
-        this->addChild(_highlightRow, 5); // 层级在地图之上，植物预览之下
+        this->addChild(_highlightRow, 5);
     }
     if (!_highlightCol) {
         _highlightCol = DrawNode::create();
@@ -191,29 +178,33 @@ void ControlLayer::updateHighlightBars(int row, int col) {
     _highlightRow->clear();
     _highlightCol->clear();
 
-    // 设置高亮颜色：半透明白色
+    // 2. 设置高亮颜色：半透明白色
     Color4F highlightColor(1.0f, 1.0f, 1.0f, 0.2f);
 
-    // 获取当前格子的中心点
-    Vec2 center = MapCoordinate[row][col];
+    // 3. 通过 Manager 获取格子中心点，不再直接访问全局数组
+    Vec2 center = _mapManager->getPositionInMap(row, col);
+
+    // 4. 从 Manager 获取地图边界参数
+    float rowLeft = _mapManager->getMapLeft();
+    float rowRight = _mapManager->getMapRight();
+    float colBottom = _mapManager->getMapBottom();
+    float colTop = _mapManager->getMapTop();
+
+    float barSize = 140.0f; // 高亮条的厚度
 
     // --- 绘制横条 (Row) ---
-    // 假设地图横向范围是从 mapLeft 到 mapRight
-    float rowLeft = _gameMapInformation.mapLeft;
-    float rowRight = _gameMapInformation.mapRight;
-    float rowHeight = 140.0f; // 高亮条的高度，可以根据感观调整
-    _highlightRow->drawSolidRect(Vec2(rowLeft, center.y - rowHeight / 2),
-        Vec2(rowRight, center.y + rowHeight / 2),
-        highlightColor);
+    _highlightRow->drawSolidRect(
+        Vec2(rowLeft, center.y - barSize / 2),
+        Vec2(rowRight, center.y + barSize / 2),
+        highlightColor
+    );
 
     // --- 绘制竖条 (Col) ---
-    // 假设地图纵向范围是从 mapBottom 到 mapTop
-    float colBottom = _gameMapInformation.mapBottom;
-    float colTop = _gameMapInformation.mapTop;
-    float colWidth = 140.0f; // 高亮条的宽度
-    _highlightCol->drawSolidRect(Vec2(center.x - colWidth / 2, colBottom),
-        Vec2(center.x + colWidth / 2, colTop),
-        highlightColor);
+    _highlightCol->drawSolidRect(
+        Vec2(center.x - barSize / 2, colBottom),
+        Vec2(center.x + barSize / 2, colTop),
+        highlightColor
+    );
 }
 
 // 隐藏高亮条
@@ -250,65 +241,26 @@ void ControlLayer::updatePreviewPosition() {
     // float y = std::max(_gameMapInformation.mapBottom, std::min(_cur.y, _gameMapInformation.mapTop));
     int row = _plantsPosition.y;
     int col = _plantsPosition.x;
-    _plantPreview->setPosition(MapCoordinate[row][col]);
+    _plantPreview->setPosition(_mapManager->getPositionInMap(row,col));
 }
 
 // 兼有更新网络坐标索引的功能
+
 bool ControlLayer::judgeTouchPositionIsInMap() {
-    float screenHeight = Director::getInstance()->getVisibleSize().height;
-    // 统一转换 Y 坐标，确保和 MapCoordinate 坐标系一致
-    float targetY = screenHeight - _cur.y;
-    Vec2 currentPos(_cur.x, targetY);
 
-    // 定义邻域阈值：比如 80 像素（你可以根据格子大小调整这个值）
-    const float threshold = 75.0f;
-
-    for (int row = 0; row < MapRow; ++row) {
-        for (int col = 0; col < MapCol; ++col) {
-            // 计算当前点与中心点的距离
-            float distance = currentPos.distance(MapCoordinate[row][col]);
-
-            if (distance < threshold) {
-                // 如果在邻域内，顺便更新网格坐标索引
-                _plantsPosition.x = col;
-                _plantsPosition.y = row;
-                return true;
-            }
-        }
+    auto pos = _mapManager->convertScreenPosToMapPos(_cur);
+    if (!pos.equals(MapManager::FalsePosition)) {//位置合法
+        _plantsPosition = pos;
+        return true;
     }
-    return false; // 不在任何格子的邻域内
+    return false;
 }
 
 bool ControlLayer::judgeTouchPositionIsCanPlant() {
-    // 判断是否可以种植植物 (格子为空)
-    if (!judgeTouchPositionIsInMap()) return false;
-    return _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] == -1;
+    return _mapManager->judgeScreenPositionIsCanPlant(_cur);
 }
 
 bool ControlLayer::judgeTouchPositionHavePlant() {
-    // 判断是否有植物
-    if (!judgeTouchPositionIsInMap()) return false;
-    return _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] != -1;
+    return _mapManager->judgeScreenPositionHavePlant(_cur);
 }
 
-void ControlLayer::calculatePlantPosition() {
-    // 将触摸坐标转换为格子坐标
-
-    // 检查 _cur 是否已被初始化（避免在没有触摸/鼠标事件前运行）
-    if (_cur.x == 0 && _cur.y == 0) return;
-
-    // 计算每个格子的宽和高
-    float cellWidth = (_gameMapInformation.mapRight - _gameMapInformation.mapLeft) / _gameMapInformation.columnNumbers;
-    float cellHeight = (_gameMapInformation.mapTop - _gameMapInformation.mapBottom) / _gameMapInformation.rowNumbers;
-
-    // 计算格子坐标，左下角为(0,0)
-    float rawX = (_cur.x - _gameMapInformation.mapLeft) / cellWidth;
-    float rawY = (_cur.y - _gameMapInformation.mapBottom) / cellHeight;
-
-    _plantsPosition.x = std::floor(rawX);
-    _plantsPosition.y = std::floor(rawY);
-
-    // 确保坐标在地图范围内
-    _plantsPosition.x = std::max(0.0f, std::min(_plantsPosition.x, static_cast<float>(_gameMapInformation.columnNumbers - 1)));
-    _plantsPosition.y = std::max(0.0f, std::min(_plantsPosition.y, static_cast<float>(_gameMapInformation.rowNumbers - 1)));
-}

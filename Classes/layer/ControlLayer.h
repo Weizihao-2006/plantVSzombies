@@ -3,7 +3,6 @@
 #define CONTROL_LAYER_H
 
 
-
 /*
 完整流程梳理
 1. 点击植物卡槽
@@ -38,22 +37,8 @@ CardMgr 扣除种植该植物所需的阳光。
 #include "cocos2d.h"
 #include<vector>
 #include<string>
+#include"manager/MapMgr.h"
 
-struct GameMapInformation 
-{
-    GameMapInformation() : rowNumbers(5), columnNumbers(9) {
-        plantsMap.resize(rowNumbers, std::vector<int>(columnNumbers, -1));
-    }
-
-    std::vector<std::vector<int>> plantsMap; // 植物种植地图，-1 表示空闲
-    unsigned int rowNumbers;                // 行数
-    unsigned int columnNumbers;             // 列数
-
-    float mapLeft;   // 地图左边界
-    float mapTop;    // 地图上边界
-    float mapRight;  // 地图右边界
-    float mapBottom; // 地图下边界
-};
 
 
 class ControlLayer : public cocos2d::Layer {
@@ -61,19 +46,11 @@ public:
     CREATE_FUNC(ControlLayer);
     bool init() override;
 
-    /*--- 外部调用 ---*/
-    void setPlantMapCanPlant(const unsigned int colum, const unsigned int row);
     // 设置选中的植物ID（替代PlantInputLayer的选择逻辑）
     void setSelectedPlantId(int plantId);
 
 private:
-    void createSchedule(); // 创建定时器
-    void controlCardEnabled(); // 控制卡牌是否可用
-    void calculatePlantPosition(); // 计算植物种植位置
     void createTouchListener(); // 创建触摸监听
-    bool touchBegan(cocos2d::Touch* touch, cocos2d::Event* event); // 触摸开始
-    void touchMoved(cocos2d::Touch* touch, cocos2d::Event* event); // 触摸移动
-    void touchEnded(cocos2d::Touch* touch, cocos2d::Event* event); // 触摸结束
 
 
     bool judgeTouchPositionIsInMap(); // 判断触摸位置是否在地图内
@@ -98,10 +75,12 @@ private:
     void clearHighlightBars();                  // 隐藏/清除高亮条
 
     /*--- 数据成员 ---*/
-    GameMapInformation _gameMapInformation; // 游戏地图信息
+    //GameMapInformation _gameMapInformation; // 游戏地图信息
     cocos2d::Vec2 _cur; // 触摸坐标
     cocos2d::Vec2 _plantsPosition; // 植物种植坐标
     int _selectedPlantId = -1; // 所选植物 ID
+    MapManager* _mapManager=nullptr;
+
 };
 
 #endif // CONTROL_LAYER_H

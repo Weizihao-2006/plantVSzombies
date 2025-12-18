@@ -1,7 +1,7 @@
 #include "manager/PlantMgr.h"
 #include"manager/CardMgr.h" //g_cardAtlas 
 #include "layer/ControlLayer.h"
-#include "MapCoordinate.h"
+#include"manager/MapMgr.h"
 USING_NS_CC;
 
 PlantMgr* PlantMgr::getInstance() { static PlantMgr mgr; return &mgr; }
