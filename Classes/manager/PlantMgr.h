@@ -43,12 +43,10 @@ PlantLayer
 class PlantMgr : public cocos2d::Node {
 
 protected:
-    PlantLayer* _plantLayer = nullptr;
-    std::vector<Plants*> _allPlants;//所有在地图上放置的格子
+    PlantLayer* _plantLayer;
    
 public:
-    void setPlantLayer(PlantLayer* layer) {
-        _plantLayer = layer;
+    void setPlantLayer(const PlantLayer* layer) {
     }
 
     // 移除植物

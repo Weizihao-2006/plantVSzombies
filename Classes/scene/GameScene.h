@@ -3,9 +3,9 @@
 
 #include "cocos2d.h"
 #include"layer/PlantLayer.h"
+#include"layer/SunLayer.h"
 class BgLayer;
 class CardBarLayer;
-class SunLayer;
 class ControlLayer;
 class ZombieLayer;
 class BulletLayer;
@@ -24,7 +24,6 @@ private:
     BulletLayer* _bulletLayer = nullptr;
     GameUILayer* _uiLayer = nullptr;
 
-
 public:
     static GameScene* createWithLevel(int level_id = 1);
     bool initWithLevel(int level_id);
@@ -36,6 +35,18 @@ public:
     void onPause(bool pause);        // 暂停/继续
     void onSpeedChanged(float s);    // 0/0.5/1/2 倍速
     int getLevelID() const { return _levelID; }
+
+    //各种Layer的外取函数
+
+    SunLayer* getSunLayer() const { return _sunLayer; }
+    ControlLayer* getControlLayer() const { return _controlLayer; }
+    PlantLayer* getPlantLayer() const { return _plantLayer; }
+    ZombieLayer* getZombieLayer() const { return _zombieLayer; }
+    CardBarLayer* getCardBarLayer() const { return _cardBarLayer; }
+    BulletLayer* getBulletLayer() const { return _bulletLayer; }
+    BgLayer* getBgLayer() const { return _bgLayer; }
+    GameUILayer* getUILayer() const { return _uiLayer; }
+
 
 private:
     void createLayers();

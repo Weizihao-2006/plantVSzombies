@@ -3,14 +3,14 @@
 USING_NS_CC;
 
 // 地图的边界
-const float MapTop = 1150.0f;
-const float MapBottom = 287.0f;
-const float MapRight = 1900.0f;
-const float MapLeft = 490.0f;
+static const float MapTop = 1150.0f;
+static const float MapBottom = 287.0f;
+static const float MapRight = 1900.0f;
+static const float MapLeft = 490.0f;
 
 // 地图的行数和列数
-const int MapRow = 5;
-const int MapCol = 9;
+static const int MapRow = 5;
+static const int MapCol = 9;
 
 // 记录每一格的中心坐标
 static const cocos2d::Vec2 MapCoordinate[MapRow][MapCol] = {

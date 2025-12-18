@@ -1,4 +1,5 @@
 ﻿#include "ControlLayer.h"
+#include"scene/GameScene.h"
 #include "manager/PlantMgr.h"
 #include"manager/CardMgr.h"
 #include <string>
@@ -24,8 +25,22 @@ void ControlLayer::createTouchListener() {
 
     // 触摸开始 (按下)
     touchListener->onTouchBegan = [this](Touch* touch, Event* event) {
+        //世界坐标
         _cur = touch->getLocation();
-        // 按下时，不立即显示预览，让 onMouseMove/onTouchMoved 控制
+        // 判定条件：如果没有选中植物，或者点在了地图外，或者点在了不可种植的地方
+        bool isPlantingMode = (_selectedPlantId != -1);
+        bool isInMap = _mapManager->judgeScreenPositionIsInMap(_cur);//这个判断不会修改_cur!!!
+
+        // 只有当“不在种植模式”或者“在地图外”时，优先判定阳光
+        // 这样可以保证你手里抓着植物时，点击地图依然是种植
+        if (!isPlantingMode || !isInMap) {
+            auto gameScene = dynamic_cast<GameScene*>(this->getScene());
+            if (gameScene && gameScene->getSunLayer()) {
+                if (gameScene->getSunLayer()->containsAndCollectSun(_cur)) {
+                    return true; // 捡起阳光成功，中断事件，不执行后续种植判断
+                }
+            }
+        }
         return true;
         };
 

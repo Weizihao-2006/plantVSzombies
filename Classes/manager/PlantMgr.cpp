@@ -15,19 +15,23 @@ PlantMgr* PlantMgr::getInstance() { static PlantMgr mgr; return &mgr; }
 void PlantMgr::createPlantAt(const Vec2& rowCol, int plantId)
 {
 
-    /*std::string filename = _CardPreview[plantId];
-    auto plant = Sprite::create(filename);
-    int col = rowCol.x;
-    int row = rowCol.y;
-    plant->setPosition(MapCoordinate[row][col]);
-    plant->setScale(1.5f);
-    Director::getInstance()->getRunningScene()->addChild(plant, 10);*/
+    auto mapManager = MapManager::getInstance();
 
-
-    Plants* plant = nullptr;
     PlantProperties props;
     PlantType plant_type = CardMgr::getInstance()->getPlantType(plantId);
 
+
+#if 1
+
+    std::string filename = _CardPreview.at(plant_type);
+    auto plant = Sprite::create(filename);
+    int col = rowCol.x;
+    int row = rowCol.y;
+    plant->setPosition(mapManager->getPositionInMap(row,col));
+    plant->setScale(1.5f);
+    Director::getInstance()->getRunningScene()->addChild(plant, 10);
+
+#endif
 #if 0
     switch (plant_type) {
         case PlantType::SunFlower:

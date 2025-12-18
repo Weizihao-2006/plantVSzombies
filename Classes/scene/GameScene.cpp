@@ -68,7 +68,7 @@ void GameScene::createLayers()
 	this->addChild(_bgLayer, 0);
 
 	// 初始化各个 Layer
-	// _sunLayer = SunLayer::create();
+	_sunLayer = SunLayer::create();
 	_cardBarLayer = CardBarLayer::create();
 	_controlLayer = ControlLayer::create();
 	// _zombieLayer = ZombieLayer::create();
@@ -76,7 +76,7 @@ void GameScene::createLayers()
 	// _uiLayer = GameUILayer::create();
 
 	// 按优先级添加
-	// this->addChild(_sunLayer, 10);
+	this->addChild(_sunLayer, 10);
 	this->addChild(_cardBarLayer, 20);
 	_controlLayer->setName("ControlLayer");
 	this->addChild(_controlLayer, 30);
