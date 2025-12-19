@@ -1,132 +1,64 @@
 #pragma once
-
+#include "plant/PlantData.h"
 #include <vector>
 #include <functional>
-#include <unordered_map>
-#include"plant/Plant.h"
-#include "util/Global.h"
+#include<unordered_map>
 
-/*
-流程说明：
-展示卡牌-> 等待点击 (in CardBarLayer:: onCardClicked) -> CardMgr::onCardSelected ->
-PlantInputLayer 处理预览 -> 移动鼠标 -> onTouchEnded ->
-PlantMgr::createPlantAt (创建植物播放) + CardMgr::onPlantConfirmed (启动冷却)
-*/
-
-struct CardDef {
-    PlantType type;     // 使用枚举代替 int id
-    const char* icon;
-    int sunCost;
-    float coolTime;
-};
-
-const std::vector<CardDef> g_cardAtlas = {
-    {PlantType::SunFlower, "plantCard/SunFlower.png",    50, 7.5f},
-    {PlantType::CherryBomb, "plantCard/CherryBomb.png",  150, 30.0f},
-    {PlantType::PeaShooter, "plantCard/PeaShooter.png",  100, 7.5f},
-    {PlantType::ReaPeater, "plantCard/Repeater.png",    200, 7.5f},
-    {PlantType::SnowPea, "plantCard/SnowPea.png",     175, 7.5f},
-    {PlantType::WallNut, "plantCard/Wallnut.png",      50, 35.0f},
-    {PlantType::WallNut, "plantCard/Wallnut.png",      50, 35.0f},
-    {PlantType::WallNut, "plantCard/Wallnut.png",      50, 35.0f}
-};
-
-const std::unordered_map<PlantType, std::string> _CardPreview = {
-    {PlantType::SunFlower,  "cardPreview/SunFlower_0.png"},
-    {PlantType::CherryBomb, "cardPreview/CherryBomb_0.png"},
-    {PlantType::PeaShooter, "cardPreview/Peashooter_0.png"},
-    {PlantType::ReaPeater,  "cardPreview/Repeater_0.png"},
-    {PlantType::SnowPea,    "cardPreview/SnowPea_0.png"},
-    {PlantType::WallNut,    "cardPreview/WallNut_0.png"}
-};
-
-
-// 初始化逻辑中的卡组，如需修改
+//对于卡槽,其实PlantType才是唯一的
 class CardMgr {
 public:
     static CardMgr* getInstance();
 
-    // 每帧更新冷却
-    void update(float dt);
+    // 每帧更新所有植物的冷却状态
+    void updateCoolTime(float dt);
 
-    // 检查是否能种植（阳光 & 冷却）
-    bool canPlant(int idx) const;
+    // 检查某种植物是否能种植（阳光充足 且 不在冷却中）
+    bool canPlant(PlantType type) const;
 
-    // 启动冷却计时
-    void startCool(int idx);
+    // 启动某种植物的冷却计时
+    void startCool(PlantType type);
 
-    // 获取冷却进度 0~100
-    float getCoolPercent(int idx) const;
+    // 获取冷却进度 0~100 (100表示刚开始冷却，0表示就绪)
+    float getCoolPercent(PlantType type) const;
 
-    // 获取冷却时间（剩余秒数）
-    float getCoolTimeLeft(int idx) const;
+    // 获取剩余冷却秒数
+    float getCoolTimeLeft(PlantType type) const;
 
     // 判断是否在冷却中
-    bool isInCoolDown(int idx) const {
-        return _rt[idx].inCD;
+    bool isInCoolDown(PlantType type) const {
+        if (_rt.count(type)) return _rt.at(type).inCD;
+        return false;
     }
 
     // 检查阳光是否足够
-    bool canAfford(int idx) const {
-        if (idx < 0 || idx >= g_cardAtlas.size()) return false;
-        return Global::getInstance()->getSun() >= g_cardAtlas[idx].sunCost;
-    }
+    bool canAfford(PlantType type) const;
 
-    // 植物确认种植后调用（扣阳光 + 启动冷却）
-    void onPlantConfirmed(int idx) {
-        if (idx < 0 || idx >= g_cardAtlas.size()) return;
+    // 确认种植后调用（扣除阳光 + 启动冷却）
+    void onPlantConfirmed(PlantType type);
 
-        const auto& cardDef = g_cardAtlas[idx];
-        auto* global = Global::getInstance();
+    // 获取卡组大小（当前关卡可选植物数量）
+    size_t getDeckSize() const { return _levelDeck.size(); }
 
-        // 检查并消耗阳光（更安全的做法）
-        if (global->consumeSun(cardDef.sunCost)) {
-            // 阳光足够，启动冷却
-            startCool(idx);
-            CCLOG("CardMgr:  Plant [%d] confirmed, cooldown started", idx);
-        }
-        else {
-            // 阳光不足（这种情况不应该发生，因为 canPlant 已经检查过）
-            CCLOG("CardMgr:  ERROR - Not enough sun for plant [%d]", idx);
-        }
-    }
+    // 获取当前关卡的卡组序列
+    const std::vector<PlantType>& getLevelDeck() const { return _levelDeck; }
 
-    PlantType getPlantType(int idx) const {
-        if (idx < 0 || idx >= g_cardAtlas.size())
-            return PlantType::Error; //返回Error
-        return g_cardAtlas[idx].type; // 从配置表中查出对应的枚举
-    }
-    // 当卡牌被点击时调用
-    // 由 CardBarLayer::onCardClicked 调用
-    // 参数 idx:  卡牌在卡组中的索引
-    std::function<void(int)> onCardSelected;
+    // 初始化当前关卡的卡组
+    void initLevelDeck(const std::vector<PlantType>& deck);
 
-    // 获取卡牌定义
-    const CardDef& getCardDef(int idx) const {
-        return g_cardAtlas[idx];
-    }
-
-    // 获取卡组大小
-    size_t getDeckSize() const {
-        return g_cardAtlas.size();
-    }
+    // 当卡牌被点击时通知 ControlLayer，参数直接传递类型
+    std::function<void(PlantType)> onCardSelected;
 
 private:
-
     struct Runtime {
         bool inCD = false;      // 是否在冷却中
         float cdLeft = 0.f;     // 剩余冷却时间
     };
 
-    std::vector<Runtime> _rt;  // 运行时状态（与 _deck 对应）
+    // 使用 Map存储运行时卡槽状态,用PlantType查询是否在冷却以及剩余冷却时间
+    std::unordered_map<PlantType, Runtime> _rt;
 
-protected:
-    CardMgr(){
-        _rt.resize(g_cardAtlas.size());
-        // 初始化运行时状态
-        for (auto& rt : _rt) {
-            rt.inCD = false;
-            rt.cdLeft = 0.f;
-        }
-    }
+    // 存储当前关卡选中的植物及其展示顺序
+    std::vector<PlantType> _levelDeck;
+
+    CardMgr() = default;
 };

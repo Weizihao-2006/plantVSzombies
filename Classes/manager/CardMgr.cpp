@@ -1,65 +1,73 @@
 #include "CardMgr.h"
 #include "util/Global.h"
 #include "cocos2d.h"
+
 USING_NS_CC;
 
-CardMgr* CardMgr::getInstance()
-{
+CardMgr* CardMgr::getInstance() {
     static CardMgr mgr;
     return &mgr;
 }
 
+void CardMgr::initLevelDeck(const std::vector<PlantType>& deck) {
+    _levelDeck = deck;
+    _rt.clear();
+    for (auto type : _levelDeck) {
+        _rt[type] = Runtime{ false, 0.0f };
+    }
+}
 
-
-void CardMgr::update(float dt)
-{
-    if (_rt.empty()) return;
-
-    for (size_t i = 0; i < _rt.size(); ++i) {
-        if (_rt[i].inCD && _rt[i].cdLeft > 0) {
-            _rt[i].cdLeft -= dt;
-
-            // ¿‰»¥ÕÍ≥…
-            if (_rt[i].cdLeft <= 0) {
-                _rt[i].cdLeft = 0.f;
-                _rt[i].inCD = false;
-                CCLOG("CardMgr:  Card [%d] cooldown finished", i);
+void CardMgr::updateCoolTime(float dt) {
+    for (auto& [type, state] : _rt) {
+        if (state.inCD) {
+            state.cdLeft -= dt;
+            if (state.cdLeft <= 0) {
+                state.cdLeft = 0.0f;
+                state.inCD = false;
+                CCLOG("CardMgr: %s cooldown finished", PlantData::getProps(type).name.c_str());
             }
         }
     }
 }
 
-bool CardMgr::canPlant(int idx) const
-{
-    if (idx < 0 || idx >= _rt.size()) return false;
-    return !_rt[idx].inCD && canAfford(idx);
+bool CardMgr::canPlant(PlantType type) const {
+    return !isInCoolDown(type) && canAfford(type);
 }
 
-void CardMgr::startCool(int idx)
-{
-    if (idx < 0 || idx >= g_cardAtlas.size()) return;
-
-    _rt[idx].inCD = true;
-    _rt[idx].cdLeft = g_cardAtlas[idx].coolTime;
-    CCLOG("CardMgr: Card [%d] cooldown started, coolTime=%.2f", idx, _rt[idx].cdLeft);
+bool CardMgr::canAfford(PlantType type) const {
+    auto props = PlantData::getProps(type);
+    if (props.type == PlantType::Error) return false;
+    return Global::getInstance()->getSun() >= props.sunCost;
 }
 
-float CardMgr::getCoolPercent(int idx) const
-{
-    if (idx < 0 || idx >= _rt.size() || !_rt[idx].inCD) {
-        return 0.f;
+void CardMgr::startCool(PlantType type) {
+    auto props = PlantData::getProps(type);
+    if (props.type == PlantType::Error) return;
+
+    _rt[type].inCD = true;
+    _rt[type].cdLeft = props.coolDownTime;
+}
+
+void CardMgr::onPlantConfirmed(PlantType type) {
+    auto props = PlantData::getProps(type);
+    if (props.type == PlantType::Error) return;
+
+    if (Global::getInstance()->consumeSun(props.sunCost)) {
+        startCool(type);
+        CCLOG("CardMgr: Planted %s, cost %d", props.name.c_str(), props.sunCost);
     }
-
-    const float total = g_cardAtlas[idx].coolTime;
-    if (total <= 0) return 0.f;
-
-    return 100.f * (_rt[idx].cdLeft / total);
 }
 
-float CardMgr::getCoolTimeLeft(int idx) const
-{
-    if (idx < 0 || idx >= _rt.size()) {
-        return 0.f;
-    }
-    return _rt[idx].inCD ? _rt[idx].cdLeft : 0.f;
+float CardMgr::getCoolPercent(PlantType type) const {
+    if (!isInCoolDown(type)) return 0.0f;
+
+    float total = PlantData::getProps(type).coolDownTime;
+    if (total <= 0) return 0.0f;
+
+    return (_rt.at(type).cdLeft / total) * 100.0f;
+}
+
+float CardMgr::getCoolTimeLeft(PlantType type) const {
+    if (isInCoolDown(type)) return _rt.at(type).cdLeft;
+    return 0.0f;
 }

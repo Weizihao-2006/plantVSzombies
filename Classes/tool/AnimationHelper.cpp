@@ -1,0 +1,44 @@
+#include "AnimationHelper.h"
+#include "plant/PlantData.h"
+
+
+void AnimationHelper::loadAllAnimations() 
+{
+    const auto& configs = PlantData::getAllConfigs();
+
+    // 遍历所有植物配置，自动生成动画
+    for (auto const& [type, props] : configs) {
+        // 只有配置了动画前缀且帧数大于 0 的才处理
+        if (!props.animPrefix.empty() && props.animFrameCount > 0) {
+            createAndCache(props.animPrefix, props.animFrameCount, props.animDelay, props.animationName);
+        }
+    }
+
+    // 处理非植物类的杂项动画（如阳光旋转、僵尸行走、爆炸效果）
+    // 这些可以直接硬编码在此，因为它们不涉及卡槽和种植逻辑
+ 
+    //.......
+}
+
+void AnimationHelper::createAndCache(const std::string& prefix, int frameCount, float delay, const std::string& animName) 
+{
+    auto cache = cocos2d::AnimationCache::getInstance();
+    if (cache->getAnimation(animName)) 
+        return;
+
+    cocos2d::Vector<cocos2d::SpriteFrame*> frames;
+    auto frameCache = cocos2d::SpriteFrameCache::getInstance();
+    for (int i = 0; i < frameCount; i++) {
+        // 格式化帧名：例如 "SunFlower_0.png"
+        std::string name = cocos2d::StringUtils::format("%s%d.png", prefix.c_str(), i);
+        auto frame = frameCache->getSpriteFrameByName(name);
+        if (frame) {
+            frames.pushBack(frame);
+        }
+    }
+
+    if (!frames.empty()) {
+        auto anim = cocos2d::Animation::createWithSpriteFrames(frames, delay);
+        cache->addAnimation(anim, animName);
+    }
+}

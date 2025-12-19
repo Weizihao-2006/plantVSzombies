@@ -3,7 +3,7 @@
 #include"layer/PlantLayer.h"
 #include"manager/CardMgr.h"
 #include"plant/Plant.h"
-
+#include"plant/PlantData.h"
 
 
 
@@ -60,6 +60,6 @@ public:
 
    
     static PlantMgr* getInstance();
-    void createPlantAt(const cocos2d::Vec2& rowCol, int plantId);
+    void createPlantAt(const cocos2d::Vec2& rowCol, PlantType plantId);
 };
 

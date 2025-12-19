@@ -1,5 +1,6 @@
 #pragma once
 #include"cocos2d.h"
+#include"plant/PlantData.h"
 USING_NS_CC;
 
 // 地图的边界
@@ -27,10 +28,10 @@ struct GameMapInformation
     GameMapInformation() : rowNumbers(MapRow), columnNumbers(MapCol),
         mapLeft(MapLeft), mapRight(MapRight), mapTop(MapTop), mapBottom(MapBottom)
     {
-        plantsMap.resize(rowNumbers, std::vector<int>(columnNumbers, -1));
+        plantsMap.resize(rowNumbers, std::vector<PlantType>(columnNumbers, PlantType::Error));
     }
 
-    std::vector<std::vector<int>> plantsMap; // 植物种植地图,-1表示空闲,其它的其实用植物种类表示更好
+    std::vector<std::vector<PlantType>> plantsMap; // 植物种植地图,PlantType::Error表示空闲
     unsigned int rowNumbers;                // 行数
     unsigned int columnNumbers;             // 列数
 
@@ -56,7 +57,7 @@ public:
 
 
     //在ControlLayer中调用可以用来更新Map的植物状态
-    void setMapCellStatus(int row, int col, int plantId);
+    void setMapCellStatus(int row, int col, PlantType plantId);
 
     // 判断触摸位置是否在地图内
     bool judgeScreenPositionIsInMap(const Vec2& screenPos);

@@ -1,24 +1,39 @@
 #include "PlantData.h"
 
-// --- PlantProperties 实现 ---
 
 PlantProperties::PlantProperties()
-    : sunCost(0), coolDownTime(0.0f), health(0), attackPower(0)
-    , attackInterval(1.5f), typeAsInt(0), name("Unknown")
-    , spriteFrameName(""), animationName("")
-    , animPrefix(""), animFrameCount(0), animDelay(0.0f) {
+    : cardIcon("")
+    , cardIcon_locked("")
+    , previewFrame("")
+    , spriteFrameName("")
+    , sunCost(0)
+    , coolDownTime(0.0f)
+    , health(0)
+    , attackPower(0)
+    , attackInterval(1.5f)
+    , type(PlantType::Error)
+    , name("Unknown")
+    , animPrefix("")
+    , animFrameCount(0)
+    , animDelay(0.0f)
+    , animationName("")
+{
+    
 }
 
-PlantProperties::PlantProperties(int cost, float cd, int hp, int atk, float interval,
-    const std::string& prefix, int fCount, float delay, const std::string& anim,
-    int type, const std::string& n)
-    : sunCost(cost), coolDownTime(cd), health(hp), attackPower(atk)
-    , attackInterval(interval), typeAsInt(type), name(n)
-    , animPrefix(prefix), animFrameCount(fCount), animDelay(delay), animationName(anim) {
+PlantProperties::PlantProperties(PlantType t, const std::string& n, int sun, float cd, int hp, int atk, float interval,
+    const std::string& cIcon, const std::string& cIconLocked, const std::string& preview, const std::string& plist,
+    const std::string& aPrefix, int aCount, float aDelay, const std::string& aName)
+    : type(t), name(n), sunCost(sun), coolDownTime(cd), health(hp), attackPower(atk), attackInterval(interval)
+    , cardIcon(cIcon), cardIcon_locked(cIconLocked), previewFrame(preview), plistPath(plist)
+    , animPrefix(aPrefix), animFrameCount(aCount), animDelay(aDelay), animationName(aName)
+{
 
-    // 自动生成初始帧名：前缀 + "0.png"
-    this->spriteFrameName = prefix + "0.png";
+    if (!animPrefix.empty()) {
+        this->spriteFrameName = animPrefix + "0.png";
+    }
 }
+
 
 PlantProperties::PlantProperties(const PlantProperties& other) {
     *this = other;
@@ -31,8 +46,14 @@ PlantProperties& PlantProperties::operator=(const PlantProperties& other) {
         this->health = other.health;
         this->attackPower = other.attackPower;
         this->attackInterval = other.attackInterval;
-        this->typeAsInt = other.typeAsInt;
+        this->type = other.type;
         this->name = other.name;
+        // 视觉与路径
+        this->plistPath = other.plistPath;
+        this->cardIcon = other.cardIcon;
+        this->cardIcon_locked = other.cardIcon_locked;
+        this->previewFrame = other.previewFrame;
+        // 动画
         this->spriteFrameName = other.spriteFrameName;
         this->animationName = other.animationName;
         this->animPrefix = other.animPrefix;
@@ -44,39 +65,71 @@ PlantProperties& PlantProperties::operator=(const PlantProperties& other) {
 
 // --- PlantData 实现 ---
 
-PlantProperties PlantData::getProps(int type) 
+PlantProperties PlantData::getProps(PlantType type) 
 {
-    auto& config = getAllConfigs();
-    if (config.find(type) != config.end()) {
-        return config[type];
+    const auto& config = getAllConfigs();
+
+    auto it = config.find(type);
+    if (it != config.end()) {
+        return it->second;
     }
+    CCLOG("Warning: PlantProperties for type %d not found!", static_cast<int>(type));
     return PlantProperties();
 }
 
-std::map<int, PlantProperties>& PlantData::getAllConfigs() {
-    static std::map<int, PlantProperties> _dataConfig;
 
+const std::map<PlantType, PlantProperties>& PlantData::getAllConfigs()
+{
+    static std::map<PlantType, PlantProperties> _dataConfig;
     if (_dataConfig.empty()) {
-        // 向日葵 (类型ID: 1)
-        _dataConfig[1] = PlantProperties(
-            50, 7.5f, 300, 0, 15.0f,
-            "SunFlower_", 18, 0.15f, "SunFlower_Anim",
-            1, "SunFlower"
+        // 1. 向日葵 (SunFlower)
+        _dataConfig[PlantType::SunFlower] = PlantProperties(
+            PlantType::SunFlower, "SunFlower", 50, 7.5f, 300, 0, 24.0f,
+            "plantCard/SunFlower.png", "plantCard/SunFlower_lock.png",
+            "cardPreview/SunFlower_0.png", "image/SunFlower.plist",
+            "SunFlower_", 18, 0.15f, "SunFlower_Anim"
         );
 
-        // 豌豆射手 (类型ID: 2)
-        _dataConfig[2] = PlantProperties(
-            100, 7.5f, 300, 20, 1.5f,
-            "Peashooter_", 13, 0.1f, "Peashooter_Anim",
-            2, "PeaShooter"
+        // 2. 樱桃炸弹 (CherryBomb) - 高伤害，长CD
+        _dataConfig[PlantType::CherryBomb] = PlantProperties(
+            PlantType::CherryBomb, "CherryBomb", 150, 35.0f, 1000, 1800, 0.0f,
+            "plantCard/CherryBomb.png", "plantCard/CherryBomb_lock.png",
+            "cardPreview/CherryBomb_0.png", "image/CherryBomb.plist",
+            "CherryBomb_", 7, 0.12f, "CherryBomb_Anim"
         );
 
-        // 坚果墙 (类型ID: 5)
-        _dataConfig[5] = PlantProperties(
-            50, 20.0f, 4000, 0, 0.0f,
-            "WallNut_", 16, 0.15f, "WallNut_Anim",
-            5, "WallNut"
+        // 3. 豌豆射手 (PeaShooter) - 基础攻击
+        _dataConfig[PlantType::PeaShooter] = PlantProperties(
+            PlantType::PeaShooter, "PeaShooter", 100, 7.5f, 300, 20, 1.5f,
+            "plantCard/PeaShooter.png", "plantCard/PeaShooter_lock.png",
+            "cardPreview/Peashooter_0.png", "image/PeaShooter.plist",
+            "Peashooter_", 13, 0.1f, "Peashooter_Anim"
         );
+
+        // 4. 双发射手 (Repeater) - 攻击间隔减半
+        _dataConfig[PlantType::ReaPeater] = PlantProperties(
+            PlantType::ReaPeater, "Repeater", 200, 7.5f, 300, 20, 0.75f,
+            "plantCard/Repeater.png", "plantCard/Repeater_lock.png",
+            "cardPreview/Repeater_0.png", "image/Repeater.plist",
+            "Repeater_", 15, 0.08f, "Repeater_Anim"
+        );
+
+        // 5. 寒冰射手 (SnowPea) - 附带减速效果
+        _dataConfig[PlantType::SnowPea] = PlantProperties(
+            PlantType::SnowPea, "SnowPea", 175, 7.5f, 300, 20, 1.5f,
+            "plantCard/SnowPea.png", "plantCard/SnowPea_lock.png",
+            "cardPreview/SnowPea_0.png", "image/SnowPea.plist",
+            "SnowPea_", 15, 0.1f, "SnowPea_Anim"
+        );
+
+        // 6. 坚果墙 (WallNut) - 高血量
+        _dataConfig[PlantType::WallNut] = PlantProperties(
+            PlantType::WallNut, "WallNut", 50, 30.0f, 4000, 0, 0.0f,
+            "plantCard/Wallnut.png", "plantCard/Wallnut_lock.png",
+            "cardPreview/WallNut_0.png", "image/WallNut.plist",
+            "WallNut_", 16, 0.15f, "WallNut_Anim"
+        );
+        // ... 其他植物配置 ...
     }
     return _dataConfig;
 }

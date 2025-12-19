@@ -6,13 +6,26 @@
 
 using namespace cocos2d;
 
+const PlantType ControlLayer::SelectNoPlant = PlantType::Error;
+
+
 
 bool ControlLayer::init()
 {
-    if (!Layer::init()) return false;
+    if (!Layer::init()) 
+        return false;
+
 
     this->setPosition(Vec2::ZERO);
-    
+
+
+    // 订阅 CardMgr 的选择事件,就是说一旦卡槽按钮被点击,会自动调用
+    CardMgr::getInstance()->onCardSelected = [this](PlantType type) {
+        // 这里不需要检查阳光和冷却，因为 CardMgr 已经检查过了
+        this->setSelectedPlantId(type);
+        CCLOG("ControlLayer: Received PlantType %d from CardMgr", static_cast<int>(type));
+        };
+
     _mapManager = MapManager::getInstance();
     createTouchListener(); // 创建触摸和鼠标监听
     return true;
@@ -28,7 +41,7 @@ void ControlLayer::createTouchListener() {
         //世界坐标
         _cur = touch->getLocation();
         // 判定条件：如果没有选中植物，或者点在了地图外，或者点在了不可种植的地方
-        bool isPlantingMode = (_selectedPlantId != -1);
+        bool isPlantingMode = (_selectedPlantType != SelectNoPlant);
         bool isInMap = _mapManager->judgeScreenPositionIsInMap(_cur);//这个判断不会修改_cur!!!
 
         // 只有当“不在种植模式”或者“在地图外”时，优先判定阳光
@@ -47,7 +60,7 @@ void ControlLayer::createTouchListener() {
     // 触摸移动 (拖动)
     touchListener->onTouchMoved = [this](Touch* touch, Event* event) {
         _cur = touch->getLocation(); // 更新当前触摸位置
-        if (_selectedPlantId != -1) {
+        if (_selectedPlantType != SelectNoPlant) {
             if (judgeTouchPositionIsInMap()) {//原来是judgeScreenPositionIsInMap,顺便修改了plantPosition,先不改
                 showPlantPreview();      // 地图内显示预览
                 updatePreviewPosition(); // 实时更新位置（跟随鼠标/手指）
@@ -64,26 +77,26 @@ void ControlLayer::createTouchListener() {
         hidePlantPreview(); // 结束触摸时隐藏预览
 
         if (judgeTouchPositionIsInMap()) {//注重数据成员的修改
-            if (_selectedPlantId != -1 && judgeTouchPositionIsCanPlant()) {
+            if (_selectedPlantType != SelectNoPlant && judgeTouchPositionIsCanPlant()) {
                 // 种植植物逻辑
-                _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, _selectedPlantId);
-               // _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantId;
-                PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantId); // 通知PlantMgr实际创建植物
-                _selectedPlantId = -1; // 重置选中状态
+                _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, _selectedPlantType);
+               // _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantType;
+                PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // 通知PlantMgr实际创建植物
+                _selectedPlantType = SelectNoPlant; // 重置选中状态
             }
             else if (judgeTouchPositionHavePlant()) {
                 // 移除植物逻辑
-                _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, -1);
+                _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, SelectNoPlant);
                 //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
                 // TODO: 通知PlantMgr移除植物
-                _selectedPlantId = -1; // 重置选中状态，防止误操作
+                _selectedPlantType = SelectNoPlant; // 重置选中状态，防止误操作
             }
             else {
-                _selectedPlantId = -1; // 如果只是拖动，结束时重置选中状态
+                _selectedPlantType = SelectNoPlant; // 如果只是拖动，结束时重置选中状态
             }
         }
         else {
-            _selectedPlantId = -1; // 如果在地图外松开，重置选中状态
+            _selectedPlantType = SelectNoPlant; // 如果在地图外松开，重置选中状态
         }
         };
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
@@ -97,13 +110,16 @@ void ControlLayer::createTouchListener() {
         _cur = event->getLocation(); // 获取鼠标当前位置
 
         // 仅在选中植物且鼠标未按下时，更新预览位置（实现松开状态下的幽灵跟随）
-        if (_selectedPlantId != -1 && event->getMouseButton() == EventMouse::MouseButton::BUTTON_UNSET) {
+        if (_selectedPlantType != SelectNoPlant && event->getMouseButton() == EventMouse::MouseButton::BUTTON_UNSET) {
 
             // 关键新增：如果幽灵精灵还未创建，现在创建它！
             if (!_isPreviewSpriteCreated) {
 
-                //现在改成从哈希表中读取预览图,这样随便是什么顺序都可以快速访问到对应的植物类型
-                std::string filename = _CardPreview.at(CardMgr::getInstance()->getPlantType(_selectedPlantId));
+                //现在改成从PlantData中获取信息
+                auto props = PlantData::getProps(_selectedPlantType);
+                std::string filename = props.previewFrame;
+
+
                 _plantPreview = Sprite::create(filename);
                 if (_plantPreview) {
                     _plantPreview->setOpacity(128); // 半透明效果
@@ -132,18 +148,18 @@ void ControlLayer::createTouchListener() {
             _cur = event->getLocation();
 
             // 只有在幽灵模式下点击地图，才执行种植/移除逻辑并退出幽灵模式
-            if (_selectedPlantId != -1 && judgeTouchPositionIsInMap()) {
+            if (_selectedPlantType != SelectNoPlant && judgeTouchPositionIsInMap()) {
                 // calculatePlantPosition 在 schedule 中持续运行，_plantsPosition 应该是最新的
 
                 if (judgeTouchPositionIsCanPlant()) {
                     // 种植植物逻辑
-                    _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, _selectedPlantId);
-                    //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantId;
-                    PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantId); // 通知PlantMgr实际创建植物
+                    _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, _selectedPlantType);
+                    //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantType;
+                    PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // 通知PlantMgr实际创建植物
                 }
-                else if (judgeTouchPositionHavePlant()) {
+                else if (judgeTouchPositionHavePlant()) {//这个是什么意思?
                     // 移除植物逻辑
-                    _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, -1);
+                    _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, SelectNoPlant);
                     //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
                     // TODO: 通知PlantMgr移除植物
                 }
@@ -151,9 +167,9 @@ void ControlLayer::createTouchListener() {
                 hidePlantPreview();
                 clearHighlightBars();
 
-                _isPreviewSpriteCreated = false;
-                _selectedPlantId = -1; // 重置选中状态，退出幽灵模式
+                _selectedPlantType = SelectNoPlant; // 重置选中状态，退出幽灵模式
             }
+            _isPreviewSpriteCreated = false;
         }
         };
 
@@ -162,10 +178,10 @@ void ControlLayer::createTouchListener() {
 
 
 // 设置选中的植物ID（从卡片点击事件调用）
-void ControlLayer::setSelectedPlantId(int plantId) {
-    _selectedPlantId = plantId;
+void ControlLayer::setSelectedPlantId(PlantType plantId) {
+    _selectedPlantType = plantId;
 
-    if (plantId != -1) {
+    if (plantId != SelectNoPlant) {
         //// 如果精灵已经存在，显示它（但初始位置可能不正确，会在 onMouseMove 中立即修正）
         //if (_plantPreview) {
         //    _plantPreview->setVisible(true);

@@ -24,7 +24,7 @@ private:
     int _amount = 25;
     static const float SUN_SCALE;
 };
-const float SunSprite::SUN_SCALE = 1.5f;
+
 
 // —Ùπ‚π‹¿Ì≤„
 class SunLayer : public Layer {

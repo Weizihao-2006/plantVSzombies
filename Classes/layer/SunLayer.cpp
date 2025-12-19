@@ -4,6 +4,8 @@
 // --- SunSprite ---
 
 const int SunSprite::exitSeqTag = 100;
+const float SunSprite::SUN_SCALE = 1.5f;
+
 
 SunSprite* SunSprite::createSun(int amount)
 {

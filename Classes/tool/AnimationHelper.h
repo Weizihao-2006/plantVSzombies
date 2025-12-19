@@ -4,49 +4,21 @@
 #include <string>
 
 USING_NS_CC;
-
-/**
-    * 快速创建并缓存动画
-    * @param prefix 帧名字的前缀，如 "SunFlower_"
-    * @param frameCount 帧的总数
-    * @param delay 帧间隔时间
-    * @param animName 存入缓存的动画标识名，如 "SunFlower_Anim"
-    */
-
 class AnimationHelper {
 public:
-    // 根据配方创建动画并放入缓存
-    static void createAndCache(const std::string& prefix, int frameCount, float delay, 
-        const std::string& animName) {
+	/**
+  * @brief 一键解析 PlantData 配置表并批量生成/缓存所有植物动画
+  * * 该函数会遍历整个配置表，通过 animPrefix 等参数自动调用 createAndCache。
+  * 调用前提：必须先将对应的 .plist 文件载入 SpriteFrameCache。
+  */
+	static void loadAllAnimations();
 
-        if (animName.empty() || AnimationCache::getInstance()->getAnimation(animName)) 
-            return;
-
-        Vector<SpriteFrame*> frames;
-        for (int i = 0; i < frameCount; i++) {
-            std::string name = StringUtils::format("%s%d.png", prefix.c_str(), i);
-            auto frame = SpriteFrameCache::getInstance()->getSpriteFrameByName(name);
-            if (frame) frames.pushBack(frame);
-        }
-
-        if (!frames.empty()) {
-            auto anim = Animation::createWithSpriteFrames(frames, delay);
-            AnimationCache::getInstance()->addAnimation(anim, animName);
-        }
-    }
-
-    // 自动加载：一键同步 PlantData 里的所有动画
-    static void loadAllAnimations() {
-        // 1. 遍历植物配置表自动加载
-        auto& configs = PlantData::getAllConfigs();
-        for (auto const& [type, props] : configs) {
-            if (!props.animPrefix.empty()) {
-                createAndCache(props.animPrefix, props.animFrameCount, props.animDelay, props.animationName);
-            }
-        }
-
-        // 2. 加载非植物类的特殊动画（如阳光、爆炸、僵尸等）
-        createAndCache("Sun_", 22, 0.05f, "Sun_Rotate");
-        createAndCache("Boom_", 8, 0.1f, "CherryBomb_Boom");
-    }
+	/**
+	 * @brief 通用的动画创建并缓存工具
+	 * * @param prefix    帧名字的前缀 (例如 "SunFlower_")，函数会自动匹配 "前缀0.png" 到 "前缀N.png"
+	 * @param frameCount 动画包含的总帧数
+	 * @param delay     每帧之间的切换间隔时间 (秒)
+	 * @param animName  存入 AnimationCache 的唯一标识名，后续通过此名字获取动画
+	 */
+	static void createAndCache(const std::string& prefix, int frameCount, float delay, const std::string& animName);
 };

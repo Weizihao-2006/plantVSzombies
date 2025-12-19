@@ -12,18 +12,17 @@ PlantMgr* PlantMgr::getInstance() { static PlantMgr mgr; return &mgr; }
 
 //实际上判断是否可以种植的逻辑可以分到GameMapManager中
 //plantId
-void PlantMgr::createPlantAt(const Vec2& rowCol, int plantId)
+void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType plantId)
 {
 
     auto mapManager = MapManager::getInstance();
 
-    PlantProperties props;
-    PlantType plant_type = CardMgr::getInstance()->getPlantType(plantId);
+    PlantProperties props = PlantData::getProps(plantId);
 
 
 #if 1
 
-    std::string filename = _CardPreview.at(plant_type);
+    std::string filename = props.previewFrame;
     auto plant = Sprite::create(filename);
     int col = rowCol.x;
     int row = rowCol.y;

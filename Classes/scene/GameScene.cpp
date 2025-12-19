@@ -44,17 +44,12 @@ bool GameScene::initWithLevel(int level_id)
 
 // 每帧更新
 void GameScene::update(float dt) {
-	auto mgr = CardMgr::getInstance();
-	mgr->update(dt);  // 更新卡牌冷却
 
-	// 更新卡牌栏显示
-	if (_cardBarLayer) {
-		for (size_t i = 0; i < mgr->getDeckSize(); ++i) {
-			float percent = mgr->getCoolPercent(i);
-			_cardBarLayer->updateCoolDown(i, percent);
-			_cardBarLayer->updateCardState(i, mgr->canPlant(i));
-		}
-	}
+	//事实上,CardLayer有一个update()会调用CardMgr中的卡槽冷却信息更新冷却遮罩等
+	//因此GameScene只用传递时间即可
+	CardMgr::getInstance()->updateCoolTime(dt);
+
+
 }
 
 // 按顺序创建 Layers

@@ -42,7 +42,7 @@ Vec2 MapManager::convertScreenPosToMapPos(const cocos2d::Vec2& screenPos) {
 }
 
 // 3. 更新格子状态
-void MapManager::setMapCellStatus(int row, int col, int plantId) {
+void MapManager::setMapCellStatus(int row, int col, PlantType plantId) {
     if (row >= 0 && row < static_cast<int>(_gameMapInformation.rowNumbers) &&
         col >= 0 && col < static_cast<int>(_gameMapInformation.columnNumbers)) {
         _gameMapInformation.plantsMap[row][col] = plantId;
@@ -70,8 +70,8 @@ bool MapManager::judgeScreenPositionHavePlant(const Vec2& screenPos) {
     if (res == FalsePosition) 
         return false;
 
-    int plantId = _gameMapInformation.plantsMap[static_cast<int>(res.y)][static_cast<int>(res.x)];
-    return plantId != -1;
+    auto plantId = _gameMapInformation.plantsMap[static_cast<int>(res.y)][static_cast<int>(res.x)];
+    return plantId != PlantType::Error;
 }
 
 // 7. 内部判定逻辑
@@ -81,5 +81,5 @@ bool MapManager::canPlantHere(int row, int col) {
         col < 0 || col >= static_cast<int>(_gameMapInformation.columnNumbers)) {
         return false;
     }
-    return _gameMapInformation.plantsMap[row][col] == -1;
+    return _gameMapInformation.plantsMap[row][col] == PlantType::Error;
 }
