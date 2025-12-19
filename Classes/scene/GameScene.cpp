@@ -68,7 +68,7 @@ void GameScene::createLayers()
 	_controlLayer = ControlLayer::create();
 	// _zombieLayer = ZombieLayer::create();
 	// _bulletLayer = BulletLayer::create();
-	// _uiLayer = GameUILayer::create();
+	 _uiLayer = GameUILayer::create();
 
 	// 按优先级添加
 	this->addChild(_sunLayer, 10);
@@ -78,7 +78,7 @@ void GameScene::createLayers()
 	// this->addChild(_plantLayer, 30);
 	// this->addChild(_zombieLayer, 40);
 	// this->addChild(_bulletLayer, 50);
-	// this->addChild(_uiLayer, 100);
+	this->addChild(_uiLayer, 100);
 }
 
 void GameScene::bindLayerSignals()

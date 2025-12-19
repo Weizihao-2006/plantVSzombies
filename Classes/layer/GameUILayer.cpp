@@ -1,24 +1,46 @@
 #include"GameUILayer.h"
 #include"scene/GameScene.h"
+#include"util/Global.h"
 #include"UI/UIScale9Sprite.h"
 USING_NS_CC;
 using namespace cocos2d::ui;
+
+void GameUILayer::update(float dt)
+{
+    //目前先只更新阳光
+    if (_sunLabel) {
+
+        _sunLabel->setString(std::to_string(Global::getInstance()->getSun()));
+
+    }
+}
+
 
 
 bool GameUILayer::init() {
     if (!Layer::init()) return false;
     createSunDisplay(); // 创建阳光数量显示
+#if 0
     createPauseButton(); // 创建暂停按钮
     createShovelButton(); // 创建铲子按钮
     createProgressBar(); // 创建进度条
+
+#endif
+    
+    this->scheduleUpdate();
     return true;
 }
 
-void GameUILayer::createSunDisplay() {
+
+void GameUILayer::createSunDisplay() 
+{
     _sunLabel = Label::createWithTTF("50", "fonts/arial.ttf", 36); // 创建阳光数量显示
-    _sunLabel->setPosition(100, Director::getInstance()->getVisibleSize().height - 50); // 设置位置
+    _sunLabel->setPosition(690.0f, 1210.0f); // 设置位置
+    _sunLabel->setTextColor(Color4B::BLACK);
     addChild(_sunLabel); // 添加到当前层
 }
+
+
 
 void GameUILayer::createPauseButton() {
     _pauseButton = MenuItemImage::create("pause_normal.png", "pause_pressed.png", // 创建暂停按钮

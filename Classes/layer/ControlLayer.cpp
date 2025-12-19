@@ -54,9 +54,11 @@ void ControlLayer::createTouchListener() {
                 }
             }
         }
-        return true;
+        return false;
         };
 
+    //经过测试,下面这一块代码去掉不影响!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#if 0
     // 触摸移动 (拖动)
     touchListener->onTouchMoved = [this](Touch* touch, Event* event) {
         _cur = touch->getLocation(); // 更新当前触摸位置
@@ -79,10 +81,10 @@ void ControlLayer::createTouchListener() {
         if (UpdateTouchPositionIsInMap()) {//注重数据成员的修改
             if (_selectedPlantType != SelectNoPlant && judgeTouchPositionIsCanPlant()) {
                 // 种植植物逻辑
-                
+
                // _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantType;
                 //PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // 通知PlantMgr实际创建植物
-               
+
                 _selectedPlantType = SelectNoPlant; // 重置选中状态
             }
             else if (judgeTouchPositionHavePlant()) {
@@ -100,6 +102,9 @@ void ControlLayer::createTouchListener() {
             _selectedPlantType = SelectNoPlant; // 如果在地图外松开，重置选中状态
         }
         };
+
+#endif
+    
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
 
 
@@ -143,6 +148,7 @@ void ControlLayer::createTouchListener() {
                 clearHighlightBars();    // 地图外清除高亮
             }
         }
+        
         };
 
     // 鼠标按下 (用于在幽灵模式下点击种植)

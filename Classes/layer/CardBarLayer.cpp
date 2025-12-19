@@ -44,7 +44,10 @@ bool CardBarLayer::init() {
         auto btn = MenuItemImage::create(props.cardIcon, props.cardIcon,
             [this, type](Ref*) {
                 // 点击后直接通知管理器，由管理器分发给 ControlLayer
-                CardMgr::getInstance()->onCardSelected(type);
+                if (_cardMgr->canPlant(type)) {//只有不在冷却期且阳光足够,才发送信息给ControlLayer,这样可以防止阳光收集不到
+                    _cardMgr->onCardSelected(type);
+                }
+                
             });
 
         btn->setAnchorPoint(Vec2::ZERO);
