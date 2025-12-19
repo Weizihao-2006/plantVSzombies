@@ -47,7 +47,7 @@ private:
     Vector<SunSprite*> _suns;
 
     float _dropTimer = 9.0f;//用于记录时间掉落阳光的时间间隔
-    float _dropInterval = 10.0f; // 10秒掉落一次
+    float _dropInterval = 4.0f; // 10秒掉落一次
 
     float _dropTimeCost = 4.0f;//阳光在空中移动的时间
     float _clearTimer = 0.0f;

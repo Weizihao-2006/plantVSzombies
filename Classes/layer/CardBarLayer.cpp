@@ -75,7 +75,7 @@ bool CardBarLayer::init() {
 
         // --- 修正点 4：层级 ---
         // 必须确保遮罩在按钮上方，this 是 CardBarLayer，10 是一个较高的 ZOrder
-        progressTimer->setOpacity(160); // 设置透明度，能看到底图但有阴影感
+        progressTimer->setOpacity(200); // 设置透明度，能看到底图但有阴影感
         this->addChild(progressTimer, 10);
 
         _cdBars.push_back(progressTimer);
@@ -110,23 +110,23 @@ void CardBarLayer::update(float dt)
 
     for (size_t i = 0; i < deck.size(); ++i) {
         PlantType type = deck[i];
-
-        // 1. 更新冷却条百分比
-        // 确保 CardMgr::getCoolPercent 返回的是 0-100
-        float percent = _cardMgr->getCoolPercent(type);
-        if (i < _cdBars.size()) {
-            _cdBars[i]->setPercentage(percent);
-        }
-
-        // 2. 更新视觉状态（变暗/灰度逻辑）
-        bool canAfford = _cardMgr->canAfford(type);
         bool inCD = _cardMgr->isInCoolDown(type);
+        bool canAfford = _cardMgr->canAfford(type);
 
-        // 核心修正：只有既买得起又没在冷却，才是 255 亮度
-        // 否则全部进入半透明（暗色）状态
-        bool isUsable = canAfford && !inCD;
+        // 1. 更新遮罩进度
+        float percent = _cardMgr->getCoolPercent(type);
+        // CardMgr 返回的应该是：刚种下时 100，冷却结束时 0
+        _cdBars[i]->setPercentage(percent);
 
-
-        _menu->getChildren().at(i)->setOpacity(canAfford ? 255 : 128);
+        // 2. 核心逻辑：背景亮度处理
+        // 只有 (不在冷却) 且 (买得起) 时，底图才恢复 255 亮度
+        if (inCD) {
+            // 只要在冷却中，底图保持最暗
+            _menu->getChildren().at(i)->setOpacity(100);
+        }
+        else {
+            // 冷却结束了，根据钱够不够决定是 255 还是 128
+            _menu->getChildren().at(i)->setOpacity(canAfford ? 255 : 128);
+        }
     }
 }

@@ -29,7 +29,7 @@ private:
     void createTouchListener(); // 创建触摸监听
 
 
-    bool judgeTouchPositionIsInMap(); // 判断触摸位置是否在地图内
+    bool UpdateTouchPositionIsInMap(); // 判断触摸位置是否在地图内
     bool judgeTouchPositionIsCanPlant(); // 判断触摸位置是否可以种植植物
     bool judgeTouchPositionHavePlant(); // 判断触摸位置是否有植物
 

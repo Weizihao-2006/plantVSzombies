@@ -61,7 +61,7 @@ void ControlLayer::createTouchListener() {
     touchListener->onTouchMoved = [this](Touch* touch, Event* event) {
         _cur = touch->getLocation(); // 更新当前触摸位置
         if (_selectedPlantType != SelectNoPlant) {
-            if (judgeTouchPositionIsInMap()) {//原来是judgeScreenPositionIsInMap,顺便修改了plantPosition,先不改
+            if (UpdateTouchPositionIsInMap()) {
                 showPlantPreview();      // 地图内显示预览
                 updatePreviewPosition(); // 实时更新位置（跟随鼠标/手指）
             }
@@ -76,12 +76,12 @@ void ControlLayer::createTouchListener() {
         _cur = touch->getLocation();
         hidePlantPreview(); // 结束触摸时隐藏预览
 
-        if (judgeTouchPositionIsInMap()) {//注重数据成员的修改
+        if (UpdateTouchPositionIsInMap()) {//注重数据成员的修改
             if (_selectedPlantType != SelectNoPlant && judgeTouchPositionIsCanPlant()) {
                 // 种植植物逻辑
-                _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, _selectedPlantType);
+                
                // _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantType;
-                PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // 通知PlantMgr实际创建植物
+                //PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // 通知PlantMgr实际创建植物
                
                 _selectedPlantType = SelectNoPlant; // 重置选中状态
             }
@@ -111,7 +111,9 @@ void ControlLayer::createTouchListener() {
         _cur = event->getLocation(); // 获取鼠标当前位置
 
         // 仅在选中植物且鼠标未按下时，更新预览位置（实现松开状态下的幽灵跟随）
-        if (_selectedPlantType != SelectNoPlant && event->getMouseButton() == EventMouse::MouseButton::BUTTON_UNSET) {
+        //update: 2025/12/19,加入CardMgr::getInstance()->canPlant(_selectedPlantType)判断冷却时间和阳光
+        if (_selectedPlantType != SelectNoPlant && event->getMouseButton() == EventMouse::MouseButton::BUTTON_UNSET
+            &&CardMgr::getInstance()->canPlant(_selectedPlantType)) {
 
             // 关键新增：如果幽灵精灵还未创建，现在创建它！
             if (!_isPreviewSpriteCreated) {
@@ -131,7 +133,7 @@ void ControlLayer::createTouchListener() {
                 }
             }
 
-            if (judgeTouchPositionIsInMap()) {
+            if (UpdateTouchPositionIsInMap()) {
                 updatePreviewPosition(); // 更新位置 (此时位置就是准确的鼠标位置)
                 showPlantPreview();      // 显示预览（如果之前隐藏了）
                 updateHighlightBars(_plantsPosition.y, _plantsPosition.x);
@@ -149,7 +151,9 @@ void ControlLayer::createTouchListener() {
             _cur = event->getLocation();
 
             // 只有在幽灵模式下点击地图，才执行种植/移除逻辑并退出幽灵模式
-            if (_selectedPlantType != SelectNoPlant && judgeTouchPositionIsInMap()) {
+            //update: 2025/12/19,加入CardMgr::getInstance()->canPlant(_selectedPlantType)判断冷却时间和阳光
+            if (_selectedPlantType != SelectNoPlant && UpdateTouchPositionIsInMap() 
+                && CardMgr::getInstance()->canPlant(_selectedPlantType)) {
                 // calculatePlantPosition 在 schedule 中持续运行，_plantsPosition 应该是最新的
 
                 if (judgeTouchPositionIsCanPlant()) {
@@ -280,7 +284,7 @@ void ControlLayer::updatePreviewPosition() {
 
 // 兼有更新网络坐标索引的功能
 
-bool ControlLayer::judgeTouchPositionIsInMap() {
+bool ControlLayer::UpdateTouchPositionIsInMap() {
 
     auto pos = _mapManager->convertScreenPosToMapPos(_cur);
     if (!pos.equals(MapManager::FalsePosition)) {//位置合法
