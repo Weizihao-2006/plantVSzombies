@@ -40,7 +40,8 @@ bool CardMgr::canAfford(PlantType type) const {
     return Global::getInstance()->getSun() >= props.sunCost;
 }
 
-void CardMgr::startCool(PlantType type) {
+void CardMgr::startCool(PlantType type) 
+{
     auto props = PlantData::getProps(type);
     if (props.type == PlantType::Error) return;
 

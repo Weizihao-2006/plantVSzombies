@@ -82,6 +82,7 @@ void ControlLayer::createTouchListener() {
                 _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, _selectedPlantType);
                // _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantType;
                 PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // 通知PlantMgr实际创建植物
+               
                 _selectedPlantType = SelectNoPlant; // 重置选中状态
             }
             else if (judgeTouchPositionHavePlant()) {
@@ -156,6 +157,8 @@ void ControlLayer::createTouchListener() {
                     _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, _selectedPlantType);
                     //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantType;
                     PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // 通知PlantMgr实际创建植物
+                    //确认种植后调用
+                    CardMgr::getInstance()->onPlantConfirmed(_selectedPlantType);
                 }
                 else if (judgeTouchPositionHavePlant()) {//这个是什么意思?
                     // 移除植物逻辑

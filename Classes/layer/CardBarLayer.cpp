@@ -53,13 +53,30 @@ bool CardBarLayer::init() {
         _menu->addChild(btn);
 
         // 2. 初始化进度条 (对应冷却视觉)
-        auto cdSprite = Sprite::create(props.cardIcon_locked); // 使用锁定的灰色图标作为覆盖层
+        auto cdSprite = Sprite::create(props.cardIcon_locked); // 灰色图标
         auto progressTimer = ProgressTimer::create(cdSprite);
+
+        // --- 修正点 1：位置对齐 ---
+        // 因为 btn 的锚点是 ZERO(左下角)，所以 progressTimer 的位置直接等于 btn 的位置
+        // 不要加 getContentSize()，否则会发生偏移
+        progressTimer->setAnchorPoint(Vec2::ZERO);
+        progressTimer->setPosition(btn->getPosition());
+
+        // --- 修正点 2：缩放对齐 ---
+        // btn 被缩放了 2.0f，遮罩也必须手动同步这个缩放，大小才会一致
+        progressTimer->setScale(btn->getScale());
+
+        // --- 修正点 3：遮罩方向 ---
         progressTimer->setType(ProgressTimer::Type::BAR);
-        progressTimer->setMidpoint(Vec2(0.5, 0)); // 从下往上遮盖
+        // Midpoint(0, 1) 代表从上方开始变化
+        progressTimer->setMidpoint(Vec2(0, 1));
+        // BarChangeRate(0, 1) 代表只在纵向（Y轴）有进度变化，横向不动
         progressTimer->setBarChangeRate(Vec2(0, 1));
-        progressTimer->setPosition(btn->getPosition() + btn->getContentSize()); // 需根据缩放微调坐标
-        this->addChild(progressTimer, 1);
+
+        // --- 修正点 4：层级 ---
+        // 必须确保遮罩在按钮上方，this 是 CardBarLayer，10 是一个较高的 ZOrder
+        progressTimer->setOpacity(160); // 设置透明度，能看到底图但有阴影感
+        this->addChild(progressTimer, 10);
 
         _cdBars.push_back(progressTimer);
     }
@@ -87,20 +104,29 @@ void CardBarLayer::createCardSlotBg()
     }
 }
 
-void CardBarLayer::update(float dt) 
+void CardBarLayer::update(float dt)
 {
     const auto& deck = _cardMgr->getLevelDeck();
 
     for (size_t i = 0; i < deck.size(); ++i) {
         PlantType type = deck[i];
 
-        // 更新冷却条
+        // 1. 更新冷却条百分比
+        // 确保 CardMgr::getCoolPercent 返回的是 0-100
         float percent = _cardMgr->getCoolPercent(type);
-        _cdBars[i]->setPercentage(percent);
+        if (i < _cdBars.size()) {
+            _cdBars[i]->setPercentage(percent);
+        }
 
-        // 更新阳光充足/不足的视觉状态
+        // 2. 更新视觉状态（变暗/灰度逻辑）
         bool canAfford = _cardMgr->canAfford(type);
-        // 如果阳光不足，可以设置卡片变暗（透明度）
+        bool inCD = _cardMgr->isInCoolDown(type);
+
+        // 核心修正：只有既买得起又没在冷却，才是 255 亮度
+        // 否则全部进入半透明（暗色）状态
+        bool isUsable = canAfford && !inCD;
+
+
         _menu->getChildren().at(i)->setOpacity(canAfford ? 255 : 128);
     }
 }
