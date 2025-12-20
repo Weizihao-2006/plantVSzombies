@@ -1,4 +1,5 @@
 #include"GameUILayer.h"
+#include "MainMenu.h"
 #include"scene/GameScene.h"
 #include"util/Global.h"
 #include"UI/UIScale9Sprite.h"
@@ -20,12 +21,10 @@ void GameUILayer::update(float dt)
 bool GameUILayer::init() {
     if (!Layer::init()) return false;
     createSunDisplay(); // 创建阳光数量显示
-#if 0
-    createPauseButton(); // 创建暂停按钮
-    createShovelButton(); // 创建铲子按钮
-    createProgressBar(); // 创建进度条
 
-#endif
+    createPauseButton(); // 创建暂停按钮
+    // createShovelButton(); // 创建铲子按钮
+    // createProgressBar(); // 创建进度条
     
     this->scheduleUpdate();
     return true;
@@ -43,19 +42,17 @@ void GameUILayer::createSunDisplay()
 
 
 void GameUILayer::createPauseButton() {
-    _pauseButton = MenuItemImage::create("pause_normal.png", "pause_pressed.png", // 创建暂停按钮
-        [this](Ref*) {
-            auto* scene = dynamic_cast<GameScene*>(this->getParent()); // 获取父场景
-            if (scene) {
-                scene->onPause(true); // 调用父场景的暂停函数
-                showPauseMenu(); // 显示暂停菜单
-            }
+    // 创建"菜单"键精灵实现暂停
+    _pauseButton = MenuItemImage::create("Button/btn_Menu.png", "Button/btn_Menu.png",
+        [this](Ref* sender) {
+            showPauseMenu();
         });
-    _pauseButton->setPosition(Director::getInstance()->getVisibleSize().width - 60, // 设置位置
-        Director::getInstance()->getVisibleSize().height - 60);
-    auto menu = Menu::create(_pauseButton, nullptr); // 创建菜单
-    menu->setPosition(Vec2::ZERO); // 菜单位置归零
-    addChild(menu); // 添加到当前层
+
+    _pauseButton->setAnchorPoint(Vec2(0, 1));
+    _pauseButton->setScale(1.3f);
+    auto menu = Menu::create(_pauseButton, nullptr);
+    menu->setPosition(Vec2(1830, 1360)); // 放置在右上角
+    this->addChild(menu);
 }
 
 void GameUILayer::createShovelButton() {
@@ -89,53 +86,55 @@ void GameUILayer::setProgress(float pct) {
 }
 
 void GameUILayer::showPauseMenu() {
-    auto menuLayer = Layer::create(); // 创建一个新层用于显示暂停菜单
-    addChild(menuLayer, 100); // 添加到当前层，层级较高
+    // 1. 通知场景暂停游戏逻辑
+    auto scene = dynamic_cast<GameScene*>(this->getParent());
+    if (scene) scene->onPause(true);
 
-    // 创建继续按钮
-    auto continueButton = Button::create("continue_normal.png", "continue_pressed.png");
+    // 2. 创建一个半透明黑色遮罩背景，拦截所有点击
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    auto menuLayer = LayerColor::create(Color4B(0, 0, 0, 50));
+    this->addChild(menuLayer, 100); // 确保在最顶层
+    // 放一张背景图
+    auto menubackground = Sprite::create("Button/Menu.png");
+    menubackground->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2));
+    menuLayer->addChild(menubackground);
 
-
-    continueButton->setPosition(Vec2(Director::getInstance()->getVisibleSize().width / 2,
-        Director::getInstance()->getVisibleSize().height / 2 + 100));
-
-    continueButton->addClickEventListener([this,menuLayer](Ref*) {
-        auto* scene = dynamic_cast<GameScene*>(this->getParent()); // 获取父场景
-        if (scene) {
-            scene->onPause(false); // 调用父场景的继续函数
-        }
-        menuLayer->removeFromParent(); // 移除暂停菜单
+    // 3. 创建返回游戏按钮
+    auto resumeBtn = ui::Button::create("Button/btn_Back.png");
+    resumeBtn->setScale(1.5f);
+    resumeBtn->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2 + 60));
+    resumeBtn->addClickEventListener([this, menuLayer, scene](Ref*) {
+        if (scene) scene->onPause(false); // 恢复游戏
+        menuLayer->removeFromParent();    // 移除菜单
         });
-    menuLayer->addChild(continueButton); // 添加到暂停菜单层
+    menuLayer->addChild(resumeBtn);
 
-    // 创建重新开始按钮
-    auto restartButton = Button::create("restart_normal.png", "restart_pressed.png");
-    restartButton->setPosition(Vec2(Director::getInstance()->getVisibleSize().width / 2, // 设置位置
-        Director::getInstance()->getVisibleSize().height / 2));
-
-
-    restartButton->addClickEventListener([this,menuLayer](Ref*) {
-        auto* scene = dynamic_cast<GameScene*>(this->getParent()); // 获取父场景
-        if (scene) {
-            scene->onPause(false); // 调用父场景的继续函数
-            Director::getInstance()->replaceScene(GameScene::createWithLevel(scene->getLevelID())); // 重新加载当前关卡
-        }
-        menuLayer->removeFromParent(); // 移除暂停菜单
+    // 4. 创建重新开始按钮
+    auto restartBtn = ui::Button::create("Button/btn_Restart.png");
+    restartBtn->setScale(1.5f);
+    restartBtn->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2 - 40));
+    restartBtn->addClickEventListener([this, scene](Ref*) {
+        int levelId = scene->getLevelID();
+        // 替换为新的当前关卡场景
+        Director::getInstance()->replaceScene(GameScene::createWithLevel(levelId));
         });
-    menuLayer->addChild(restartButton); // 添加到暂停菜单层
+    menuLayer->addChild(restartBtn);
 
-    // 创建退出按钮
-    auto exitButton = Button::create("exit_normal.png", "exit_pressed.png");
-
-    exitButton->setPosition(Vec2(Director::getInstance()->getVisibleSize().width / 2, // 设置位置
-        Director::getInstance()->getVisibleSize().height / 2 - 100));
-
-
-    exitButton->addClickEventListener([this](Ref*) {
-        Director::getInstance()->popScene(); // 返回上一个场景
+    // 5. 创建退出按钮
+    auto exitBtn = ui::Button::create("Button/out1.png");
+    exitBtn->setScale(1.2f);
+    exitBtn->setPosition(Vec2(visibleSize.width / 2, visibleSize.height / 2 - 184));
+    exitBtn->addClickEventListener([](Ref*) {
+        // Director::getInstance()->resume();
+        // 主菜单场景是 MainMenu
+        Director::getInstance()->replaceScene(MainMenu::create());
+        // Director::getInstance()->end(); // 或者直接关闭（调试用）
         });
-    menuLayer->addChild(exitButton); // 添加到暂停菜单层
+    menuLayer->addChild(exitBtn);
 
-
-    
+    // 6. 吞噬触摸：防止点击菜单按钮时穿透到下面的游戏层
+    auto listener = EventListenerTouchOneByOne::create();
+    listener->setSwallowTouches(true);
+    listener->onTouchBegan = [](Touch* touch, Event* event) { return true; };
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, menuLayer);
 }

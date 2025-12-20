@@ -48,6 +48,9 @@ public:
     // 当卡牌被点击时通知 ControlLayer，参数直接传递类型
     std::function<void(PlantType)> onCardSelected;
 
+    // 更新卡牌状态
+    void reset();
+
 private:
     struct Runtime {
         bool inCD = false;      // 是否在冷却中

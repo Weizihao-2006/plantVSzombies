@@ -5,6 +5,7 @@
 #include <string>
 
 using namespace cocos2d;
+USING_NS_CC;
 
 const PlantType ControlLayer::SelectNoPlant = PlantType::Error;
 
@@ -286,6 +287,7 @@ void ControlLayer::updatePreviewPosition() {
     int row = _plantsPosition.y;
     int col = _plantsPosition.x;
     _plantPreview->setPosition(_mapManager->getPositionInMap(row,col));
+
 }
 
 // 兼有更新网络坐标索引的功能

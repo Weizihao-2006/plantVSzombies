@@ -40,6 +40,9 @@ public:
     // 点击判定,只有worldPos(点击坐标)在_suns中的某一个阳光的范围时才会调用sun->collect()
     bool containsAndCollectSun(const Vec2& worldPos);
 
+    void pauseAllSuns();
+    void resumeAllSuns();
+
 private:
     void update(float dt) override;
 

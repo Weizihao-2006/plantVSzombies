@@ -83,3 +83,14 @@ bool MapManager::canPlantHere(int row, int col) {
     }
     return _gameMapInformation.plantsMap[row][col] == PlantType::Error;
 }
+
+// 重置地图状态
+void MapManager::reset() {
+    // 遍历地图，将所有格子设为 Error (无植物)
+    for (int r = 0; r < MapRow; ++r) {
+        for (int c = 0; c < MapCol; ++c) {
+            _gameMapInformation.plantsMap[r][c] = PlantType::Error;
+        }
+    }
+    CCLOG("MapManager reset: Map plants cleared.");
+}

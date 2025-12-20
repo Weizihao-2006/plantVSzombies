@@ -132,7 +132,7 @@ void SunLayer::spawnSunFromPlant(Vec2 pos) {
 
 bool SunLayer::containsAndCollectSun(const Vec2& worldPos) {
     //资源栏位置(飞向的目标)
-    Vec2 collectorPos = Vec2(730.0f, 1150.0f);
+    Vec2 collectorPos = Vec2(700.0f, 1300.0f);
 
     //将点击的世界坐标转换到SunLayer坐标系中
     Vec2 localPos = this->convertToNodeSpace(worldPos);
@@ -148,4 +148,18 @@ bool SunLayer::containsAndCollectSun(const Vec2& worldPos) {
         }
     }
     return false;
+}
+
+void SunLayer::pauseAllSuns() {
+    this->pause(); // 停止 SunLayer 的定时器（停止产生新阳光）
+    for (auto sun : _suns) {
+        sun->pause(); // 停止每个阳光自己的旋转动画和位移动作
+    }
+}
+
+void SunLayer::resumeAllSuns() {
+    this->resume(); // 恢复产生逻辑
+    for (auto sun : _suns) {
+        sun->resume(); // 恢复动作
+    }
 }

@@ -55,6 +55,8 @@ public:
     //返回(-1,-1)表示不在地图中,兼具判断合法的功能
     Vec2 convertScreenPosToMapPos(const cocos2d::Vec2& screenPos);
 
+    // 重置地图状态
+    void reset();
 
     //在ControlLayer中调用可以用来更新Map的植物状态
     void setMapCellStatus(int row, int col, PlantType plantId);

@@ -72,3 +72,15 @@ float CardMgr::getCoolTimeLeft(PlantType type) const {
     if (isInCoolDown(type)) return _rt.at(type).cdLeft;
     return 0.0f;
 }
+
+void CardMgr::reset() {
+    // 1. 将所有植物的冷却状态清零
+    for (auto& pair : _rt) {
+        pair.second.inCD = false;
+        pair.second.cdLeft = 0.0f;
+    }
+    // 2. 清除回调函数，防止指向已销毁的 Layer
+    onCardSelected = nullptr;
+
+    CCLOG("CardMgr reset: All cooldowns cleared.");
+}

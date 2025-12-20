@@ -24,6 +24,11 @@ GameScene* GameScene::createWithLevel(int level_id)
 
 bool GameScene::initWithLevel(int level_id)
 {
+	// 先重置所有manager
+	Global::getInstance()->reset();
+	CardMgr::getInstance()->reset();
+	MapManager::getInstance()->reset();
+
 	if (!Scene::init())
 		return false;
 
@@ -71,8 +76,8 @@ void GameScene::createLayers()
 	 _uiLayer = GameUILayer::create();
 
 	// 按优先级添加
-	this->addChild(_sunLayer, 10);
-	this->addChild(_cardBarLayer, 20);
+	this->addChild(_cardBarLayer, 10);
+	this->addChild(_sunLayer, 20);
 	_controlLayer->setName("ControlLayer");
 	this->addChild(_controlLayer, 30);
 	// this->addChild(_plantLayer, 30);
@@ -143,11 +148,33 @@ void GameScene::onPause(bool pause)
 {
 	if (pause) {
 		CCLOG("Game paused");
-		Director::getInstance()->pause();
+		// 1. 暂停所有游戏逻辑相关的层
+		// pause() 会停止该节点及其子节点的所有 Schedule 和 Action
+		if (_bgLayer) _bgLayer->pause();
+		if (_cardBarLayer) _cardBarLayer->pause();
+		if (_sunLayer) _sunLayer->pauseAllSuns();
+		// if (_zombieLayer) _zombieLayer->pause();
+		if (_plantLayer) _plantLayer->pause();
+		// if (_bulletLayer) _bulletLayer->pause();
+
+		// 2. 特别注意：ControlLayer 必须暂停，否则玩家在暂停时还能点击地图种植物
+		if (_controlLayer) _controlLayer->pause();
+
+		// 3. 停止场景本身的 update (如果有的话)
+		this->unscheduleUpdate();
 	}
 	else {
 		CCLOG("Game resumed");
-		Director::getInstance()->resume();
+		// 恢复逻辑
+		if (_bgLayer) _bgLayer->resume();
+		if (_cardBarLayer) _cardBarLayer->resume();
+		if (_sunLayer) _sunLayer->resumeAllSuns();
+		// if (_zombieLayer) _zombieLayer->resume();
+		if (_plantLayer) _plantLayer->resume();
+		// if (_bulletLayer) _bulletLayer->resume();
+		if (_controlLayer) _controlLayer->resume();
+
+		this->scheduleUpdate();
 	}
 }
 
