@@ -2,6 +2,22 @@
 #include "plant/PlantData.h"
 
 
+void AnimationHelper::initResources() 
+{
+    auto frameCache = SpriteFrameCache::getInstance();
+
+    // B. 加载植物图集 (可以从 PlantData 获取当前关卡所有植物的资源路径)
+    const auto& configs = PlantData::getAllConfigs();
+    for (auto const& [type, props] : configs) {
+        if (!props.plistPath.empty()) { // 建议在 PlantProperties 增加这个字段
+            frameCache->addSpriteFramesWithFile(props.plistPath);
+        }
+    }
+
+    // C. 资源进内存后，统一生成并缓存动画
+    loadAllAnimations();
+}
+
 void AnimationHelper::loadAllAnimations() 
 {
     const auto& configs = PlantData::getAllConfigs();

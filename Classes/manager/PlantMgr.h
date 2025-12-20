@@ -5,7 +5,7 @@
 #include"plant/Plant.h"
 #include"plant/PlantData.h"
 
-
+#include"plant/SunFlower.h"
 
 /*
 PlantMgr
@@ -44,8 +44,8 @@ PlantLayer
 class PlantMgr : public cocos2d::Node {
 
 protected:
-    PlantLayer* _plantLayer;
-   
+    PlantLayer* _plantLayer = nullptr;
+    static PlantMgr* s_sharedPlantMgr;
 public:
     void setPlantLayer(const PlantLayer* layer) {
     }
@@ -61,6 +61,9 @@ public:
 
    
     static PlantMgr* getInstance();
-    void createPlantAt(const cocos2d::Vec2& rowCol, PlantType plantId);
+
+    bool init() override;
+
+    void createPlantAt(const cocos2d::Vec2& rowCol, PlantType type);
 };
 

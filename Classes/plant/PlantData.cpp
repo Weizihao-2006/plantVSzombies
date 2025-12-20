@@ -84,10 +84,10 @@ const std::map<PlantType, PlantProperties>& PlantData::getAllConfigs()
     if (_dataConfig.empty()) {
         // 1. œÚ»’ø˚ (SunFlower)
         _dataConfig[PlantType::SunFlower] = PlantProperties(
-            PlantType::SunFlower, "SunFlower", 50, 7.5f, 300, 0, 24.0f,
+            PlantType::SunFlower, "SunFlower", 50, 7.5f, 300, 0, 2.0f,
             "plantCard/SunFlower.png", "plantCard/SunFlower_lock.png",
             "cardPreview/SunFlower_0.png", "image/SunFlower.plist",
-            "SunFlower_", 18, 0.15f, "SunFlower_Anim"
+            "SunFlower_", 17, 0.15f, "SunFlower_Anim"
         );
 
         // 2. ”£Ã“’®µØ (CherryBomb) - ∏ﬂ…À∫¶£¨≥§CD

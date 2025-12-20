@@ -8,6 +8,7 @@ USING_NS_CC;
 // 所有的植物数据从getAllConfigs()中获取,因此添加植物要修改getAllConfigs()
 //
 
+const float NormalScale = 1.5f;
 
 enum class PlantType
 {

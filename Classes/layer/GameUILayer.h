@@ -4,12 +4,22 @@
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
 
+
+//更新 _sunLabel 的文本。 
+/*
+
+
+*/
+
+
 class GameUILayer : public cocos2d::Layer {
 public:
     CREATE_FUNC(GameUILayer);
     bool init() override;
     virtual void update(float dt) override;
     /*--- 外部调用 ---*/
+
+    void refreshSun(int val); // 更新阳光总数
     void setProgress(float pct); // 更新进度条百分比
 
 private:
