@@ -1,4 +1,4 @@
-ï»¿#include "ControlLayer.h"
+#include "ControlLayer.h"
 #include"scene/GameScene.h"
 #include "manager/PlantMgr.h"
 #include"manager/CardMgr.h"
@@ -13,126 +13,126 @@ const PlantType ControlLayer::SelectNoPlant = PlantType::Error;
 
 bool ControlLayer::init()
 {
-    if (!Layer::init()) 
+    if (!Layer::init())
         return false;
 
 
     this->setPosition(Vec2::ZERO);
 
 
-    // è®¢é˜… CardMgr çš„é€‰æ‹©äº‹ä»¶,å°±æ˜¯è¯´ä¸€æ—¦å¡æ§½æŒ‰é’®è¢«ç‚¹å‡»,ä¼šè‡ªåŠ¨è°ƒç”¨
+    // ¶©ÔÄ CardMgr µÄÑ¡ÔñÊÂ¼ş,¾ÍÊÇËµÒ»µ©¿¨²Û°´Å¥±»µã»÷,»á×Ô¶¯µ÷ÓÃ
     CardMgr::getInstance()->onCardSelected = [this](PlantType type) {
-        // è¿™é‡Œä¸éœ€è¦æ£€æŸ¥é˜³å…‰å’Œå†·å´ï¼Œå› ä¸º CardMgr å·²ç»æ£€æŸ¥è¿‡äº†
+        // ÕâÀï²»ĞèÒª¼ì²éÑô¹âºÍÀäÈ´£¬ÒòÎª CardMgr ÒÑ¾­¼ì²é¹ıÁË
         this->setSelectedPlantId(type);
         CCLOG("ControlLayer: Received PlantType %d from CardMgr", static_cast<int>(type));
         };
 
     _mapManager = MapManager::getInstance();
-    createTouchListener(); // åˆ›å»ºè§¦æ‘¸å’Œé¼ æ ‡ç›‘å¬
+    createTouchListener(); // ´´½¨´¥ÃşºÍÊó±ê¼àÌı
     return true;
 }
 
 
 void ControlLayer::createTouchListener() {
-    // 1. è§¦æ‘¸ç›‘å¬å™¨ï¼šå¤„ç†è§¦æ‘¸å±è¾“å…¥æˆ–é¼ æ ‡æ‹–åŠ¨ï¼ˆæŒ‰ä¸‹æ—¶ï¼‰
+    // 1. ´¥Ãş¼àÌıÆ÷£º´¦Àí´¥ÃşÆÁÊäÈë»òÊó±êÍÏ¶¯£¨°´ÏÂÊ±£©
     auto touchListener = EventListenerTouchOneByOne::create();
 
-    // è§¦æ‘¸å¼€å§‹ (æŒ‰ä¸‹)
+    // ´¥Ãş¿ªÊ¼ (°´ÏÂ)
     touchListener->onTouchBegan = [this](Touch* touch, Event* event) {
-        //ä¸–ç•Œåæ ‡
+        //ÊÀ½ç×ø±ê
         _cur = touch->getLocation();
-        // åˆ¤å®šæ¡ä»¶ï¼šå¦‚æœæ²¡æœ‰é€‰ä¸­æ¤ç‰©ï¼Œæˆ–è€…ç‚¹åœ¨äº†åœ°å›¾å¤–ï¼Œæˆ–è€…ç‚¹åœ¨äº†ä¸å¯ç§æ¤çš„åœ°æ–¹
+        // ÅĞ¶¨Ìõ¼ş£ºÈç¹ûÃ»ÓĞÑ¡ÖĞÖ²Îï£¬»òÕßµãÔÚÁËµØÍ¼Íâ£¬»òÕßµãÔÚÁË²»¿ÉÖÖÖ²µÄµØ·½
         bool isPlantingMode = (_selectedPlantType != SelectNoPlant);
-        bool isInMap = _mapManager->judgeScreenPositionIsInMap(_cur);//è¿™ä¸ªåˆ¤æ–­ä¸ä¼šä¿®æ”¹_cur!!!
+        bool isInMap = _mapManager->judgeScreenPositionIsInMap(_cur);//Õâ¸öÅĞ¶Ï²»»áĞŞ¸Ä_cur!!!
 
-        // åªæœ‰å½“â€œä¸åœ¨ç§æ¤æ¨¡å¼â€æˆ–è€…â€œåœ¨åœ°å›¾å¤–â€æ—¶ï¼Œä¼˜å…ˆåˆ¤å®šé˜³å…‰
-        // è¿™æ ·å¯ä»¥ä¿è¯ä½ æ‰‹é‡ŒæŠ“ç€æ¤ç‰©æ—¶ï¼Œç‚¹å‡»åœ°å›¾ä¾ç„¶æ˜¯ç§æ¤
+        // Ö»ÓĞµ±¡°²»ÔÚÖÖÖ²Ä£Ê½¡±»òÕß¡°ÔÚµØÍ¼Íâ¡±Ê±£¬ÓÅÏÈÅĞ¶¨Ñô¹â
+        // ÕâÑù¿ÉÒÔ±£Ö¤ÄãÊÖÀï×¥×ÅÖ²ÎïÊ±£¬µã»÷µØÍ¼ÒÀÈ»ÊÇÖÖÖ²
         if (!isPlantingMode || !isInMap) {
             auto gameScene = dynamic_cast<GameScene*>(this->getScene());
             if (gameScene && gameScene->getSunLayer()) {
                 if (gameScene->getSunLayer()->containsAndCollectSun(_cur)) {
-                    return true; // æ¡èµ·é˜³å…‰æˆåŠŸï¼Œä¸­æ–­äº‹ä»¶ï¼Œä¸æ‰§è¡Œåç»­ç§æ¤åˆ¤æ–­
+                    return true; // ¼ñÆğÑô¹â³É¹¦£¬ÖĞ¶ÏÊÂ¼ş£¬²»Ö´ĞĞºóĞøÖÖÖ²ÅĞ¶Ï
                 }
             }
         }
         return false;
         };
 
-    //ç»è¿‡æµ‹è¯•,ä¸‹é¢è¿™ä¸€å—ä»£ç å»æ‰ä¸å½±å“!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //¾­¹ı²âÊÔ,ÏÂÃæÕâÒ»¿é´úÂëÈ¥µô²»Ó°Ïì!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #if 0
-    // è§¦æ‘¸ç§»åŠ¨ (æ‹–åŠ¨)
+    // ´¥ÃşÒÆ¶¯ (ÍÏ¶¯)
     touchListener->onTouchMoved = [this](Touch* touch, Event* event) {
-        _cur = touch->getLocation(); // æ›´æ–°å½“å‰è§¦æ‘¸ä½ç½®
+        _cur = touch->getLocation(); // ¸üĞÂµ±Ç°´¥ÃşÎ»ÖÃ
         if (_selectedPlantType != SelectNoPlant) {
             if (UpdateTouchPositionIsInMap()) {
-                showPlantPreview();      // åœ°å›¾å†…æ˜¾ç¤ºé¢„è§ˆ
-                updatePreviewPosition(); // å®æ—¶æ›´æ–°ä½ç½®ï¼ˆè·Ÿéšé¼ æ ‡/æ‰‹æŒ‡ï¼‰
+                showPlantPreview();      // µØÍ¼ÄÚÏÔÊ¾Ô¤ÀÀ
+                updatePreviewPosition(); // ÊµÊ±¸üĞÂÎ»ÖÃ£¨¸úËæÊó±ê/ÊÖÖ¸£©
             }
             else {
-                hidePlantPreview(); // åœ°å›¾å¤–éšè—
+                hidePlantPreview(); // µØÍ¼ÍâÒş²Ø
             }
         }
         };
 
-    // è§¦æ‘¸ç»“æŸ (æ¾å¼€)
+    // ´¥Ãş½áÊø (ËÉ¿ª)
     touchListener->onTouchEnded = [this](Touch* touch, Event* event) {
         _cur = touch->getLocation();
-        hidePlantPreview(); // ç»“æŸè§¦æ‘¸æ—¶éšè—é¢„è§ˆ
+        hidePlantPreview(); // ½áÊø´¥ÃşÊ±Òş²ØÔ¤ÀÀ
 
-        if (UpdateTouchPositionIsInMap()) {//æ³¨é‡æ•°æ®æˆå‘˜çš„ä¿®æ”¹
+        if (UpdateTouchPositionIsInMap()) {//×¢ÖØÊı¾İ³ÉÔ±µÄĞŞ¸Ä
             if (_selectedPlantType != SelectNoPlant && judgeTouchPositionIsCanPlant()) {
-                // ç§æ¤æ¤ç‰©é€»è¾‘
+                // ÖÖÖ²Ö²ÎïÂß¼­
 
                // _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantType;
-                //PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // é€šçŸ¥PlantMgrå®é™…åˆ›å»ºæ¤ç‰©
+                //PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // Í¨ÖªPlantMgrÊµ¼Ê´´½¨Ö²Îï
 
-                _selectedPlantType = SelectNoPlant; // é‡ç½®é€‰ä¸­çŠ¶æ€
+                _selectedPlantType = SelectNoPlant; // ÖØÖÃÑ¡ÖĞ×´Ì¬
             }
             else if (judgeTouchPositionHavePlant()) {
-                // ç§»é™¤æ¤ç‰©é€»è¾‘
+                // ÒÆ³ıÖ²ÎïÂß¼­
                 _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, SelectNoPlant);
                 //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
-                // TODO: é€šçŸ¥PlantMgrç§»é™¤æ¤ç‰©
-                _selectedPlantType = SelectNoPlant; // é‡ç½®é€‰ä¸­çŠ¶æ€ï¼Œé˜²æ­¢è¯¯æ“ä½œ
+                // TODO: Í¨ÖªPlantMgrÒÆ³ıÖ²Îï
+                _selectedPlantType = SelectNoPlant; // ÖØÖÃÑ¡ÖĞ×´Ì¬£¬·ÀÖ¹Îó²Ù×÷
             }
             else {
-                _selectedPlantType = SelectNoPlant; // å¦‚æœåªæ˜¯æ‹–åŠ¨ï¼Œç»“æŸæ—¶é‡ç½®é€‰ä¸­çŠ¶æ€
+                _selectedPlantType = SelectNoPlant; // Èç¹ûÖ»ÊÇÍÏ¶¯£¬½áÊøÊ±ÖØÖÃÑ¡ÖĞ×´Ì¬
             }
         }
         else {
-            _selectedPlantType = SelectNoPlant; // å¦‚æœåœ¨åœ°å›¾å¤–æ¾å¼€ï¼Œé‡ç½®é€‰ä¸­çŠ¶æ€
+            _selectedPlantType = SelectNoPlant; // Èç¹ûÔÚµØÍ¼ÍâËÉ¿ª£¬ÖØÖÃÑ¡ÖĞ×´Ì¬
         }
         };
 
 #endif
-    
+
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
 
 
-    // 2. é¼ æ ‡ç›‘å¬å™¨ï¼šå¤„ç†æ¡Œé¢ç«¯é¼ æ ‡çš„éæŒ‰ä¸‹ç§»åŠ¨ (å¹½çµè·Ÿéš) å’Œç‚¹å‡» (ç§æ¤)
+    // 2. Êó±ê¼àÌıÆ÷£º´¦Àí×ÀÃæ¶ËÊó±êµÄ·Ç°´ÏÂÒÆ¶¯ (ÓÄÁé¸úËæ) ºÍµã»÷ (ÖÖÖ²)
     auto mouseListener = EventListenerMouse::create();
 
-    // é¼ æ ‡ç§»åŠ¨ (æœªæŒ‰ä¸‹æ—¶)
+    // Êó±êÒÆ¶¯ (Î´°´ÏÂÊ±)
     mouseListener->onMouseMove = [this](EventMouse* event) {
-        _cur = event->getLocation(); // è·å–é¼ æ ‡å½“å‰ä½ç½®
+        _cur = event->getLocation(); // »ñÈ¡Êó±êµ±Ç°Î»ÖÃ
 
-        // ä»…åœ¨é€‰ä¸­æ¤ç‰©ä¸”é¼ æ ‡æœªæŒ‰ä¸‹æ—¶ï¼Œæ›´æ–°é¢„è§ˆä½ç½®ï¼ˆå®ç°æ¾å¼€çŠ¶æ€ä¸‹çš„å¹½çµè·Ÿéšï¼‰
-        //update: 2025/12/19,åŠ å…¥CardMgr::getInstance()->canPlant(_selectedPlantType)åˆ¤æ–­å†·å´æ—¶é—´å’Œé˜³å…‰
+        // ½öÔÚÑ¡ÖĞÖ²ÎïÇÒÊó±êÎ´°´ÏÂÊ±£¬¸üĞÂÔ¤ÀÀÎ»ÖÃ£¨ÊµÏÖËÉ¿ª×´Ì¬ÏÂµÄÓÄÁé¸úËæ£©
+        //update: 2025/12/19,¼ÓÈëCardMgr::getInstance()->canPlant(_selectedPlantType)ÅĞ¶ÏÀäÈ´Ê±¼äºÍÑô¹â
         if (_selectedPlantType != SelectNoPlant && event->getMouseButton() == EventMouse::MouseButton::BUTTON_UNSET
-            &&CardMgr::getInstance()->canPlant(_selectedPlantType)) {
+            && CardMgr::getInstance()->canPlant(_selectedPlantType)) {
 
-            // å…³é”®æ–°å¢ï¼šå¦‚æœå¹½çµç²¾çµè¿˜æœªåˆ›å»ºï¼Œç°åœ¨åˆ›å»ºå®ƒï¼
+            // ¹Ø¼üĞÂÔö£ºÈç¹ûÓÄÁé¾«Áé»¹Î´´´½¨£¬ÏÖÔÚ´´½¨Ëü£¡
             if (!_isPreviewSpriteCreated) {
 
-                //ç°åœ¨æ”¹æˆä»PlantDataä¸­è·å–ä¿¡æ¯
+                //ÏÖÔÚ¸Ä³É´ÓPlantDataÖĞ»ñÈ¡ĞÅÏ¢
                 auto props = PlantData::getProps(_selectedPlantType);
                 std::string filename = props.previewFrame;
 
 
                 _plantPreview = Sprite::create(filename);
                 if (_plantPreview) {
-                    _plantPreview->setOpacity(128); // åŠé€æ˜æ•ˆæœ
-                    _plantPreview->setScale(1.5f); // æ”¾å¤§1.5å€
+                    _plantPreview->setOpacity(128); // °ëÍ¸Ã÷Ğ§¹û
+                    _plantPreview->setScale(1.5f); // ·Å´ó1.5±¶
                     this->addChild(_plantPreview, 10);
                     _isPreviewSpriteCreated = true;
                     _isPreviewShowing = true;
@@ -140,48 +140,48 @@ void ControlLayer::createTouchListener() {
             }
 
             if (UpdateTouchPositionIsInMap()) {
-                updatePreviewPosition(); // æ›´æ–°ä½ç½® (æ­¤æ—¶ä½ç½®å°±æ˜¯å‡†ç¡®çš„é¼ æ ‡ä½ç½®)
-                showPlantPreview();      // æ˜¾ç¤ºé¢„è§ˆï¼ˆå¦‚æœä¹‹å‰éšè—äº†ï¼‰
+                updatePreviewPosition(); // ¸üĞÂÎ»ÖÃ (´ËÊ±Î»ÖÃ¾ÍÊÇ×¼È·µÄÊó±êÎ»ÖÃ)
+                showPlantPreview();      // ÏÔÊ¾Ô¤ÀÀ£¨Èç¹ûÖ®Ç°Òş²ØÁË£©
                 updateHighlightBars(_plantsPosition.y, _plantsPosition.x);
             }
             else {
-                hidePlantPreview();      // åœ°å›¾å¤–éšè—
-                clearHighlightBars();    // åœ°å›¾å¤–æ¸…é™¤é«˜äº®
+                hidePlantPreview();      // µØÍ¼ÍâÒş²Ø
+                clearHighlightBars();    // µØÍ¼ÍâÇå³ı¸ßÁÁ
             }
         }
-        
+
         };
 
-    // é¼ æ ‡æŒ‰ä¸‹ (ç”¨äºåœ¨å¹½çµæ¨¡å¼ä¸‹ç‚¹å‡»ç§æ¤)
+    // Êó±ê°´ÏÂ (ÓÃÓÚÔÚÓÄÁéÄ£Ê½ÏÂµã»÷ÖÖÖ²)
     mouseListener->onMouseDown = [this](EventMouse* event) {
         if (event->getMouseButton() == EventMouse::MouseButton::BUTTON_LEFT) {
             _cur = event->getLocation();
 
-            // åªæœ‰åœ¨å¹½çµæ¨¡å¼ä¸‹ç‚¹å‡»åœ°å›¾ï¼Œæ‰æ‰§è¡Œç§æ¤/ç§»é™¤é€»è¾‘å¹¶é€€å‡ºå¹½çµæ¨¡å¼
-            //update: 2025/12/19,åŠ å…¥CardMgr::getInstance()->canPlant(_selectedPlantType)åˆ¤æ–­å†·å´æ—¶é—´å’Œé˜³å…‰
+            // Ö»ÓĞÔÚÓÄÁéÄ£Ê½ÏÂµã»÷µØÍ¼£¬²ÅÖ´ĞĞÖÖÖ²/ÒÆ³ıÂß¼­²¢ÍË³öÓÄÁéÄ£Ê½
+            //update: 2025/12/19,¼ÓÈëCardMgr::getInstance()->canPlant(_selectedPlantType)ÅĞ¶ÏÀäÈ´Ê±¼äºÍÑô¹â
             if (_selectedPlantType != SelectNoPlant && UpdateTouchPositionIsInMap() 
                 && CardMgr::getInstance()->canPlant(_selectedPlantType)) {
-                // calculatePlantPosition åœ¨ schedule ä¸­æŒç»­è¿è¡Œï¼Œ_plantsPosition åº”è¯¥æ˜¯æœ€æ–°çš„
+                // calculatePlantPosition ÔÚ schedule ÖĞ³ÖĞøÔËĞĞ£¬_plantsPosition Ó¦¸ÃÊÇ×îĞÂµÄ
 
                 if (judgeTouchPositionIsCanPlant()) {
-                    // ç§æ¤æ¤ç‰©é€»è¾‘
+                    // ÖÖÖ²Ö²ÎïÂß¼­
                     _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, _selectedPlantType);
                     //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantType;
-                    PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // é€šçŸ¥PlantMgrå®é™…åˆ›å»ºæ¤ç‰©
-                    //ç¡®è®¤ç§æ¤åè°ƒç”¨
+                    PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // Í¨ÖªPlantMgrÊµ¼Ê´´½¨Ö²Îï
+                    //È·ÈÏÖÖÖ²ºóµ÷ÓÃ
                     CardMgr::getInstance()->onPlantConfirmed(_selectedPlantType);
                 }
-                else if (judgeTouchPositionHavePlant()) {//è¿™ä¸ªæ˜¯ä»€ä¹ˆæ„æ€?
-                    // ç§»é™¤æ¤ç‰©é€»è¾‘
+                else if (judgeTouchPositionHavePlant()) {//Õâ¸öÊÇÊ²Ã´ÒâË¼?
+                    // ÒÆ³ıÖ²ÎïÂß¼­
                     _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, SelectNoPlant);
                     //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
-                    // TODO: é€šçŸ¥PlantMgrç§»é™¤æ¤ç‰©
+                    // TODO: Í¨ÖªPlantMgrÒÆ³ıÖ²Îï
                 }
 
                 hidePlantPreview();
                 clearHighlightBars();
 
-                _selectedPlantType = SelectNoPlant; // é‡ç½®é€‰ä¸­çŠ¶æ€ï¼Œé€€å‡ºå¹½çµæ¨¡å¼
+                _selectedPlantType = SelectNoPlant; // ÖØÖÃÑ¡ÖĞ×´Ì¬£¬ÍË³öÓÄÁéÄ£Ê½
             }
             _isPreviewSpriteCreated = false;
         }
@@ -191,17 +191,17 @@ void ControlLayer::createTouchListener() {
 }
 
 
-// è®¾ç½®é€‰ä¸­çš„æ¤ç‰©IDï¼ˆä»å¡ç‰‡ç‚¹å‡»äº‹ä»¶è°ƒç”¨ï¼‰
+// ÉèÖÃÑ¡ÖĞµÄÖ²ÎïID£¨´Ó¿¨Æ¬µã»÷ÊÂ¼şµ÷ÓÃ£©
 void ControlLayer::setSelectedPlantId(PlantType plantId) {
     _selectedPlantType = plantId;
 
     if (plantId != SelectNoPlant) {
-        //// å¦‚æœç²¾çµå·²ç»å­˜åœ¨ï¼Œæ˜¾ç¤ºå®ƒï¼ˆä½†åˆå§‹ä½ç½®å¯èƒ½ä¸æ­£ç¡®ï¼Œä¼šåœ¨ onMouseMove ä¸­ç«‹å³ä¿®æ­£ï¼‰
+        //// Èç¹û¾«ÁéÒÑ¾­´æÔÚ£¬ÏÔÊ¾Ëü£¨µ«³õÊ¼Î»ÖÃ¿ÉÄÜ²»ÕıÈ·£¬»áÔÚ onMouseMove ÖĞÁ¢¼´ĞŞÕı£©
         //if (_plantPreview) {
         //    _plantPreview->setVisible(true);
         //    _isPreviewShowing = true;
         //}
-        //// å¦‚æœç²¾çµä¸å­˜åœ¨ï¼Œä»€ä¹ˆéƒ½ä¸åšï¼Œç­‰å¾… onMouseMove åˆ›å»ºå®ƒã€‚
+        //// Èç¹û¾«Áé²»´æÔÚ£¬Ê²Ã´¶¼²»×ö£¬µÈ´ı onMouseMove ´´½¨Ëü¡£
     }
     else {
         hidePlantPreview();
@@ -210,7 +210,7 @@ void ControlLayer::setSelectedPlantId(PlantType plantId) {
 
 
 void ControlLayer::updateHighlightBars(int row, int col) {
-    // 1. å»¶è¿Ÿåˆå§‹åŒ– DrawNode
+    // 1. ÑÓ³Ù³õÊ¼»¯ DrawNode
     if (!_highlightRow) {
         _highlightRow = DrawNode::create();
         this->addChild(_highlightRow, 5);
@@ -223,28 +223,28 @@ void ControlLayer::updateHighlightBars(int row, int col) {
     _highlightRow->clear();
     _highlightCol->clear();
 
-    // 2. è®¾ç½®é«˜äº®é¢œè‰²ï¼šåŠé€æ˜ç™½è‰²
+    // 2. ÉèÖÃ¸ßÁÁÑÕÉ«£º°ëÍ¸Ã÷°×É«
     Color4F highlightColor(1.0f, 1.0f, 1.0f, 0.2f);
 
-    // 3. é€šè¿‡ Manager è·å–æ ¼å­ä¸­å¿ƒç‚¹ï¼Œä¸å†ç›´æ¥è®¿é—®å…¨å±€æ•°ç»„
+    // 3. Í¨¹ı Manager »ñÈ¡¸ñ×ÓÖĞĞÄµã£¬²»ÔÙÖ±½Ó·ÃÎÊÈ«¾ÖÊı×é
     Vec2 center = _mapManager->getPositionInMap(row, col);
 
-    // 4. ä» Manager è·å–åœ°å›¾è¾¹ç•Œå‚æ•°
+    // 4. ´Ó Manager »ñÈ¡µØÍ¼±ß½ç²ÎÊı
     float rowLeft = _mapManager->getMapLeft();
     float rowRight = _mapManager->getMapRight();
     float colBottom = _mapManager->getMapBottom();
     float colTop = _mapManager->getMapTop();
 
-    float barSize = 140.0f; // é«˜äº®æ¡çš„åšåº¦
+    float barSize = 140.0f; // ¸ßÁÁÌõµÄºñ¶È
 
-    // --- ç»˜åˆ¶æ¨ªæ¡ (Row) ---
+    // --- »æÖÆºáÌõ (Row) ---
     _highlightRow->drawSolidRect(
         Vec2(rowLeft, center.y - barSize / 2),
         Vec2(rowRight, center.y + barSize / 2),
         highlightColor
     );
 
-    // --- ç»˜åˆ¶ç«–æ¡ (Col) ---
+    // --- »æÖÆÊúÌõ (Col) ---
     _highlightCol->drawSolidRect(
         Vec2(center.x - barSize / 2, colBottom),
         Vec2(center.x + barSize / 2, colTop),
@@ -252,13 +252,13 @@ void ControlLayer::updateHighlightBars(int row, int col) {
     );
 }
 
-// éšè—é«˜äº®æ¡
+// Òş²Ø¸ßÁÁÌõ
 void ControlLayer::clearHighlightBars() {
     if (_highlightRow) _highlightRow->clear();
     if (_highlightCol) _highlightCol->clear();
 }
 
-// æ˜¾ç¤ºæ¤ç‰©é¢„è§ˆ
+// ÏÔÊ¾Ö²ÎïÔ¤ÀÀ
 void ControlLayer::showPlantPreview() {
     if (_plantPreview && !_isPreviewShowing) {
         _plantPreview->setVisible(true);
@@ -266,22 +266,22 @@ void ControlLayer::showPlantPreview() {
     }
 }
 
-// éšè—æ¤ç‰©é¢„è§ˆ
+// Òş²ØÖ²ÎïÔ¤ÀÀ
 void ControlLayer::hidePlantPreview() {
-    // ä»…éšè—ï¼Œä¸ç§»é™¤ç²¾çµï¼Œä»¥ä¾¿ä¸‹æ¬¡ç§»åŠ¨æ—¶å¯ä»¥ç«‹å³æ˜¾ç¤º
+    // ½öÒş²Ø£¬²»ÒÆ³ı¾«Áé£¬ÒÔ±ãÏÂ´ÎÒÆ¶¯Ê±¿ÉÒÔÁ¢¼´ÏÔÊ¾
     if (_plantPreview && _isPreviewShowing) {
         _plantPreview->setVisible(false);
         _isPreviewShowing = false;
     }
 }
 
-// æ›´æ–°é¢„è§ˆä½ç½®åˆ°å½“å‰è§¦æ‘¸/é¼ æ ‡ä½ç½®
+// ¸üĞÂÔ¤ÀÀÎ»ÖÃµ½µ±Ç°´¥Ãş/Êó±êÎ»ÖÃ
 void ControlLayer::updatePreviewPosition() {
     if (!_plantPreview) return;
 
     // CCLOG("%f %f", _cur.x, targetY);
 
-    // å¯é€‰ï¼šé™åˆ¶é¢„è§ˆå›¾åªèƒ½åœ¨åœ°å›¾èŒƒå›´å†…æ˜¾ç¤º
+    // ¿ÉÑ¡£ºÏŞÖÆÔ¤ÀÀÍ¼Ö»ÄÜÔÚµØÍ¼·¶Î§ÄÚÏÔÊ¾
     // float x = std::max(_gameMapInformation.mapLeft, std::min(_cur.x, _gameMapInformation.mapRight));
     // float y = std::max(_gameMapInformation.mapBottom, std::min(_cur.y, _gameMapInformation.mapTop));
     int row = _plantsPosition.y;
@@ -290,12 +290,12 @@ void ControlLayer::updatePreviewPosition() {
 
 }
 
-// å…¼æœ‰æ›´æ–°ç½‘ç»œåæ ‡ç´¢å¼•çš„åŠŸèƒ½
+// ¼æÓĞ¸üĞÂÍøÂç×ø±êË÷ÒıµÄ¹¦ÄÜ
 
 bool ControlLayer::UpdateTouchPositionIsInMap() {
 
     auto pos = _mapManager->convertScreenPosToMapPos(_cur);
-    if (!pos.equals(MapManager::FalsePosition)) {//ä½ç½®åˆæ³•
+    if (!pos.equals(MapManager::FalsePosition)) {//Î»ÖÃºÏ·¨
         _plantsPosition = pos;
         return true;
     }
@@ -309,4 +309,3 @@ bool ControlLayer::judgeTouchPositionIsCanPlant() {
 bool ControlLayer::judgeTouchPositionHavePlant() {
     return _mapManager->judgeScreenPositionHavePlant(_cur);
 }
-

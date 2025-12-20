@@ -6,10 +6,9 @@
 USING_NS_CC;
 
 
-struct SelectedPlantCard {
-	cocos2d::Node* cardNode;
-	int id;
-};
+//数据的保存: 阳光的数据
+// 
+
 
 class Global {
 
@@ -49,21 +48,16 @@ public:
 		return false;
 	}
 
-	// 返回玩家在selectPlantScene选择的卡片
-	// 返回引用
-	std::vector<SelectedPlantCard>& getSelectedCards() { return _selectedCards; }
-
 	// 重置游戏状态
 	void reset() {
-		_sun = 50;
-		_selectedCards.clear();
+		_sun = 0;
 		CCLOG("Global: Game state reset");
 	}
 
 private:
 	Global() = default;
 	int _levelID = 1;
-	int _sun = 50;
+	int _sun = 0;
 	std::vector<SelectedPlantCard> _selectedCards;
 };
 
