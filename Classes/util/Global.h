@@ -1,7 +1,6 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#include<vector>
 #include"cocos2d.h"
 USING_NS_CC;
 
@@ -58,7 +57,6 @@ private:
 	Global() = default;
 	int _levelID = 1;
 	int _sun = 0;
-	std::vector<SelectedPlantCard> _selectedCards;
 };
 
 

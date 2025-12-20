@@ -85,11 +85,11 @@ void GameScene::createLayers()
 	// 按优先级添加
 	this->addChild(_cardBarLayer, 10);
 	this->addChild(_sunLayer, 20);
-	this->addChild(_sunLayer, 10);
 	_sunLayer->setName("SunLayer");
-	this->addChild(_cardBarLayer, 20);
+
 	_controlLayer->setName("ControlLayer");
 	this->addChild(_controlLayer, 30);
+
 	this->addChild(_plantLayer, 30);
 	_plantLayer->setName("PlantLayer");
 	// this->addChild(_zombieLayer, 40);
