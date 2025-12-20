@@ -30,7 +30,5 @@ bool Plants::initWithPlantType(PlantType type)
         }
     }
 
-    
-
     return true;
 }

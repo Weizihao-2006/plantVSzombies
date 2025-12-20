@@ -11,6 +11,7 @@
 #include "manager/CardMgr.h"
 #include "util/Global.h"
 #include "cocos2d.h"
+#include "AudioEngine.h"
 USING_NS_CC;
 
 GameScene* GameScene::createWithLevel(int level_id)
@@ -30,6 +31,10 @@ bool GameScene::initWithLevel(int level_id)
 	Global::getInstance()->reset();
 	CardMgr::getInstance()->reset();
 	MapManager::getInstance()->reset();
+
+	// 播放游戏音乐
+	AudioEngine::play2d("Music/StartBGM.MP3", false, 1.0f);
+	bgmID = AudioEngine::play2d("Music/GameSceneBGM.MP3", true, 1.0f);
 
 	if (!Scene::init())
 		return false;
@@ -84,13 +89,13 @@ void GameScene::createLayers()
 
 	// 按优先级添加
 	this->addChild(_cardBarLayer, 10);
-	this->addChild(_sunLayer, 20);
 	_sunLayer->setName("SunLayer");
 
 	_controlLayer->setName("ControlLayer");
 	this->addChild(_controlLayer, 30);
 
 	this->addChild(_plantLayer, 30);
+	this->addChild(_sunLayer, 40);
 	_plantLayer->setName("PlantLayer");
 	// this->addChild(_zombieLayer, 40);
 	// this->addChild(_bulletLayer, 50);
@@ -165,7 +170,7 @@ void GameScene::onPause(bool pause)
 		if (_cardBarLayer) _cardBarLayer->pause();
 		if (_sunLayer) _sunLayer->pauseAllSuns();
 		// if (_zombieLayer) _zombieLayer->pause();
-		if (_plantLayer) _plantLayer->pause();
+		if (_plantLayer) _plantLayer->pauseAllPlants();
 		// if (_bulletLayer) _bulletLayer->pause();
 
 		// 2. 特别注意：ControlLayer 必须暂停，否则玩家在暂停时还能点击地图种植物
@@ -173,6 +178,9 @@ void GameScene::onPause(bool pause)
 
 		// 3. 停止场景本身的 update (如果有的话)
 		this->unscheduleUpdate();
+
+		// 4.暂停游戏音乐
+		AudioEngine::pause(bgmID);
 	}
 	else {
 		CCLOG("Game resumed");
@@ -181,11 +189,14 @@ void GameScene::onPause(bool pause)
 		if (_cardBarLayer) _cardBarLayer->resume();
 		if (_sunLayer) _sunLayer->resumeAllSuns();
 		// if (_zombieLayer) _zombieLayer->resume();
-		if (_plantLayer) _plantLayer->resume();
+		if (_plantLayer) _plantLayer->resumeAllPlants();
 		// if (_bulletLayer) _bulletLayer->resume();
 		if (_controlLayer) _controlLayer->resume();
 
 		this->scheduleUpdate();
+
+		// 恢复游戏音乐
+		AudioEngine::resume(bgmID);
 	}
 }
 

@@ -27,6 +27,12 @@ public:
     // 更新所有植物
     virtual void update(float dt) override;
 
+    // 停止所有植物动画
+    void pauseAllPlants();
+
+    // 恢复所有植物动画
+    void resumeAllPlants();
+
 private:
     Vector<Plants*> _plants;
 };

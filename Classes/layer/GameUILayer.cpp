@@ -3,6 +3,7 @@
 #include"scene/GameScene.h"
 #include"util/Global.h"
 #include"UI/UIScale9Sprite.h"
+#include "AudioEngine.h"
 USING_NS_CC;
 using namespace cocos2d::ui;
 
@@ -89,6 +90,8 @@ void GameUILayer::showPauseMenu() {
     // 1. 通知场景暂停游戏逻辑
     auto scene = dynamic_cast<GameScene*>(this->getParent());
     if (scene) scene->onPause(true);
+    // 播放暂停键音乐
+    AudioEngine::play2d("Music/pause.MP3", false, 1.0f);
 
     // 2. 创建一个半透明黑色遮罩背景，拦截所有点击
     auto visibleSize = Director::getInstance()->getVisibleSize();

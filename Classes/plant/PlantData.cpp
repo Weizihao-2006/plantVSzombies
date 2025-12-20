@@ -84,7 +84,7 @@ const std::map<PlantType, PlantProperties>& PlantData::getAllConfigs()
     if (_dataConfig.empty()) {
         // 1. ÏòÈÕ¿û (SunFlower)
         _dataConfig[PlantType::SunFlower] = PlantProperties(
-            PlantType::SunFlower, "SunFlower", 50, 7.5f, 300, 0, 2.0f,
+            PlantType::SunFlower, "SunFlower", 50, 7.5f, 300, 0, 8.0f,
             "plantCard/SunFlower.png", "plantCard/SunFlower_lock.png",
             "cardPreview/SunFlower_0.png", "image/SunFlower.plist",
             "SunFlower_", 17, 0.15f, "SunFlower_Anim"

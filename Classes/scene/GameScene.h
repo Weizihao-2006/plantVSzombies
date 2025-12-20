@@ -24,6 +24,8 @@ private:
     BulletLayer* _bulletLayer = nullptr;
     GameUILayer* _uiLayer = nullptr;
 
+    int bgmID;
+
 public:
     static GameScene* createWithLevel(int level_id = 1);
     bool initWithLevel(int level_id);
