@@ -119,8 +119,9 @@ void SunLayer::spawnSkySun()
 }
 
 void SunLayer::spawnSunFromPlant(Vec2 pos) {
+
     auto sun = SunSprite::createSun();
-    sun->setPosition(pos);
+    sun->setPosition(pos+Vec2(30.0f,30.0f));
     this->addChild(sun);
 
     _suns.pushBack(sun);

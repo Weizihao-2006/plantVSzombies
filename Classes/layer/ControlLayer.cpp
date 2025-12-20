@@ -117,6 +117,8 @@ void ControlLayer::createTouchListener() {
 
         // 仅在选中植物且鼠标未按下时，更新预览位置（实现松开状态下的幽灵跟随）
         //update: 2025/12/19,加入CardMgr::getInstance()->canPlant(_selectedPlantType)判断冷却时间和阳光
+        
+
         if (_selectedPlantType != SelectNoPlant && event->getMouseButton() == EventMouse::MouseButton::BUTTON_UNSET
             &&CardMgr::getInstance()->canPlant(_selectedPlantType)) {
 
@@ -152,39 +154,50 @@ void ControlLayer::createTouchListener() {
         };
 
     // 鼠标按下 (用于在幽灵模式下点击种植)
-    mouseListener->onMouseDown = [this](EventMouse* event) {
-        if (event->getMouseButton() == EventMouse::MouseButton::BUTTON_LEFT) {
-            _cur = event->getLocation();
+    mouseListener->onMouseDown = [this](EventMouse* event) 
+    {
+            if (event->getMouseButton() == EventMouse::MouseButton::BUTTON_LEFT) {
+                _cur = event->getLocation();
 
-            // 只有在幽灵模式下点击地图，才执行种植/移除逻辑并退出幽灵模式
-            //update: 2025/12/19,加入CardMgr::getInstance()->canPlant(_selectedPlantType)判断冷却时间和阳光
-            if (_selectedPlantType != SelectNoPlant && UpdateTouchPositionIsInMap() 
-                && CardMgr::getInstance()->canPlant(_selectedPlantType)) {
-                // calculatePlantPosition 在 schedule 中持续运行，_plantsPosition 应该是最新的
+                // 只有在幽灵模式下点击地图，才执行种植/移除逻辑并退出幽灵模式
+                //update: 2025/12/19,加入CardMgr::getInstance()->canPlant(_selectedPlantType)判断冷却时间和阳光
+                if (_selectedPlantType != SelectNoPlant && UpdateTouchPositionIsInMap()
+                    && CardMgr::getInstance()->canPlant(_selectedPlantType)) {
+                    // calculatePlantPosition 在 schedule 中持续运行，_plantsPosition 应该是最新的
 
-                if (judgeTouchPositionIsCanPlant()) {
-                    // 种植植物逻辑
-                    _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, _selectedPlantType);
-                    //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantType;
-                    PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // 通知PlantMgr实际创建植物
-                    //确认种植后调用
-                    CardMgr::getInstance()->onPlantConfirmed(_selectedPlantType);
+                    if (judgeTouchPositionIsCanPlant()) {
+                        // 种植植物逻辑
+                        _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, _selectedPlantType);
+                        //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantType;
+                        PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // 通知PlantMgr实际创建植物
+                        //确认种植后调用
+                        CardMgr::getInstance()->onPlantConfirmed(_selectedPlantType);
+                    }
+                    else if (judgeTouchPositionHavePlant()) {//这个是什么意思?
+                        // 移除植物逻辑
+                        _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, SelectNoPlant);
+                        //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
+                        // TODO: 通知PlantMgr移除植物
+                    }
+
+                    hidePlantPreview();
+                    clearHighlightBars();
+
+                    _selectedPlantType = SelectNoPlant; // 重置选中状态，退出幽灵模式
                 }
-                else if (judgeTouchPositionHavePlant()) {//这个是什么意思?
-                    // 移除植物逻辑
-                    _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, SelectNoPlant);
-                    //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
-                    // TODO: 通知PlantMgr移除植物
-                }
+                _isPreviewSpriteCreated = false;
+            }
 
+            else if (event->getMouseButton() == EventMouse::MouseButton::BUTTON_RIGHT) {//新增一个功能,右键取消种植植物
                 hidePlantPreview();
                 clearHighlightBars();
 
                 _selectedPlantType = SelectNoPlant; // 重置选中状态，退出幽灵模式
+                _isPreviewSpriteCreated = false;
             }
-            _isPreviewSpriteCreated = false;
-        }
-        };
+
+            
+    };
 
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
 }

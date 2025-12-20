@@ -4,78 +4,71 @@
 #include"manager/MapMgr.h"
 USING_NS_CC;
 
-PlantMgr* PlantMgr::getInstance() { static PlantMgr mgr; return &mgr; }
+PlantMgr* PlantMgr::s_sharedPlantMgr = nullptr;
 
+
+PlantMgr* PlantMgr::getInstance()
+{ 
+    if (s_sharedPlantMgr == nullptr) {
+        s_sharedPlantMgr = new(std::nothrow) PlantMgr;
+        s_sharedPlantMgr->init();
+    }
+    return s_sharedPlantMgr;
+
+}
+bool PlantMgr::init()
+{
+    auto scene=Director::getInstance()->getRunningScene();
+    _plantLayer = dynamic_cast<PlantLayer*>(scene->getChildByName("PlantLayer"));
+    return true;
+}
 
 // 在指定位置创建一个植物并且加入到RunningScene中
 // 注意,创建的植物并非加到某一个Layer!
 
-//实际上判断是否可以种植的逻辑可以分到GameMapManager中
-//plantId
-void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType plantId)
+
+void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType type)
 {
 
     auto mapManager = MapManager::getInstance();
 
-    PlantProperties props = PlantData::getProps(plantId);
-
-
-#if 1
-
-    std::string filename = props.previewFrame;
-    auto plant = Sprite::create(filename);
-    int col = rowCol.x;
-    int row = rowCol.y;
-    plant->setPosition(mapManager->getPositionInMap(row,col));
-    plant->setScale(1.5f);
-    Director::getInstance()->getRunningScene()->addChild(plant, 10);
-
-#endif
-#if 0
-    switch (plant_type) {
+    Plants* plant;
+    switch (type) {
         case PlantType::SunFlower:
             plant = SunFlower::create();
-            // 阳光花费, 冷却时间, 血量, 攻击力, 类型, 名字
-            props = { 50, 7.5f, 300, 0, PlantType::SunFlower, "SunFlower" };
             break;
-
+#if 0
         case PlantType::PeaShooter:
             plant = PeaShooter::create();
-            props = { 100, 7.5f, 300, 20, PlantType::PeaShooter, "PeaShooter" };
             break;
-
         case PlantType::ReaPeater:
             plant = Repeater::create();
-            props = { 200, 7.5f, 300, 20, PlantType::ReaPeater, "Repeater" };
             break;
-
         case PlantType::SnowPea:
             plant = SnowPea::create();
-            props = { 175, 7.5f, 300, 20, PlantType::SnowPea, "SnowPea" };
             break;
-
         case PlantType::WallNut:
             plant = WallNut::create();
-            props = { 50, 30.0f, 4000, 0, PlantType::WallNut, "WallNut" };
             break;
-
         case PlantType::CherryBomb:
             plant = CherryBomb::create();
-            props = { 150, 50.0f, 300, 1800, PlantType::CherryBomb, "CherryBomb" };
             break;
-
         default:
             CCLOG("Warning: Unknown PlantType!");
             return;
+#endif
     }
     if (plant) {
         // 2. 放置
-        plant->setPosition(MapCoordinate[static_cast<int>(rowCol.y)][static_cast<int>(rowCol.x)]);
-        _plantLayer->addChild(plant);
-        // 3. 登记
-        _allPlants.push_back(plant);
-        // 4. 启动update的schedule,具体见plant::update()
+        int col = rowCol.x;
+        int row = rowCol.y;
+        plant->setPosition(mapManager->getPositionInMap(row, col));
+
+        //放大
+        plant->setScale(1.5f);
+
+        _plantLayer->addPlant(plant);
+
         plant->scheduleUpdate();
     }
-#endif
 }

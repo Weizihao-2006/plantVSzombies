@@ -6,6 +6,9 @@
 USING_NS_CC;
 class AnimationHelper {
 public:
+
+	static void initResources();
+
 	/**
   * @brief 一键解析 PlantData 配置表并批量生成/缓存所有植物动画
   * * 该函数会遍历整个配置表，通过 animPrefix 等参数自动调用 createAndCache。

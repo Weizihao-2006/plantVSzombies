@@ -5,15 +5,13 @@
 #include"plant/PlantData.h"
 USING_NS_CC;
 
-
-
 //植物属性结构体
 
 
 //基类不提供create(),需要在子类中使用initWithPlantProperties
 class Plants : public Node {
 public:
-    virtual bool initWithPlantProperties(const PlantProperties& props);
+    virtual bool initWithPlantType(PlantType type);
 
 
     virtual void update(float dt) override {} //执行攻击/生产逻辑检测
@@ -23,8 +21,6 @@ public:
         //生产资源（资源型植物实现）
     virtual void produceResource() {};
 
-    //碰撞检测
-    virtual bool checkZombieCollision(Zombie* zombie) {};
 
 
     // 受伤状态切换：基类什么都不做

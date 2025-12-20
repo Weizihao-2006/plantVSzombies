@@ -7,8 +7,16 @@ bool PlantLayer::init()
 {
 	if (!Layer::init())
 		return false;
+}
 
+void PlantLayer::addPlant(Plants* plant)
+{
+	this->addChild(plant);
+	_plants.pushBack(plant);
+}
 
-
+//¸üĞÂÖ²Îï×´Ì¬
+void PlantLayer::update(float dt)
+{
 
 }
