@@ -9,10 +9,10 @@
 #include "layer/ControlLayer.h"
 #include"tool/AnimationHelper.h"
 #include "manager/CardMgr.h"
-#include "manager/ZombieMgr.h"
 #include "util/Global.h"
 #include "cocos2d.h"
 #include "AudioEngine.h"
+#include "manager/ZombieMgr.h"
 USING_NS_CC;
 
 GameScene* GameScene::createWithLevel(int level_id)
