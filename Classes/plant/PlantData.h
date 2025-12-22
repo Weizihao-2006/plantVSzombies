@@ -71,6 +71,17 @@ struct PlantProperties {
     PlantProperties& operator=(const PlantProperties& other);
 };
 
+//update:专门存放特殊状态动画的配方
+struct SpecialAnimData {
+    std::string animationName;
+    std::string prefix;
+    int frameCount;
+    float delay;
+    std::string plistPath;
+};
+
+
+
 class PlantData {
 public:
     /** * @brief 获取指定类型的植物属性
@@ -83,4 +94,11 @@ public:
     *  返回map的const&,只能使用.find()和.at(),不允许[]访问
      */
     static const std::map<PlantType, PlantProperties>& getAllConfigs();
+
+    static const std::map<PlantState, SpecialAnimData> getSpecialAnimMap(PlantType type);
+
+    static void initSpecialAnims();
+
+    // 内部存储表
+    static std::map<PlantType, std::map<PlantState, SpecialAnimData>> _specialAnimConfig;
 };

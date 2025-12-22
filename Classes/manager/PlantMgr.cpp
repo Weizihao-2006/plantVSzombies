@@ -39,6 +39,10 @@ void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType type)
             plant = SunFlower::create();
             break;
 
+        case PlantType::WallNut:
+            plant = WallNut::create();
+            break;
+#if 0
         case PlantType::PeaShooter:
             plant = PeaShooter::create();
             break;
@@ -49,9 +53,7 @@ void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType type)
         case PlantType::SnowPea:
             plant = SnowPea::create();
             break;
-        case PlantType::WallNut:
-            plant = WallNut::create();
-            break;
+        
         case PlantType::CherryBomb:
             plant = CherryBomb::create();
             break;

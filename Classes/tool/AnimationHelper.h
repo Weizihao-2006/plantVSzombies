@@ -7,6 +7,7 @@ USING_NS_CC;
 class AnimationHelper {
 public:
 
+	//╪сть.plist
 	static void initResources();
 
 	/**
