@@ -9,6 +9,7 @@
 #include "layer/ControlLayer.h"
 #include"tool/AnimationHelper.h"
 #include "manager/CardMgr.h"
+#include "manager/ZombieMgr.h"
 #include "util/Global.h"
 #include "cocos2d.h"
 #include "AudioEngine.h"
@@ -53,6 +54,13 @@ bool GameScene::initWithLevel(int level_id)
 	// 添加每帧更新
 	scheduleUpdate();
 
+	this->scheduleOnce([this](float dt) {
+		CCLOG("Test: Spawning a zombie!");
+		// 注意：如果你还没写 ZombieMgr，可以先手动测试
+		// 确保你已经把 ZombieMgr.h 包含在 GameScene.cpp 头部
+		ZombieMgr::getInstance()->spawnZombie(ZombieType::Normal, 2);
+		}, 3.0f, "test_zombie_spawn");
+
 	return true;
 }
 
@@ -83,22 +91,27 @@ void GameScene::createLayers()
 	_cardBarLayer = CardBarLayer::create();
 	_controlLayer = ControlLayer::create();
 	_plantLayer = PlantLayer::create();
-	// _zombieLayer = ZombieLayer::create();
+	_zombieLayer = ZombieLayer::create();
 	// _bulletLayer = BulletLayer::create();
-	 _uiLayer = GameUILayer::create();
+	_uiLayer = GameUILayer::create();
 
 	// 按优先级添加
 	this->addChild(_cardBarLayer, 10);
-	_sunLayer->setName("SunLayer");
-
-	_controlLayer->setName("ControlLayer");
+	
 	this->addChild(_controlLayer, 30);
+	_controlLayer->setName("ControlLayer");
 
 	this->addChild(_plantLayer, 30);
-	this->addChild(_sunLayer, 40);
 	_plantLayer->setName("PlantLayer");
-	// this->addChild(_zombieLayer, 40);
+
+	this->addChild(_sunLayer, 40);
+	_sunLayer->setName("SunLayer");
+	
+	this->addChild(_zombieLayer, 40);
+	_zombieLayer->setName("ZombieLayer");
+
 	// this->addChild(_bulletLayer, 50);
+
 	this->addChild(_uiLayer, 100);
 }
 
