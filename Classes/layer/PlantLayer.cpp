@@ -7,6 +7,7 @@ bool PlantLayer::init()
 {
 	if (!Layer::init())
 		return false;
+    this->scheduleUpdate();
     return true;
 }
 
@@ -19,9 +20,11 @@ void PlantLayer::addPlant(Plants* plant)
 //更新植物状态
 void PlantLayer::update(float dt)
 {
-    // 遍历所有存活的植物并更新它们
-    for (auto plant : _plants) { // 注意：根据你 PlantLayer.h 的成员变量名修改，通常是 _plants
-        plant->update(dt);
+    for (int i = _plants.size() - 1; i >= 0; --i) {
+        auto z = _plants.at(i);
+        if (z->getParent() == nullptr) {
+            _plants.erase(i);
+        }
     }
 }
 

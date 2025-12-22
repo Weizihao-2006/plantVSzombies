@@ -66,5 +66,7 @@ public:
     bool init() override;
 
     void createPlantAt(const cocos2d::Vec2& rowCol, PlantType type);
+
+    void reset();
 };
 

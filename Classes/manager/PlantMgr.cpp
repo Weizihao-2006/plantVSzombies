@@ -76,3 +76,17 @@ void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType type)
         plant->scheduleUpdate();
     }
 }
+
+void PlantMgr::reset() {
+
+    _plantLayer = nullptr;
+
+
+    if (s_sharedPlantMgr) {
+        delete s_sharedPlantMgr;
+        s_sharedPlantMgr = nullptr;
+
+    }
+
+    CCLOG("PlantMgr Reset Complete.");
+}

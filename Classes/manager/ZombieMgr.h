@@ -13,6 +13,8 @@ public:
     // 在特定行生成指定类型的僵尸
     void spawnZombie(ZombieType type, int row);
 
+    void reset();
+
 private:
     ZombieMgr() = default;
     static ZombieMgr* s_instance;

@@ -28,7 +28,7 @@ const std::map<ZombieState, ZombieSpecialAnimData> ZombieData::getSpecialAnimMap
         // --- 普通僵尸 (Normal) 特殊动画 ---
         auto& normal = _specialAnimConfig[ZombieType::Normal];
 
-        //正常啃咬
+        // 正常啃咬
         normal[ZombieState::ATTACK] = { "ZombieAttack", "ZombieAttack", 22, 0.15f, "image/ZombieAttack_default.plist" };
         // 掉落的头（飞出的动画）
         normal[ZombieState::HEAD_LOSS] = { "ZombieHead", "ZombieHead", 13, 0.12f, "image/ZombieHead_default.plist" };
@@ -38,7 +38,7 @@ const std::map<ZombieState, ZombieSpecialAnimData> ZombieData::getSpecialAnimMap
         normal[ZombieState::HEADLESS_ATTACK] = { "ZombieLostHeadAttack", "ZombieLostHeadAttack", 12, 0.15f, "image/ZombieLostHeadAttack_default.plist" };
         // 普通倒地死亡
         normal[ZombieState::DYING] = { "ZombieDie", "ZombieDie", 11, 0.15f, "image/ZombieDie_default.plist" };
-       //爆裂死亡
+        // 爆裂死亡
         normal[ZombieState::BOOMDIE] = { "ZombieBoomDie","BoomDie",19,0.15f,"image/BoomDie_default.plist" };
 
 
@@ -51,11 +51,13 @@ const std::map<ZombieState, ZombieSpecialAnimData> ZombieData::getSpecialAnimMap
         cone[ZombieState::HEAD_LOSS] = normal[ZombieState::HEAD_LOSS];
         cone[ZombieState::HEADLESS_WALK] = normal[ZombieState::HEADLESS_WALK];
         cone[ZombieState::DYING] = normal[ZombieState::DYING];
+        cone[ZombieState::BOOMDIE] = normal[ZombieState::BOOMDIE];
 
         // --- 3. 铁桶僵尸 (Buckethead) ---
         auto& bucket = _specialAnimConfig[ZombieType::Buckethead];
         bucket[ZombieState::WALK] = { "BucketheadZombie", "BucketheadZombie", 16, 0.15f, "image/BucketheadZombie_default.plist" };
         bucket[ZombieState::ATTACK] = { "BucketheadZombieAttack", "BucketheadZombieAttack", 12, 0.15f, "image/BucketheadZombieAttack_default.plist" };
+        bucket[ZombieState::BOOMDIE] = normal[ZombieState::BOOMDIE];
 
         // 同样在失去铁桶后复用普通僵尸逻辑
         bucket[ZombieState::HEAD_LOSS] = normal[ZombieState::HEAD_LOSS];
@@ -82,7 +84,7 @@ void ZombieData::init() {
     // 普通僵尸
     // 资源名: Zombie_default.plist
     _dataConfig[ZombieType::Normal] = ZombieProperties(
-        ZombieType::Normal, "Zombie", 200, 30.0f, 20, 1.0f,
+        ZombieType::Normal, "Zombie", 200, 30.0f, 50, 1.0f,
         "image/Zombie_default.plist", "Zombie", 22, 0.12f, "ZombieWalk_Default"
     );
 

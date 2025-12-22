@@ -3,6 +3,7 @@
 #include"cocos2d.h"
 #include"zombie/Zombie.h"
 #include"plant/PlantData.h"
+
 USING_NS_CC;
 
 //植物属性结构体
@@ -21,7 +22,7 @@ public:
         //生产资源（资源型植物实现）
     virtual void produceResource() {};
 
-
+    bool isDead() { return _currentHealth <= 0; }
 
     // 受伤状态切换：基类什么都不做
     virtual void updateVisualByHealth() {}
@@ -35,10 +36,10 @@ public:
         _currentHealth -= damage;
 
         // 视觉反馈：通用的受击闪烁
-        /*_mainSprite->runAction(Sequence::create(
-            TintTo::create(0.1f, Color3B::RED),
+        _mainSprite->runAction(Sequence::create(
+            TintTo::create(0.1f, Color3B(100,0,0)),
             TintTo::create(0.1f, Color3B::WHITE),
-            nullptr));*/
+            nullptr));
 
         // 受伤状态切换：由各子类决定是否需要根据血量切换图片
         updateVisualByHealth();
@@ -48,27 +49,13 @@ public:
         }
     }
 
-    
-
     //调用之后植物进入死亡状态,停止所有攻击,播放死亡动画,在子类中重写playDeathAnimation()以播放死亡动画
     void handleDeath() {
         if (_currentState == PlantState::DYING) 
             return;
-
         this->setState(PlantState::DYING);
         this->unscheduleUpdate(); //立即停止逻辑更新（如停止产阳光、停止射击）
-
-        //播放死亡动画，动画结束后再移除
-        playDeathAnimation();
-    }
-
-    //基类提供默认死亡动画与移除逻辑
-    virtual void playDeathAnimation() {
-        auto fade = FadeOut::create(0.5f);
-        auto callback = CallFunc::create([this]() {
-            this->removeFromParent(); //真正移除
-            });
-        _mainSprite->runAction(Sequence::create(fade, callback, nullptr));
+        this->removeFromParent();
     }
 
     //植物状态管理

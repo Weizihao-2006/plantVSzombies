@@ -1,5 +1,6 @@
 #pragma once
 #include "zombie/Zombie.h"
+#include "plant/Plant.h"
 
 class CommonZombie : public Zombie {
 public:
@@ -11,7 +12,7 @@ public:
 
 protected:
     // ¿ÐÒ§Âß¼­
-    void eatPlant(float dt);
+    void eatPlant(float dt, Plants* plant);
 
 private:
     float _eatTimer = 0.0f;

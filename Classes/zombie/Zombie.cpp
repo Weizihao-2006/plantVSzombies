@@ -1,4 +1,8 @@
 #include "Zombie.h"
+#include "zombie/ZombieData.h"
+#include "cocos2d.h"
+
+using namespace cocos2d;
 
 bool Zombie::initWithZombieType(ZombieType type) {
     if (!Node::init()) return false;
@@ -30,16 +34,85 @@ void Zombie::update(float dt) {
     }
 }
 
+void Zombie::changeAnimation(const std::string& animName) {
+    _mainSprite->stopAllActions(); // 停止当前正在播放的动画
+    auto anim = cocos2d::AnimationCache::getInstance()->getAnimation(animName);
+    if (anim) {
+        _mainSprite->runAction(cocos2d::RepeatForever::create(cocos2d::Animate::create(anim)));
+    }
+}
+
+// 修改 takeDamage 以支持死亡动画
 void Zombie::takeDamage(float damage) {
+    if (_state == ZombieState::DYING || _state == ZombieState::DEAD) return;
+
     _currentHealth -= damage;
 
-    // 受击闪红 (复用你的闪红逻辑)
+    // 受击闪红反馈
     _mainSprite->runAction(cocos2d::Sequence::create(
         cocos2d::TintTo::create(0.1f, 255, 0, 0),
         cocos2d::TintTo::create(0.1f, 255, 255, 255),
         nullptr));
 
     if (_currentHealth <= 0) {
-        this->removeFromParent();
+        onDie(); // 触发死亡流程
     }
+}
+
+void Zombie::onDie(ZombieState dieType) {
+    if (_state == ZombieState::DEAD) return;
+    _state = dieType; // 设置为 DYING 或 BOOMDIE
+
+    _mainSprite->stopAllActions();
+    this->unscheduleUpdate();
+
+    auto specialAnims = ZombieData::getSpecialAnimMap(_props.type);
+
+    // --- 逻辑分支：如果是被炸死 ---
+    if (dieType == ZombieState::BOOMDIE) {
+        if (specialAnims.count(ZombieState::BOOMDIE)) {
+            auto boomData = specialAnims.at(ZombieState::BOOMDIE);
+            auto anim = AnimationCache::getInstance()->getAnimation(boomData.animationName);
+            if (anim) {
+                _mainSprite->runAction(Sequence::create(
+                    Animate::create(anim),
+                    RemoveSelf::create(),
+                    nullptr
+                ));
+            }
+        }
+        else {
+            this->removeFromParent(); // 如果没配炸死动画，直接消失
+        }
+        return; // 炸死通常不掉头，直接结束
+    }
+
+    // --- 逻辑分支：如果是普通死亡 (DYING) ---
+    // 1. 掉脑袋逻辑 (HEAD_LOSS)
+    if (specialAnims.count(ZombieState::HEAD_LOSS)) {
+        auto headData = specialAnims.at(ZombieState::HEAD_LOSS);
+        auto head = Sprite::create();
+        head->setPosition(this->getPosition() + Vec2(0, 60));
+        this->getParent()->addChild(head, this->getLocalZOrder() + 1);
+
+        auto anim = AnimationCache::getInstance()->getAnimation(headData.animationName);
+        if (anim) {
+            head->runAction(Sequence::create(Animate::create(anim), RemoveSelf::create(), nullptr));
+        }
+    }
+
+    // 2. 播放对应的身体倒地动画
+    if (specialAnims.count(dieType)) {
+        auto dieData = specialAnims.at(dieType);
+        auto anim = AnimationCache::getInstance()->getAnimation(dieData.animationName);
+        if (anim) {
+            _mainSprite->runAction(Sequence::create(
+                Animate::create(anim),
+                DelayTime::create(0.5f),
+                RemoveSelf::create(),
+                nullptr
+            ));
+        }
+    }
+    this->removeFromParent();
 }

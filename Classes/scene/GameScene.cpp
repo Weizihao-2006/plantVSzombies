@@ -9,6 +9,7 @@
 #include "layer/ControlLayer.h"
 #include"tool/AnimationHelper.h"
 #include "manager/CardMgr.h"
+#include "manager/PlantMgr.h"
 #include "util/Global.h"
 #include "cocos2d.h"
 #include "AudioEngine.h"
@@ -32,6 +33,8 @@ bool GameScene::initWithLevel(int level_id)
 	Global::getInstance()->reset();
 	CardMgr::getInstance()->reset();
 	MapManager::getInstance()->reset();
+	ZombieMgr::getInstance()->reset();
+	PlantMgr::getInstance()->reset();
 
 	// ≤•∑≈”Œœ∑“Ù¿÷
 	AudioEngine::play2d("Music/StartBGM.MP3", false, 1.0f);

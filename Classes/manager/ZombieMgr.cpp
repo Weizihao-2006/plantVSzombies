@@ -56,3 +56,11 @@ void ZombieMgr::spawnZombie(ZombieType type, int row) {
         zombieLayer->addZombie(zombie);
     }
 }
+
+void ZombieMgr::reset() {
+    if (s_instance) {
+        delete s_instance;
+        s_instance = nullptr;
+    }
+    CCLOG("ZombieMgr Reset Complete.");
+}

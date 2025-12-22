@@ -13,6 +13,14 @@ public:
     void takeDamage(float damage);
     CC_SYNTHESIZE(int, _row, Row);
 
+    // 增加切换动画的方法
+    void changeAnimation(const std::string& animName);
+    // 增加获取当前状态的方法
+    ZombieState getState() const { return _state; }
+    
+    // 增加参数，默认为普通死亡 (DYING)
+    virtual void onDie(ZombieState dieType = ZombieState::DYING);
+
 protected: // 必须是 protected 子类才能访问 _state
     ZombieProperties _props;
     ZombieState _state = ZombieState::WALK;
