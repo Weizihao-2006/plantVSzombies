@@ -65,6 +65,8 @@ PlantProperties& PlantProperties::operator=(const PlantProperties& other) {
 
 // --- PlantData 实现 ---
 
+std::map<PlantType, std::map<PlantState, SpecialAnimData>> PlantData::_specialAnimConfig;
+
 PlantProperties PlantData::getProps(PlantType type) 
 {
     const auto& config = getAllConfigs();
@@ -132,4 +134,28 @@ const std::map<PlantType, PlantProperties>& PlantData::getAllConfigs()
         // ... 其他植物配置 ...
     }
     return _dataConfig;
+}
+
+
+
+
+void PlantData::initSpecialAnims() 
+{
+    // 坚果墙的特殊状态
+    _specialAnimConfig[PlantType::WallNut][PlantState::DAMAGED] = { "Wallnut_cracked_1","Wallnut_cracked1_", 10, 0.15f, "image/WallNut_Cracked1.plist" };
+    _specialAnimConfig[PlantType::WallNut][PlantState::CRITICAL] = { "Wallnut_cracked_2","Wallnut_cracked2_", 10, 0.15f, "image/WallNut_Cracked2.plist" };
+
+    // 以后可以加其他的，比如大嘴花
+    // _specialAnimConfig[PlantType::Chomper]["Digesting"] = { "Chomper_Digest_", 8, 0.2f, "" };
+}
+
+const std::map<PlantState, SpecialAnimData> PlantData::getSpecialAnimMap(PlantType type)
+{
+    if (_specialAnimConfig.empty()) 
+        initSpecialAnims();
+    if (_specialAnimConfig.find(type)!=_specialAnimConfig.end()) {
+        return _specialAnimConfig.at(type);
+    }
+    return std::map<PlantState, SpecialAnimData>();
+    
 }

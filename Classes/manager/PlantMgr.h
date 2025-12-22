@@ -6,6 +6,7 @@
 #include"plant/PlantData.h"
 
 #include"plant/SunFlower.h"
+#include"plant/WallNut.h"
 
 /*
 PlantMgr

@@ -27,14 +27,18 @@ public:
     virtual void updateVisualByHealth() {}
 
     //植物受伤
-    void takeDamage(float damage) {
+    void takeDamage(float damage) 
+    {
+        if (_currentHealth < 0) {
+            return;
+        }
         _currentHealth -= damage;
 
         // 视觉反馈：通用的受击闪烁
-        _mainSprite->runAction(Sequence::create(
+        /*_mainSprite->runAction(Sequence::create(
             TintTo::create(0.1f, Color3B::RED),
             TintTo::create(0.1f, Color3B::WHITE),
-            nullptr));
+            nullptr));*/
 
         // 受伤状态切换：由各子类决定是否需要根据血量切换图片
         updateVisualByHealth();
