@@ -54,11 +54,12 @@ bool GameScene::initWithLevel(int level_id)
 	// 添加每帧更新
 	scheduleUpdate();
 
+	// 单僵尸测试
 	this->scheduleOnce([this](float dt) {
 		CCLOG("Test: Spawning a zombie!");
 		// 注意：如果你还没写 ZombieMgr，可以先手动测试
 		// 确保你已经把 ZombieMgr.h 包含在 GameScene.cpp 头部
-		ZombieMgr::getInstance()->spawnZombie(ZombieType::Normal, 2);
+		ZombieMgr::getInstance()->spawnZombie(ZombieType::Normal, 0);
 		}, 3.0f, "test_zombie_spawn");
 
 	return true;
@@ -92,7 +93,7 @@ void GameScene::createLayers()
 	_controlLayer = ControlLayer::create();
 	_plantLayer = PlantLayer::create();
 	_zombieLayer = ZombieLayer::create();
-	// _bulletLayer = BulletLayer::create();
+	_bulletLayer = BulletLayer::create();
 	_uiLayer = GameUILayer::create();
 
 	// 按优先级添加
@@ -110,7 +111,8 @@ void GameScene::createLayers()
 	this->addChild(_zombieLayer, 40);
 	_zombieLayer->setName("ZombieLayer");
 
-	// this->addChild(_bulletLayer, 50);
+	this->addChild(_bulletLayer, 50);
+	_bulletLayer->setName("BulletLayer");
 
 	this->addChild(_uiLayer, 100);
 }
@@ -182,9 +184,9 @@ void GameScene::onPause(bool pause)
 		if (_bgLayer) _bgLayer->pause();
 		if (_cardBarLayer) _cardBarLayer->pause();
 		if (_sunLayer) _sunLayer->pauseAllSuns();
-		// if (_zombieLayer) _zombieLayer->pause();
+		if (_zombieLayer) _zombieLayer->pauseAllZombies();
 		if (_plantLayer) _plantLayer->pauseAllPlants();
-		// if (_bulletLayer) _bulletLayer->pause();
+		if (_bulletLayer) _bulletLayer->pauseAllBullets();
 
 		// 2. 特别注意：ControlLayer 必须暂停，否则玩家在暂停时还能点击地图种植物
 		if (_controlLayer) _controlLayer->pause();
@@ -201,9 +203,9 @@ void GameScene::onPause(bool pause)
 		if (_bgLayer) _bgLayer->resume();
 		if (_cardBarLayer) _cardBarLayer->resume();
 		if (_sunLayer) _sunLayer->resumeAllSuns();
-		// if (_zombieLayer) _zombieLayer->resume();
+		if (_zombieLayer) _zombieLayer->resumeAllZombies();
 		if (_plantLayer) _plantLayer->resumeAllPlants();
-		// if (_bulletLayer) _bulletLayer->resume();
+		if (_bulletLayer) _bulletLayer->resumeAllBullets();
 		if (_controlLayer) _controlLayer->resume();
 
 		this->scheduleUpdate();

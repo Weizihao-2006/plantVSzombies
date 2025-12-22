@@ -19,7 +19,10 @@ void PlantLayer::addPlant(Plants* plant)
 //更新植物状态
 void PlantLayer::update(float dt)
 {
-
+    // 遍历所有存活的植物并更新它们
+    for (auto plant : _plants) { // 注意：根据你 PlantLayer.h 的成员变量名修改，通常是 _plants
+        plant->update(dt);
+    }
 }
 
 void PlantLayer::pauseAllPlants() {

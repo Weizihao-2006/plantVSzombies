@@ -44,8 +44,10 @@ void ZombieMgr::spawnZombie(ZombieType type, int row) {
         // 计算初始位置：屏幕右侧边缘外 (MapRight + 偏移)
         float startX = MapManager::getInstance()->getMapRight() + 100.0f;
         // 使用 MapManager 获取该行对应的 Y 坐标
-        float startY = MapManager::getInstance()->getPositionInMap(row, 0).y;
+        float startY = MapManager::getInstance()->getPositionInMap(row, 0).y - 70;
 
+        zombie->setAnchorPoint(Vec2(0.5, 0.5));
+        zombie->setScale(1.5f);
         zombie->setPosition(Vec2(startX, startY));
 
         // 设置层级关系（ZOrder），让下方的僵尸遮挡上方的

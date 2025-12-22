@@ -75,7 +75,13 @@ public:
         return _currentState;
     }
 
+    // 设置坐标
+    void setPos(Vec2 MapPos) {
+        _myMapPos = MapPos;
+    }
+
 protected:
+    Vec2 _myMapPos; // 记录植物在地图中的坐标
     PlantProperties _properties;  // 统一管理属性
     PlantState _currentState;     // 当前状态
     Sprite* _mainSprite = nullptr; // 植物的图片/动画主体

@@ -14,5 +14,5 @@ protected:
     virtual void attack() override;
 
 private:
-    int _myRow = -1; // 记录自己所在的行号
+    
 };
