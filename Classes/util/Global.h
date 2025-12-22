@@ -49,14 +49,14 @@ public:
 
 	// ÖØÖÃÓÎÏ·×´Ì¬
 	void reset() {
-		_sun = 0;
+		_sun = 50;
 		CCLOG("Global: Game state reset");
 	}
 
 private:
 	Global() = default;
 	int _levelID = 1;
-	int _sun = 0;
+	int _sun = 50;
 };
 
 
