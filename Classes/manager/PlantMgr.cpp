@@ -42,7 +42,6 @@ void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType type)
         case PlantType::WallNut:
             plant = WallNut::create();
             break;
-#if 0
         case PlantType::PeaShooter:
             plant = PeaShooter::create();
             break;
