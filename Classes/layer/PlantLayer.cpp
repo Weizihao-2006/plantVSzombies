@@ -7,6 +7,7 @@ bool PlantLayer::init()
 {
 	if (!Layer::init())
 		return false;
+    return true;
 }
 
 void PlantLayer::addPlant(Plants* plant)
