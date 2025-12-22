@@ -11,6 +11,4 @@ public:
     // 重写关键接口：根据血量更新视觉状态
     virtual void updateVisualByHealth() override;
 
-    virtual void update(float dt) override;
-
 };
