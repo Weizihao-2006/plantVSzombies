@@ -2,8 +2,8 @@
 #include "cocos2d.h"
 #include "zombie/ZombieData.h"
 
-// 确保枚举在基类可见
-enum class ZombieState { WALK, ATTACK, DIE };
+
+
 
 class Zombie : public cocos2d::Node {
 public:

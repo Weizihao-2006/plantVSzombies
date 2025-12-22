@@ -16,7 +16,8 @@ bool CommonZombie::init() {
 }
 
 void CommonZombie::update(float dt) {
-    if (_state == ZombieState::DIE) return;
+    if (_state == ZombieState::DEAD)
+        return;
 
     // 1. 检测前方是否有植物
     auto scene = Director::getInstance()->getRunningScene();

@@ -30,6 +30,15 @@ void AnimationHelper::initResources()
         if (!props.plistPath.empty()) {
             frameCache->addSpriteFramesWithFile(props.plistPath);
         }
+        auto specialAnims = ZombieData::getSpecialAnimMap(type);//获取对应植物类型的特殊动画
+        for (auto const& [stateName, anim] : specialAnims) {
+            // 如果有独立的 plist，先载入
+            if (!anim.plistPath.empty()) {
+                SpriteFrameCache::getInstance()->addSpriteFramesWithFile(anim.plistPath);
+            }
+        }
+
+
     }
 
     // C. 资源进内存后，统一生成并缓存动画
@@ -62,14 +71,16 @@ void AnimationHelper::loadAllAnimations()
         if (!props.animPrefix.empty()) {
             createAndCache(props.animPrefix, props.animFrameCount, props.animDelay, props.animationName);
         }
+        auto specialAnims = ZombieData::getSpecialAnimMap(type);//获取对应僵尸类型的特殊动画
+        for (auto const& [stateName, anim] : specialAnims) {//遍历可能的僵尸特殊动画
+
+            if (!anim.prefix.empty() && anim.frameCount > 0) {
+                createAndCache(anim.prefix, anim.frameCount, anim.delay, anim.animationName);
+            }
+        }
+
     }
 
-
-
-    // 处理非植物类的杂项动画（如阳光旋转、僵尸行走、爆炸效果）
-    // 这些可以直接硬编码在此，因为它们不涉及卡槽和种植逻辑
- 
-    //.......
 }
 
 void AnimationHelper::createAndCache(const std::string& prefix, int frameCount, float delay, const std::string& animName) 
