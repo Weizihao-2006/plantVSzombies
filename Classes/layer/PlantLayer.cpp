@@ -20,3 +20,26 @@ void PlantLayer::update(float dt)
 {
 
 }
+
+void PlantLayer::pauseAllPlants() {
+    this->pause();
+    for (auto& plant : _plants) {
+        // 1. ÔİÍ£Ö²ÎïÈİÆ÷
+        plant->pause();
+
+        // 2. ÔİÍ£ËùÓĞ×Ó½Úµã£¨ÔİÍ£Ô¤ÖÃµÃanimation£©
+        for (auto& child : plant->getChildren()) {
+            child->pause();
+        }
+    }
+}
+
+void PlantLayer::resumeAllPlants() {
+    this->resume();
+    for (auto& plant : _plants) {
+        plant->resume();
+        for (auto& child : plant->getChildren()) {
+            child->resume();
+        }
+    }
+}

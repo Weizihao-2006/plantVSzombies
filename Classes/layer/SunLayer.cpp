@@ -1,6 +1,7 @@
 #include "layer/SunLayer.h"
 #include "util/Global.h"
 #include"manager/MapMgr.h"
+#include "AudioEngine.h"
 // --- SunSprite ---
 
 const int SunSprite::exitSeqTag = 100;
@@ -52,6 +53,9 @@ void SunSprite::collect(Vec2 destPos)
 {
     // 停止所有动作 (包括旋转动画和自动消失倒计时)
     this->stopAllActions();
+
+    // 播放收集到阳光的音乐
+    AudioEngine::play2d("Music/GetSunBGM.MP3", false, 1.0f);
 
     auto move = MoveTo::create(0.6f, destPos);
     auto scale = ScaleTo::create(0.6f, 0.8f);

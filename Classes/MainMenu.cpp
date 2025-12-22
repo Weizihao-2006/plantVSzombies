@@ -1,5 +1,6 @@
 #include "MainMenu.h"
 #include"scene/GameScene.h"
+#include "AudioEngine.h"
 USING_NS_CC;
 
 Scene* MainMenu::createScene()
@@ -26,6 +27,9 @@ bool MainMenu::init()
     // 获取显示偏移(windows默认为0)
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
+    // 播放背景音乐
+    int MainMenuBgmID = AudioEngine::play2d("Music/MainMenuBGM.MP3", true, 1.0f);
+
     // 创建主菜单背景
     auto spriteMainMenu = Sprite::create("main_background.png");
     if (spriteMainMenu == nullptr)
@@ -50,7 +54,10 @@ bool MainMenu::init()
     auto ExitItem = MenuItemLabel::create(ExitText, [this](Ref* p) {this->MainMenuCloseCallback(p);});
     ExitItem->setName("退出");
 
-    auto StartGameItem = MenuItemImage::create("select10.png", "select11.png", [](Ref* pSender) {
+    auto StartGameItem = MenuItemImage::create("select10.png", "select11.png", [MainMenuBgmID](Ref* pSender) {
+        // 关闭音乐
+        AudioEngine::stop(MainMenuBgmID);
+
         Director::getInstance()->replaceScene(TransitionCrossFade::create(0.5f, GameScene::createWithLevel(1)));
         });
 
