@@ -1,5 +1,6 @@
 #include "Zombie.h"
 #include "zombie/ZombieData.h"
+#include"plant/PlantData.h"
 #include "cocos2d.h"
 
 using namespace cocos2d;
@@ -42,9 +43,10 @@ void Zombie::changeAnimation(const std::string& animName) {
     }
 }
 
-// 修改 takeDamage 以支持死亡动画
-void Zombie::takeDamage(float damage) {
-    if (_state == ZombieState::DYING || _state == ZombieState::DEAD) return;
+//增加了一个参数attackPlant,标记最后一次攻击的发出者
+void Zombie::takeDamage(float damage,PlantType attackPlant) {
+    if (_state == ZombieState::DYING || _state == ZombieState::DEAD||_state==ZombieState::BOOMDIE) 
+        return;
 
     _currentHealth -= damage;
 
@@ -55,12 +57,25 @@ void Zombie::takeDamage(float damage) {
         nullptr));
 
     if (_currentHealth <= 0) {
-        onDie(); // 触发死亡流程
+
+        ZombieState dieType = ZombieState::DYING;
+        switch (attackPlant) {
+
+            case PlantType::CherryBomb:
+                dieType = ZombieState::BOOMDIE;
+                break;
+            default:
+                break;
+
+        }
+        onDie(dieType); // 触发死亡流程
     }
 }
 
-void Zombie::onDie(ZombieState dieType) {
-    if (_state == ZombieState::DEAD) return;
+void Zombie::onDie(ZombieState dieType) 
+{
+    if (_state == ZombieState::DEAD) 
+        return;
     _state = dieType; // 设置为 DYING 或 BOOMDIE
 
     _mainSprite->stopAllActions();
@@ -81,10 +96,9 @@ void Zombie::onDie(ZombieState dieType) {
                 ));
             }
         }
-        else {
-            this->removeFromParent(); // 如果没配炸死动画，直接消失
-        }
-        return; // 炸死通常不掉头，直接结束
+        //this->removeFromParent();
+        _state = ZombieState::DEAD;
+        return;
     }
 
     // --- 逻辑分支：如果是普通死亡 (DYING) ---
@@ -108,11 +122,11 @@ void Zombie::onDie(ZombieState dieType) {
         if (anim) {
             _mainSprite->runAction(Sequence::create(
                 Animate::create(anim),
-                DelayTime::create(0.5f),
+                DelayTime::create(0.5f),//这个参数
                 RemoveSelf::create(),
                 nullptr
             ));
         }
     }
-    this->removeFromParent();
+    _state = ZombieState::DEAD;
 }

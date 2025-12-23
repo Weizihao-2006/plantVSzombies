@@ -97,7 +97,7 @@ const std::map<PlantType, PlantProperties>& PlantData::getAllConfigs()
             PlantType::CherryBomb, "CherryBomb", 150, 35.0f, 1000, 1800, 0.0f,
             "plantCard/CherryBomb.png", "plantCard/CherryBomb_lock.png",
             "cardPreview/CherryBomb_0.png", "image/CherryBomb.plist",
-            "CherryBomb_", 7, 0.12f, "CherryBomb_Anim"
+            "CherryBomb/CherryBomb_", 8, 0.12f, "CherryBomb_Anim"
         );
 
         // 3. Íã¶¹ÉäÊÖ (PeaShooter) - »ù´¡¹¥»÷

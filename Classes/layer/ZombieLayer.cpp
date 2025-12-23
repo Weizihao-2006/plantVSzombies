@@ -29,7 +29,7 @@ void ZombieLayer::update(float dt) {
     // 清理已经死亡从父节点移除的僵尸
     for (int i = _allZombies.size() - 1; i >= 0; --i) {
         auto z = _allZombies.at(i);
-        if (z->getParent() == nullptr) {
+        if (z->getParent() == nullptr||z->isDead()) {
             _allZombies.erase(i);
         }
     }

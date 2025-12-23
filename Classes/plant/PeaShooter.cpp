@@ -48,7 +48,7 @@ void PeaShooter::attack() {
     if (bulletLayer) {
         // 子弹发射位置：通常是植物的头部中心点，略微靠右
         Vec2 firePos = this->getPosition() + Vec2(40, 30);
-        bulletLayer->spawnBullet(firePos, static_cast<int>(_myMapPos.x), _properties.attackPower);
+        bulletLayer->spawnBullet(firePos, static_cast<int>(_myMapPos.x), _properties.attackPower,_properties.type);
 
         // 3. 音效：发射声音
         // AudioEngine::play2d("sound/throw.mp3", false, 0.6f);

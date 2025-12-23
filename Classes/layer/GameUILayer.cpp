@@ -34,7 +34,8 @@ bool GameUILayer::init() {
 
 void GameUILayer::createSunDisplay() 
 {
-    _sunLabel = Label::createWithTTF("0", "fonts/arial.ttf", 36); // 创建阳光数量显示
+    int origin_sun = Global::getInstance()->getSun();
+    _sunLabel = Label::createWithTTF(std::to_string(origin_sun), "fonts/arial.ttf", 36); // 创建阳光数量显示
     _sunLabel->setPosition(690.0f, 1210.0f); // 设置位置
     _sunLabel->setTextColor(Color4B::BLACK);
     addChild(_sunLabel); // 添加到当前层
