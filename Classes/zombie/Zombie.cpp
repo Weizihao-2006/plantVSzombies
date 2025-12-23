@@ -88,31 +88,42 @@ void Zombie::onDie(ZombieState dieType) {
     }
 
     // --- 逻辑分支：如果是普通死亡 (DYING) ---
-    // 1. 掉脑袋逻辑 (HEAD_LOSS)
+    // 1. 掉脑袋 (Head Loss) - 这个是独立出来的，不需要管移除
     if (specialAnims.count(ZombieState::HEAD_LOSS)) {
         auto headData = specialAnims.at(ZombieState::HEAD_LOSS);
         auto head = Sprite::create();
         head->setPosition(this->getPosition() + Vec2(0, 60));
         this->getParent()->addChild(head, this->getLocalZOrder() + 1);
-
         auto anim = AnimationCache::getInstance()->getAnimation(headData.animationName);
         if (anim) {
             head->runAction(Sequence::create(Animate::create(anim), RemoveSelf::create(), nullptr));
         }
     }
 
-    // 2. 播放对应的身体倒地动画
+    // 2. 处理身体倒地逻辑
+    bool hasDieAnimation = false;
     if (specialAnims.count(dieType)) {
         auto dieData = specialAnims.at(dieType);
         auto anim = AnimationCache::getInstance()->getAnimation(dieData.animationName);
         if (anim) {
-            _mainSprite->runAction(Sequence::create(
+            hasDieAnimation = true;
+            // 核心修改点：把 removeFromParent 包装进 Sequence
+            auto seq = Sequence::create(
                 Animate::create(anim),
-                DelayTime::create(0.5f),
-                RemoveSelf::create(),
+                DelayTime::create(0.5f), // 尸体停留一会儿
+                CallFunc::create([this]() {
+                    // 动画播完了，现在执行真正的移除
+                    // 这一步执行后，z->getParent() 就会变成 nullptr
+                    this->removeFromParent();
+                    }),
                 nullptr
-            ));
+            );
+            _mainSprite->runAction(seq);
         }
     }
-    this->removeFromParent();
+
+    // 3. 兜底逻辑：如果没有找到倒地动画，则立即执行移除
+    if (!hasDieAnimation) {
+        this->removeFromParent();
+    }
 }

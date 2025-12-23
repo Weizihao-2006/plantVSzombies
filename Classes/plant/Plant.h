@@ -3,6 +3,7 @@
 #include"cocos2d.h"
 #include"zombie/Zombie.h"
 #include"plant/PlantData.h"
+#include "layer/ControlLayer.h"
 
 USING_NS_CC;
 
@@ -55,6 +56,12 @@ public:
             return;
         this->setState(PlantState::DYING);
         this->unscheduleUpdate(); //立即停止逻辑更新（如停止产阳光、停止射击）
+        
+        // 从ControlLayer里删除植物（因为mapMgr和ControlLayer）挂钩
+        auto scene = cocos2d::Director::getInstance()->getRunningScene();
+        auto controlLayer = dynamic_cast<ControlLayer*>(scene->getChildByName("ControlLayer"));
+        controlLayer->removePlantFromMap(static_cast<int>(_myMapPos.x), static_cast<int>(_myMapPos.y), PlantType::Error);
+
         this->removeFromParent();
     }
 

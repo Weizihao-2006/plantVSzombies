@@ -25,6 +25,9 @@ public:
     // 设置选中的植物ID（替代PlantInputLayer的选择逻辑）
     void setSelectedPlantId(PlantType plantId);
 
+    // 从地图中删除植物，在植物被吃掉的时候可以调用
+    void removePlantFromMap(int row, int col, PlantType plantID) { _mapManager->setMapCellStatus(row, col, plantID); }
+
 private:
     void createTouchListener(); // 创建触摸监听
 

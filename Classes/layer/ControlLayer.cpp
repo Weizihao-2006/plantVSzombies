@@ -141,8 +141,9 @@ void ControlLayer::createTouchListener() {
                 }
             }
 
-            if (UpdateTouchPositionIsInMap()) {
-                updatePreviewPosition(); // 更新位置 (此时位置就是准确的鼠标位置)
+            // 只有可种植的情况下才显示预览
+            if (UpdateTouchPositionIsInMap() && judgeTouchPositionIsCanPlant()) {
+                updatePreviewPosition(); // 更新位置
                 showPlantPreview();      // 显示预览（如果之前隐藏了）
                 updateHighlightBars(_plantsPosition.y, _plantsPosition.x);
             }
@@ -174,12 +175,12 @@ void ControlLayer::createTouchListener() {
                         //确认种植后调用
                         CardMgr::getInstance()->onPlantConfirmed(_selectedPlantType);
                     }
-                    else if (judgeTouchPositionHavePlant()) {//这个是什么意思?
-                        // 移除植物逻辑
-                        _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, SelectNoPlant);
-                        //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
-                        // TODO: 通知PlantMgr移除植物
-                    }
+                    //else if (judgeTouchPositionHavePlant()) {//这个是什么意思?
+                    //    // 移除植物逻辑
+                    //    _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, SelectNoPlant);
+                    //    //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
+                    //    // TODO: 通知PlantMgr移除植物
+                    //}
 
                     hidePlantPreview();
                     clearHighlightBars();
