@@ -4,6 +4,7 @@
 #include"manager/MapMgr.h"
 #include "plant/PeaShooter.h"
 #include"plant/CherryBomb.h"
+#include"plant/SnowPeaShooter.h"
 USING_NS_CC;
 
 PlantMgr* PlantMgr::s_sharedPlantMgr = nullptr;
@@ -49,13 +50,14 @@ void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType type)
         case PlantType::CherryBomb:
             plant = CherryBomb::create();
             break;
+        case PlantType::SnowPea:
+            plant = SnowPea::create();
+            break;
 #if 0
         case PlantType::ReaPeater:
             plant = Repeater::create();
             break;
-        case PlantType::SnowPea:
-            plant = SnowPea::create();
-            break;
+       
         
         
         default:

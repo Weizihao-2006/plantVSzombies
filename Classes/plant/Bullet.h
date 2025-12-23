@@ -20,13 +20,18 @@ public:
     float getDamage() const { return _damage; }
     PlantType getPlantType() const { return _originType; }
     bool isExploding() const { return _isExploding; }
-
+    float getSlowPercent()const { return _slowPercent; }
+    float getSlowDuration() const { return _slowDuration; }
     std::string getHitTexturePath() { return _props.hitTexturePath; }
 
 private:
     int _row;
     float _damage;
     PlantType _originType;
+
+    float _slowPercent=0.5f;   // 减速百分比
+    float _slowDuration=3.0f; // 持续时间
+
     bool _isExploding = false; // 标记是否正在播放消失动画，防止重复触发伤害
     BulletProperties _props;
 };

@@ -19,21 +19,6 @@ void BulletLayer::spawnBullet(Vec2 pos, int row, float damage,PlantType type) {
         _bullets.pushBack(bullet);
     }
 #if 0
-    auto bullet = Sprite::create("image/Pea.png");
-    bullet->setScale(1.5f);
-
-    if (bullet) {
-        bullet->setPosition(pos);
-        this->addChild(bullet);
-        _bullets.pushBack(bullet);
-
-        // 使用 setUserData 绑定行号和伤害，方便 update 里做碰撞检测
-        auto info = new BulletInfo();
-        info->row = row;
-        info->damage = damage;
-        info->plantType = type;
-        bullet->setUserData(info);
-    }
 
 #endif
    
@@ -70,6 +55,11 @@ void BulletLayer::update(float dt) {
                 if (dist > -20 && dist < 20) {
                     // 1. 停止子弹的所有位移逻辑
                     // 立即从逻辑列表删除，防止它再次触发碰撞或继续飞行
+
+                    if (b->getPlantType() == PlantType::SnowPea) {
+                        z->applySlowDown(b->getSlowDuration(),b->getSlowPercent());
+                    }
+
                     _bullets.erase(i);
 
                     // 2. 切换纹理

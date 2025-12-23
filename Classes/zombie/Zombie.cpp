@@ -5,12 +5,69 @@
 
 using namespace cocos2d;
 
+void Zombie::applySlowDown(float duration, float percent)
+{
+    if (_state == ZombieState::DYING || _state == ZombieState::DEAD || _state == ZombieState::BOOMDIE)
+        return;
+
+
+    _isSlowed = true;
+    _currentSpeed = _props.speed * percent; // 设置减速后的速度
+
+    // 视觉反馈：变为蓝色
+    if (_mainSprite) {
+        _mainSprite->setColor(Color3B(100, 100, 255));
+        // 暂停当前动画，重新以倍速运行（或者使用以下更直接的方法）
+        // 关键：停止当前的 RepeatForever，重新跑一个带速度缩放的
+        auto anim = AnimationCache::getInstance()->getAnimation(_mainSprite->getName());
+        if (anim) {
+            _mainSprite->stopAllActions(); // 停止当前动画
+
+            // 使用 Speed 动作包装 Animate
+            auto animate = Animate::create(anim);
+            auto speedAction = Speed::create(RepeatForever::create(animate), percent);
+            speedAction->setTag(1001); // 给动画打个标签方便找回
+            _mainSprite->runAction(speedAction);
+
+        }
+    }
+
+    //防止重复调用
+    this->unschedule("recoverFromSlowDown");
+
+    // 开启定时器，duration 秒后恢复
+    this->scheduleOnce([this](float dt) {
+        this->restoreFromSlowDown(dt);
+
+        }, duration,"recoverFromSlowDown");
+}
+
+
+void Zombie::restoreFromSlowDown(float dt) {
+    _isSlowed = false;
+    _currentSpeed = _props.speed;
+
+    if (_mainSprite) {
+        _mainSprite->setColor(Color3B::WHITE);
+
+        // 恢复 1.0 倍速动画
+        auto action = _mainSprite->getActionByTag(1001);
+        auto speedAction = dynamic_cast<Speed*>(action);
+        if (speedAction) {
+            speedAction->setSpeed(1.0f); // 直接将速度设回 1.0
+        }
+    }
+}
+
+
+
+
 bool Zombie::initWithZombieType(ZombieType type) {
     if (!Node::init()) return false;
 
     _props = ZombieData::getProps(type);
     _currentHealth = _props.health;
-
+    _currentSpeed = _props.speed;
     // 1. 创建视觉主体 (类似 Plant.cpp)
     _mainSprite = cocos2d::Sprite::createWithSpriteFrameName(_props.spriteFrameName);
     if (_mainSprite) {
@@ -31,7 +88,15 @@ bool Zombie::initWithZombieType(ZombieType type) {
 void Zombie::update(float dt) {
     if (_state!=ZombieState::ATTACK) {
         // 向左走
-        this->setPositionX(this->getPositionX() - _props.speed * dt);
+        this->setPositionX(this->getPositionX() - _currentSpeed * dt);//修改,使用_currentSpeed
+    }
+
+    //颜色更新
+    if (_isSlowed) {
+        _mainSprite->setColor(Color3B(100, 100, 255));
+        if (_headSprite) {
+            _headSprite->setColor(Color3B(100, 100, 255));
+        }
     }
 }
 
@@ -50,11 +115,11 @@ void Zombie::takeDamage(float damage,PlantType attackPlant) {
 
     _currentHealth -= damage;
 
-    // 受击闪红反馈
-    _mainSprite->runAction(cocos2d::Sequence::create(
-        cocos2d::TintTo::create(0.1f, 255, 0, 0),
-        cocos2d::TintTo::create(0.1f, 255, 255, 255),
-        nullptr));
+    //// 受击闪红反馈
+    //_mainSprite->runAction(cocos2d::Sequence::create(
+    //    cocos2d::TintTo::create(0.1f, 255, 0, 0),
+    //    cocos2d::TintTo::create(0.1f, 255, 255, 255),
+    //    nullptr));
 
     if (_currentHealth <= 0) {
 
@@ -91,7 +156,11 @@ void Zombie::onDie(ZombieState dieType)
             if (anim) {
                 _mainSprite->runAction(Sequence::create(
                     Animate::create(anim),
-                    RemoveSelf::create(),
+                    CallFunc::create([this]() {
+                        // 动画播完了，现在执行真正的移除
+                        // 这一步执行后，z->getParent() 就会变成 nullptr
+                        this->removeFromParent();
+                        }),
                     nullptr
                 ));
             }
@@ -102,30 +171,41 @@ void Zombie::onDie(ZombieState dieType)
     }
 
     // --- 逻辑分支：如果是普通死亡 (DYING) ---
-    // 1. 掉脑袋逻辑 (HEAD_LOSS)
+       // 1. 掉脑袋 (Head Loss) - 这个是独立出来的，不需要管移除
     if (specialAnims.count(ZombieState::HEAD_LOSS)) {
         auto headData = specialAnims.at(ZombieState::HEAD_LOSS);
-        auto head = Sprite::create();
-        head->setPosition(this->getPosition() + Vec2(0, 60));
-        this->getParent()->addChild(head, this->getLocalZOrder() + 1);
-
+        _headSprite = Sprite::create();
+        if (_isSlowed) {
+            _headSprite->setColor(Color3B(100, 100, 255));
+        }
+            
+        _headSprite->setPosition(this->getPosition() + Vec2(0, 60));
+        this->getParent()->addChild(_headSprite, this->getLocalZOrder() + 1);
         auto anim = AnimationCache::getInstance()->getAnimation(headData.animationName);
         if (anim) {
-            head->runAction(Sequence::create(Animate::create(anim), RemoveSelf::create(), nullptr));
+            _headSprite->runAction(Sequence::create(Animate::create(anim), RemoveSelf::create(), nullptr));
         }
     }
 
-    // 2. 播放对应的身体倒地动画
+    // 2. 处理身体倒地逻辑
+    bool hasDieAnimation = false;
     if (specialAnims.count(dieType)) {
         auto dieData = specialAnims.at(dieType);
         auto anim = AnimationCache::getInstance()->getAnimation(dieData.animationName);
         if (anim) {
-            _mainSprite->runAction(Sequence::create(
+            hasDieAnimation = true;
+            // 核心修改点：把 removeFromParent 包装进 Sequence
+            auto seq = Sequence::create(
                 Animate::create(anim),
-                DelayTime::create(0.5f),//这个参数
-                RemoveSelf::create(),
+                DelayTime::create(0.5f), // 尸体停留一会儿
+                CallFunc::create([this]() {
+                    // 动画播完了，现在执行真正的移除
+                    // 这一步执行后，z->getParent() 就会变成 nullptr
+                    this->removeFromParent();
+                    }),
                 nullptr
-            ));
+            );
+            _mainSprite->runAction(seq);
         }
     }
     _state = ZombieState::DEAD;
