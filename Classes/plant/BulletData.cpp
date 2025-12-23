@@ -7,7 +7,6 @@ void BulletData::initConfigs() {
 
     // Õ„∂π…‰ ÷ & À´∑¢…‰ ÷
     _bulletConfigs[PlantType::PeaShooter] = BulletProperties("image/Pea.png", "image/PeaDisappear.png", 450.0f);
-    _bulletConfigs[PlantType::ReaPeater] = BulletProperties("image/Pea.png", "image/PeaDisappear.png", 450.0f);
 
     // ∫Æ±˘…‰ ÷
     _bulletConfigs[PlantType::SnowPea] = BulletProperties("image/SnowPeaBullet.png", "image/SnowPeaDisappear.png", 450.0f);

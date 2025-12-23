@@ -84,7 +84,7 @@ void ZombieData::init() {
     // 普通僵尸
     // 资源名: Zombie_default.plist
     _dataConfig[ZombieType::Normal] = ZombieProperties(
-        ZombieType::Normal, "Zombie", 200, 30.0f, 50, 1.0f,
+        ZombieType::Normal, "Zombie", 200, 30.0f, 500, 1.0f,
         "image/Zombie_default.plist", "Zombie", 22, 0.12f, "ZombieWalk_Default"
     );
 

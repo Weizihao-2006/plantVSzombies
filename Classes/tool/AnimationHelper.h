@@ -25,4 +25,13 @@ public:
 	 * @param animName  存入 AnimationCache 的唯一标识名，后续通过此名字获取动画
 	 */
 	static void createAndCache(const std::string& prefix, int frameCount, float delay, const std::string& animName);
+
+	/**
+ * @brief 通过单张图片文件创建并缓存动画
+ * @param pathFormat 路径格式，例如 "image/Repeater/Repeater_%d.png"
+ * @param frameCount 帧数
+ * @param delay      间隔
+ * @param animName   缓存名
+ */
+	static void createAndCacheFromFiles(const std::string& pathFormat, int frameCount, float delay, const std::string& animName);
 };

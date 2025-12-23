@@ -108,13 +108,13 @@ const std::map<PlantType, PlantProperties>& PlantData::getAllConfigs()
             "Peashooter_", 13, 0.1f, "Peashooter_Anim"
         );
 
-        // 4. 双发射手 (Repeater) - 攻击间隔减半
-        _dataConfig[PlantType::ReaPeater] = PlantProperties(
-            PlantType::ReaPeater, "Repeater", 200, 7.5f, 300, 20, 0.75f,
-            "plantCard/Repeater.png", "plantCard/Repeater_lock.png",
-            "cardPreview/Repeater_0.png", "image/Repeater.plist",
-            "Repeater_", 15, 0.08f, "Repeater_Anim"
-        );
+        //// 4. 双发射手 (Repeater) - 攻击间隔减半
+        //_dataConfig[PlantType::ReaPeater] = PlantProperties(
+        //    PlantType::ReaPeater, "Repeater", 200, 7.5f, 300, 20, 0.75f,
+        //    "plantCard/Repeater.png", "plantCard/Repeater_lock.png",
+        //    "cardPreview/Repeater_0.png", "image/Repeater.plist",
+        //    "Repeater_", 15, 0.08f, "Repeater_Anim"
+        //);
 
         // 5. 寒冰射手 (SnowPea) - 附带减速效果
         _dataConfig[PlantType::SnowPea] = PlantProperties(
