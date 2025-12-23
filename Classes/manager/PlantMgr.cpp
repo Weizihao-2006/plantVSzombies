@@ -5,6 +5,7 @@
 #include "plant/PeaShooter.h"
 #include"plant/CherryBomb.h"
 #include"plant/SnowPeaShooter.h"
+#include"plant/ReaPeater.h"
 USING_NS_CC;
 
 PlantMgr* PlantMgr::s_sharedPlantMgr = nullptr;
@@ -52,6 +53,9 @@ void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType type)
             break;
         case PlantType::SnowPea:
             plant = SnowPea::create();
+            break;
+        case PlantType::ReaPeater:
+            plant = ReaPeater::create();
             break;
         default:
             CCLOG("Warning: Unknown PlantType!");

@@ -1,4 +1,4 @@
-#include "CardMgr.h"
+#include "manager/CardMgr.h"
 #include "util/Global.h"
 #include "cocos2d.h"
 
