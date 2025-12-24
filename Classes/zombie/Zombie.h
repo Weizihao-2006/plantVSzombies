@@ -36,4 +36,7 @@ protected: // 必须是 protected 子类才能访问 _state
     //速度相关
     float _currentSpeed;
     bool _isSlowed = false;
+
+    // 音效
+    int _soundID;
 };

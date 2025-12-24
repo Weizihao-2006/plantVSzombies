@@ -15,6 +15,7 @@ bool BucketheadZombie::init() {
     // _armorBrokenThreshold = ZombieData::getProps(ZombieType::Normal).health;
     _isArmorBroken = false;
     _state = ZombieState::WALK;
+    _soundID = AudioEngine::INVALID_AUDIO_ID;
 
     this->scheduleUpdate();
     return true;
@@ -66,6 +67,11 @@ void BucketheadZombie::update(float dt) {
 
     if (!findPlant && _state == ZombieState::ATTACK) {
         _state = ZombieState::WALK;
+        // Í£Ö¹³ÔÖ²ÎïÒôÐ§
+        if (_soundID != AudioEngine::INVALID_AUDIO_ID) {
+            AudioEngine::stop(_soundID);
+            _soundID = AudioEngine::INVALID_AUDIO_ID;
+        }
         this->changeAnimation(_props.animationName);
     }
 
@@ -75,22 +81,22 @@ void BucketheadZombie::update(float dt) {
 }
 
 void BucketheadZombie::convertToNormal() {
-    // 1. ²¥·ÅÌúÍ°µôÂäËéÆ¬ÌØÐ§
-    auto specialAnims = ZombieData::getSpecialAnimMap(ZombieType::Buckethead);
-    if (specialAnims.count(ZombieState::ARMOR_LOSS)) {
-        auto armorData = specialAnims.at(ZombieState::ARMOR_LOSS);
-        auto armor = Sprite::create();
-        armor->setPosition(this->getPosition() + Vec2(0, 80));
-        this->getParent()->addChild(armor, this->getLocalZOrder() + 1);
+    //// 1. ²¥·ÅÌúÍ°µôÂäËéÆ¬ÌØÐ§
+    //auto specialAnims = ZombieData::getSpecialAnimMap(ZombieType::Buckethead);
+    //if (specialAnims.count(ZombieState::ARMOR_LOSS)) {
+    //    auto armorData = specialAnims.at(ZombieState::ARMOR_LOSS);
+    //    auto armor = Sprite::create();
+    //    armor->setPosition(this->getPosition() + Vec2(0, 80));
+    //    this->getParent()->addChild(armor, this->getLocalZOrder() + 1);
 
-        auto anim = AnimationCache::getInstance()->getAnimation(armorData.animationName);
-        if (anim) {
-            armor->runAction(Sequence::create(Animate::create(anim), RemoveSelf::create(), nullptr));
-        }
-    }
+    //    auto anim = AnimationCache::getInstance()->getAnimation(armorData.animationName);
+    //    if (anim) {
+    //        armor->runAction(Sequence::create(Animate::create(anim), RemoveSelf::create(), nullptr));
+    //    }
+    //}
 
-    // ²¥·Å½ðÊôµôÂäÒôÐ§
-    AudioEngine::play2d("Music/bucket_fall.mp3");
+    //// ²¥·Å½ðÊôµôÂäÒôÐ§
+    //AudioEngine::play2d("Music/bucket_fall.mp3");
 
     // 2. ×ª»»ÅäÖÃÎªÆÕÍ¨½©Ê¬
     auto normalProps = ZombieData::getProps(ZombieType::Normal);
@@ -111,7 +117,7 @@ void BucketheadZombie::eatPlant(float dt, Plants* plant) {
     _eatTimer += dt;
     if (_eatTimer >= _props.attackInterval) {
         _eatTimer = 0.0f;
-        AudioEngine::play2d("Music/zombie_eb_1.mp3");
+        if (_soundID == AudioEngine::INVALID_AUDIO_ID) _soundID = AudioEngine::play2d("Music/chompsoft.ogg", true, 1.0f);
         if (plant) plant->takeDamage(_props.attackPower);
     }
 }

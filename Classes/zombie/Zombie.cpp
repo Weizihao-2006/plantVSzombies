@@ -147,6 +147,12 @@ void Zombie::onDie(ZombieState dieType)
     _mainSprite->stopAllActions();
     this->unscheduleUpdate();
 
+    // 如果有吃植物的音效，停止它
+    if (_soundID != AudioEngine::INVALID_AUDIO_ID) {
+        AudioEngine::stop(_soundID);
+        _soundID = AudioEngine::INVALID_AUDIO_ID;
+    }
+
     auto specialAnims = ZombieData::getSpecialAnimMap(_props.type);
 
     // --- 逻辑分支：如果是被炸死 ---

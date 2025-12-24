@@ -13,6 +13,7 @@ bool CommonZombie::init() {
     // 2. 初始状态为行走
     _state = ZombieState::WALK;
 
+    _soundID = AudioEngine::INVALID_AUDIO_ID;
     this->scheduleUpdate();
     return true;
 }
@@ -49,6 +50,12 @@ void CommonZombie::update(float dt) {
 
     if (!findPlant && _state == ZombieState::ATTACK) {
         _state = ZombieState::WALK;
+        // 停止吃植物音效
+        if (_soundID != AudioEngine::INVALID_AUDIO_ID) {
+            AudioEngine::stop(_soundID);
+            _soundID = AudioEngine::INVALID_AUDIO_ID;
+        }
+
         this->changeAnimation(_props.animationName); // 恢复行走动画
     }
 
@@ -61,10 +68,12 @@ void CommonZombie::eatPlant(float dt, Plants* plant) {
     _eatTimer += dt;
     if (_eatTimer >= _props.attackInterval) {
         _eatTimer = 0.0f;
+
+        // 可以在这里播放一个“咔嚓”的声音特效
+        if (_soundID == AudioEngine::INVALID_AUDIO_ID) _soundID = AudioEngine::play2d("Music/chompsoft.ogg", true, 1.0f);
+
         // 假设你的植物基类 Plants 有 takeDamage 方法
         plant->takeDamage(_props.attackPower);
 
-        // 可以在这里播放一个“咔嚓”的声音特效
-        // AudioEngine::play2d("Music/chompsoft.ogg", true, 1.0f);
     }
 }

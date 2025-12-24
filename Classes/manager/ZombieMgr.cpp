@@ -1,6 +1,7 @@
 #include "manager/ZombieMgr.h"
 #include "layer/ZombieLayer.h"
 #include "manager/MapMgr.h"
+#include "AudioEngine.h"
 
 USING_NS_CC;
 
@@ -16,6 +17,7 @@ ZombieMgr* ZombieMgr::getInstance() {
 ZombieMgr::ZombieMgr() : _isLevelStarted(false), _currentWave(0), _waveTimer(0.0f) {}
 
 void ZombieMgr::startLevel() {
+    _isSpawningWave = false; // 初始化为没有在产生僵尸
     _currentWave = 0;
     _waveTimer = 0.0f;
     _nextWaveInterval = 10.0f; // 10秒后开始第一波
@@ -30,28 +32,37 @@ void ZombieMgr::update(float dt) {
 
     int aliveCount = this->getAliveZombieCount();
 
+    // CCLOG("aliveCount is %d", aliveCount);
+
     // --- 核心逻辑：衔接判定 ---
     // 只有在已经开始刷怪且场上没怪时，才强制结束当前等待并进入下一波
-    if (aliveCount == 0 && _currentWave > 0 && _waveTimer < _nextWaveInterval) {
-        //// 留 2 秒缓冲时间，不要瞬间刷下一波，给玩家一点喘息感
-        //if (_waveTimer < _nextWaveInterval - 2.0f) {
-        //    _waveTimer = _nextWaveInterval - 2.0f;
-        //}
-        _waveTimer = 0.0f;
-        _currentWave++;
-        this->generateNextWave(_currentWave);
+    if (!_isSpawningWave && aliveCount == 0 && _currentWave > 0) {
+        // 时间大于渲染时间才算提前解干净
+        if (_waveTimer > _waveDelay + 0.5f) {
+            CCLOG("Wave %d solved in advance", _currentWave);
+            if (_waveTimer < _nextWaveInterval) {
+                _waveTimer = _nextWaveInterval; // 直接跳到时间点，让下面的逻辑统一处理
+            }
+        }
     }
 
     // 时间到了，进入下一波
     if (_waveTimer >= _nextWaveInterval) {
-        _waveTimer = 0.0f;
-        _currentWave++;
-        this->generateNextWave(_currentWave);
+        if (!_isSpawningWave) {
+            _waveTimer = 0.0f;
+            _currentWave++;
+            this->generateNextWave(_currentWave);
+        }
     }
 }
 
 void ZombieMgr::generateNextWave(int waveIndex) {
     CCLOG("--- Wave %d Started ---", waveIndex);
+    // 正在生成僵尸
+    _isSpawningWave = true;
+
+    // Zombies Are Coming音乐，在第一波播放
+    if (waveIndex == 1)AudioEngine::play2d("Music/StartBGM.MP3", false, 1.0f);
 
     // 每 10 波触发一次大波 (Huge Wave)
     if (waveIndex % 10 == 0) {
@@ -63,17 +74,21 @@ void ZombieMgr::generateNextWave(int waveIndex) {
     // 普通波次：僵尸数量随波次缓慢增长
     int spawnCount = 1 + (waveIndex / 2);
     for (int i = 0; i < spawnCount; ++i) {
-        float delay = i * 2.0f; // 僵尸错开出现
+        _waveDelay = i * 2.0f; // 僵尸错开出现
 
         Director::getInstance()->getRunningScene()->scheduleOnce([this, waveIndex](float dt) {
             int row = rand() % 5;
             ZombieType type = this->getRandomZombieTypeByWave(waveIndex);
             this->spawnZombie(type, row);
-            }, delay, "spawn_zombie_" + std::to_string(waveIndex) + "_" + std::to_string(i));
+            }, _waveDelay, "spawn_zombie_" + std::to_string(waveIndex) + "_" + std::to_string(i));
     }
 
+    // 僵尸生成结束
+    _isSpawningWave = false;
+    
+    CCLOG("Wave %d complete generating", _currentWave);
     // 动态调整下一波间隔（越往后节奏越快）
-    _nextWaveInterval = std::max(6.0f, 20.0f - (waveIndex * 0.4f));
+    // _nextWaveInterval = std::max(6.0f, 20.0f - (waveIndex * 0.4f));
 }
 
 void ZombieMgr::spawnHugeWave(int waveIndex) {
@@ -118,7 +133,7 @@ void ZombieMgr::spawnZombie(ZombieType type, int row) {
     if (zombie) {
         zombie->setRow(row);
         float y = MapManager::getInstance()->getPositionInMap(row, 0).y - 70;
-        float x = Director::getInstance()->getWinSize().width + 100 + (rand() % 50); // 屏幕外随机偏移
+        float x = Director::getInstance()->getWinSize().width + (rand() % 50); // 屏幕外随机偏移
         zombie->setPosition(Vec2(x, y));
         zombie->setScale(1.5f);
 

@@ -37,4 +37,6 @@ private:
     float _waveTimer = 0.0f;
     float _nextWaveInterval = 15.0f; // 第一波前的准备时间
     bool _isLevelStarted = false;
+    bool _isSpawningWave;
+    float _waveDelay; // 每一波的渲染时间
 };

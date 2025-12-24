@@ -36,8 +36,6 @@ bool GameScene::initWithLevel(int level_id)
 	ZombieMgr::getInstance()->reset();
 	PlantMgr::getInstance()->reset();
 
-	// Zombies Are Coming音乐
-	AudioEngine::play2d("Music/StartBGM.MP3", false, 1.0f);
 	// 背景音乐
 	bgmID = AudioEngine::play2d("Music/GameSceneBGM.MP3", true, 1.0f);
 
@@ -133,47 +131,6 @@ void GameScene::createLayers()
 void GameScene::bindLayerSignals()
 {
 	auto cardMgr = CardMgr::getInstance();
-
-#if 0
-	// 1. UI 层 -> 游戏逻辑（暂停/加速）
-	if (_uiLayer) {
-		_uiLayer->onPauseBtnClicked = [this](bool p) { onPause(p); };
-		_uiLayer->onSpeedBtnClicked = [this](float s) { onSpeedChanged(s); };
-	}
-
-	// 2. 僵尸层 -> 游戏结束（失败/胜利）
-	if (_zombieLayer) {
-		_zombieLayer->onZombieReachHouse = [this]() { onZombieEnterHouse(); };
-		_zombieLayer->onAllZombieDead = [this]() { onAllZombieClear(); };
-	}
-
-	// 3. 阳光层 -> 卡牌栏（显示阳光变化）
-	if (_sunLayer && _cardBarLayer) {
-		_sunLayer->onSunChanged = [this](int val) {
-			auto mgr = CardMgr::getInstance();
-			// 更新所有卡牌的可用状态
-			for (size_t i = 0; i < mgr->getDeckSize(); ++i) {
-				_cardBarLayer->updateCardState(i, mgr->canPlant(i));
-			}
-			CCLOG("GameScene: Sun changed to %d", val);
-			};
-	}
-
-	// 4. 卡牌栏 -> 种植处理
-	// CardMgr:: onCardSelected 被 CardBarLayer::onCardClicked 调用
-	cardMgr->onCardSelected = [this](int cardIdx) {
-		CCLOG("GameScene: Card [%d] selected", cardIdx);
-
-		// TODO: 通知 PlantInputLayer 开始种植预览
-		// 如果有 PlantInputLayer，应该在这里调用
-		// if (_plantInput) {
-		//     _plantInput->onCardSelected(cardIdx);
-		// }
-
-		// 种植完成后（在 PlantInputLayer 或其他地方调用）
-		// CardMgr::getInstance()->onPlantConfirmed(cardIdx);
-		};
-#endif
 }
 
 void GameScene::onZombieEnterHouse()

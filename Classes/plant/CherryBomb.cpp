@@ -2,6 +2,7 @@
 #include "zombie/Zombie.h"
 #include "layer/ZombieLayer.h"
 #include "AudioEngine.h"
+#include "manager/MapMgr.h"
 
 bool CherryBomb::init() 
 {
@@ -51,6 +52,10 @@ void CherryBomb::explode() {
 
     AudioEngine::play2d("Music/cherrybomb.ogg", false, 1.0f);
     _mainSprite->setVisible(false);
+
+    // ´ÓMapMgrµ±ÖÐÒÆ³ý
+    auto MapMgr = MapManager::getInstance();
+    MapMgr->setMapCellStatus(static_cast<int>(_myMapPos.x), static_cast<int>(_myMapPos.y), PlantType::Error);
 }
 
 void CherryBomb::playExplosionEffect() {

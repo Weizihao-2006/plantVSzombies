@@ -15,6 +15,7 @@ bool ConeheadZombie::init() {
     // 2. 初始状态为行走
     _state = ZombieState::WALK;
     _isConeBroken = false;
+    _soundID = AudioEngine::INVALID_AUDIO_ID;
 
     this->scheduleUpdate();
     return true;
@@ -70,6 +71,11 @@ void ConeheadZombie::update(float dt) {
     // 如果没找到植物且处于攻击态，恢复行走
     if (!findPlant && _state == ZombieState::ATTACK) {
         _state = ZombieState::WALK;
+        // 停止吃植物音效
+        if (_soundID != AudioEngine::INVALID_AUDIO_ID) {
+            AudioEngine::stop(_soundID);
+            _soundID = AudioEngine::INVALID_AUDIO_ID;
+        }
         this->changeAnimation(_props.animationName);
     }
 
@@ -84,8 +90,8 @@ void ConeheadZombie::eatPlant(float dt, Plants* plant) {
     if (_eatTimer >= _props.attackInterval) {
         _eatTimer = 0.0f;
 
-        // 播放啃咬音效
-        // AudioEngine::play2d("Music/zombie_eb_1.mp3"); // 建议检查路径
+        // 可以在这里播放一个“咔嚓”的声音特效
+        if (_soundID == AudioEngine::INVALID_AUDIO_ID) _soundID = AudioEngine::play2d("Music/chompsoft.ogg", true, 1.0f);
 
         // 对植物造成伤害
         if (plant) {
