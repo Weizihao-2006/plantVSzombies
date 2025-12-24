@@ -36,8 +36,9 @@ bool GameScene::initWithLevel(int level_id)
 	ZombieMgr::getInstance()->reset();
 	PlantMgr::getInstance()->reset();
 
-	// 播放游戏音乐
+	// Zombies Are Coming音乐
 	AudioEngine::play2d("Music/StartBGM.MP3", false, 1.0f);
+	// 背景音乐
 	bgmID = AudioEngine::play2d("Music/GameSceneBGM.MP3", true, 1.0f);
 
 	if (!Scene::init())
@@ -54,16 +55,22 @@ bool GameScene::initWithLevel(int level_id)
 	// 初始化 CardMgr,确实已经初始化了,写在构造函数了
 	CardMgr::getInstance();
 
+	// 启动僵尸管理器
+	ZombieMgr::getInstance()->startLevel();
+
+	// 播放开始动画
+	this->playStartAnimation();
+
 	// 添加每帧更新
 	scheduleUpdate();
 
-	// 单僵尸测试
-	this->scheduleOnce([this](float dt) {
-		CCLOG("Test: Spawning a zombie!");
-		// 注意：如果你还没写 ZombieMgr，可以先手动测试
-		// 确保你已经把 ZombieMgr.h 包含在 GameScene.cpp 头部
-		ZombieMgr::getInstance()->spawnZombie(ZombieType::Normal, 0);
-		}, 3.0f, "test_zombie_spawn");
+	//// 单僵尸测试
+	//this->scheduleOnce([this](float dt) {
+	//	CCLOG("Test: Spawning a zombie!");
+	//	// 注意：如果你还没写 ZombieMgr，可以先手动测试
+	//	// 确保你已经把 ZombieMgr.h 包含在 GameScene.cpp 头部
+	//	ZombieMgr::getInstance()->spawnZombie(ZombieType::Buckethead, 0);
+	//	}, 3.0f, "test_zombie_spawn");
 
 	return true;
 }
@@ -72,12 +79,15 @@ bool GameScene::initWithLevel(int level_id)
 
 // 每帧更新
 void GameScene::update(float dt) {
-
+	// 调用僵尸管理器的 update，它内部会处理：
+	// 1. 计时刷新波次
+	// 2. 检查场上僵尸是否死光（没怪不傻等）
+	// 3. 产生大波预警
+	ZombieMgr::getInstance()->update(dt);
 	//事实上,CardLayer有一个update()会调用CardMgr中的卡槽冷却信息更新冷却遮罩等
 	//因此GameScene只用传递时间即可
 	CardMgr::getInstance()->updateCoolTime(dt);
-
-
+	
 }
 
 // 按顺序创建 Layers
@@ -222,4 +232,74 @@ void GameScene::onSpeedChanged(float s)
 {
 	CCLOG("GameScene:  speed changed to %. 1fx", s);
 	Director::getInstance()->getScheduler()->setTimeScale(s);
+}
+
+void GameScene::playStartAnimation() {
+	auto visibleSize = Director::getInstance()->getVisibleSize();
+	Vec2 center = Vec2(visibleSize.width / 2, visibleSize.height / 2);
+
+	// --- 新增：半透明黑色遮罩层 ---
+	auto mask = LayerColor::create(Color4B(0, 0, 0, 50)); // 150 为透明度
+	// 放在所有界面之上
+	this->addChild(mask, 110);
+
+	// 1. 创建精灵
+	auto ready = Sprite::create("ready.png");
+	auto set = Sprite::create("set.png");
+	auto start = Sprite::create("start.png");
+
+	// ... 初始设置 (ready, set, start) ...
+	// 初始都设为不可见且缩放为 0
+	ready->setOpacity(0); ready->setScale(0); ready->setPosition(center);
+	set->setOpacity(0);   set->setScale(0);   set->setPosition(center);
+	start->setOpacity(0); start->setScale(0); start->setPosition(center);
+
+	this->addChild(ready, 100);
+	this->addChild(set, 100);
+	this->addChild(start, 100);
+
+	// 2. 定义动画
+	auto createAnimate = [](Sprite* sprite, float delayTime) {
+		return Sequence::create(
+			DelayTime::create(delayTime),
+			Spawn::create(FadeIn::create(0.2f), ScaleTo::create(0.2f, 1.2f), nullptr),
+			ScaleTo::create(0.1f, 1.0f),
+			DelayTime::create(0.8f),
+			Spawn::create(FadeOut::create(0.2f), ScaleTo::create(0.2f, 1.5f), nullptr),
+			RemoveSelf::create(),
+			nullptr
+		);
+		};
+
+	// 3. 运行图片动画
+	ready->runAction(createAnimate(ready, 0.0f));
+	set->runAction(createAnimate(set, 1.2f));
+
+	// 最后一个动画加一个特殊处理：结束后移除遮罩并启动游戏
+	start->runAction(Sequence::create(
+		createAnimate(start, 2.4f),
+		CallFunc::create([this, mask]() {
+			mask->removeFromParent(); // 移除遮罩
+			this->startGameLogic();   // 统一启动游戏逻辑
+			}),
+		nullptr
+	));
+}
+
+// 新增一个统一启动函数
+void GameScene::startGameLogic() {
+	// 1. 启动僵尸生成
+	ZombieMgr::getInstance()->startLevel();
+
+	// 2. 启动阳光产生（假设 SunLayer 有这个方法）
+	auto sunLayer = dynamic_cast<SunLayer*>(getChildByName("SunLayer"));
+	if (sunLayer) {
+		// 你需要在 SunLayer 里实现 startGenerateSun，而不是在它的 init 里直接跑
+		sunLayer->startSunLogic();
+	}
+
+	// 3. 启动场景更新
+	this->scheduleUpdate();
+
+	CCLOG("Game Logic Started after Animation.");
 }

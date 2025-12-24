@@ -2,6 +2,7 @@
 #include "zombie/ZombieData.h"
 #include"plant/PlantData.h"
 #include "cocos2d.h"
+#include "AudioEngine.h"
 
 using namespace cocos2d;
 
@@ -39,7 +40,7 @@ void Zombie::applySlowDown(float duration, float percent)
     this->scheduleOnce([this](float dt) {
         this->restoreFromSlowDown(dt);
 
-        }, duration,"recoverFromSlowDown");
+        }, duration, "recoverFromSlowDown");
 }
 
 
@@ -86,7 +87,7 @@ bool Zombie::initWithZombieType(ZombieType type) {
 }
 
 void Zombie::update(float dt) {
-    if (_state!=ZombieState::ATTACK) {
+    if (_state != ZombieState::ATTACK) {
         // 向左走
         this->setPositionX(this->getPositionX() - _currentSpeed * dt);//修改,使用_currentSpeed
     }
@@ -109,8 +110,8 @@ void Zombie::changeAnimation(const std::string& animName) {
 }
 
 //增加了一个参数attackPlant,标记最后一次攻击的发出者
-void Zombie::takeDamage(float damage,PlantType attackPlant) {
-    if (_state == ZombieState::DYING || _state == ZombieState::DEAD||_state==ZombieState::BOOMDIE) 
+void Zombie::takeDamage(float damage, PlantType attackPlant) {
+    if (_state == ZombieState::DYING || _state == ZombieState::DEAD || _state == ZombieState::BOOMDIE)
         return;
 
     _currentHealth -= damage;
@@ -137,9 +138,9 @@ void Zombie::takeDamage(float damage,PlantType attackPlant) {
     }
 }
 
-void Zombie::onDie(ZombieState dieType) 
+void Zombie::onDie(ZombieState dieType)
 {
-    if (_state == ZombieState::DEAD) 
+    if (_state == ZombieState::DEAD)
         return;
     _state = dieType; // 设置为 DYING 或 BOOMDIE
 
@@ -178,7 +179,7 @@ void Zombie::onDie(ZombieState dieType)
         if (_isSlowed) {
             _headSprite->setColor(Color3B(100, 100, 255));
         }
-            
+
         _headSprite->setPosition(this->getPosition() + Vec2(0, 60));
         this->getParent()->addChild(_headSprite, this->getLocalZOrder() + 1);
         auto anim = AnimationCache::getInstance()->getAnimation(headData.animationName);
@@ -201,6 +202,7 @@ void Zombie::onDie(ZombieState dieType)
                 CallFunc::create([this]() {
                     // 动画播完了，现在执行真正的移除
                     // 这一步执行后，z->getParent() 就会变成 nullptr
+                    AudioEngine::play2d("Music/zombie_falling_1.ogg", false, 1.0f);
                     this->removeFromParent();
                     }),
                 nullptr

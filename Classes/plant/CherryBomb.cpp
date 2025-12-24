@@ -1,6 +1,7 @@
 #include "plant/CherryBomb.h"
 #include "zombie/Zombie.h"
 #include "layer/ZombieLayer.h"
+#include "AudioEngine.h"
 
 bool CherryBomb::init() 
 {
@@ -48,6 +49,7 @@ void CherryBomb::explode() {
         }
     }
 
+    AudioEngine::play2d("Music/cherrybomb.ogg", false, 1.0f);
     _mainSprite->setVisible(false);
 }
 

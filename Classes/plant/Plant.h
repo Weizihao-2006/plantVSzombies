@@ -3,6 +3,8 @@
 #include"cocos2d.h"
 #include"zombie/Zombie.h"
 #include"plant/PlantData.h"
+#include "layer/ControlLayer.h"
+#include "manager/MapMgr.h"
 
 USING_NS_CC;
 
@@ -55,6 +57,11 @@ public:
             return;
         this->setState(PlantState::DYING);
         this->unscheduleUpdate(); //Á¢¼´Í£Ö¹Âß¼­¸üÐÂ£¨ÈçÍ£Ö¹²úÑô¹â¡¢Í£Ö¹Éä»÷£©
+        
+        // ´ÓMapManagerÀïÉ¾³ýÖ²Îï
+        auto MapMgr = MapManager::getInstance();
+        MapMgr->setMapCellStatus(static_cast<int>(_myMapPos.x), static_cast<int>(_myMapPos.y), PlantType::Error);
+
         this->removeFromParent();
     }
 

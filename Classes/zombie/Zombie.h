@@ -2,6 +2,7 @@
 #include "cocos2d.h"
 #include "zombie/ZombieData.h"
 #include"plant/PlantData.h"
+#include "plant/Plant.h"
 
 
 

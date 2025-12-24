@@ -1,4 +1,5 @@
 #include"layer/PlantLayer.h"
+#include "layer/ControlLayer.h"
 USING_NS_CC;
 
 

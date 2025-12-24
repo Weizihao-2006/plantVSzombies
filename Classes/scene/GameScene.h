@@ -48,6 +48,8 @@ public:
     BulletLayer* getBulletLayer() const { return _bulletLayer; }
     BgLayer* getBgLayer() const { return _bgLayer; }
     GameUILayer* getUILayer() const { return _uiLayer; }
+    void playStartAnimation();
+    void startGameLogic();
 
 
 private:
