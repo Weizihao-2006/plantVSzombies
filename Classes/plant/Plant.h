@@ -78,6 +78,9 @@ public:
         _myMapPos = MapPos;
     }
 
+    int getRow() const { return static_cast<int>(_myMapPos.x); }
+
+    int getCol() const{ return static_cast<int>(_myMapPos.y); }
 protected:
     Vec2 _myMapPos; // 记录植物在地图中的坐标
     PlantProperties _properties;  // 统一管理属性

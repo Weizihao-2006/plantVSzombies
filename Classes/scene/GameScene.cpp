@@ -50,7 +50,6 @@ bool GameScene::initWithLevel(int level_id)
 
 	AnimationHelper::initResources();//加载动画资源
 	createLayers();
-	bindLayerSignals();
 
 	// 初始化 CardMgr,确实已经初始化了,写在构造函数了
 	CardMgr::getInstance();
@@ -112,11 +111,12 @@ void GameScene::createLayers()
 	// 按优先级添加
 	this->addChild(_cardBarLayer, 10);
 	
-	this->addChild(_controlLayer, 30);
-	_controlLayer->setName("ControlLayer");
-
+	
 	this->addChild(_plantLayer, 30);
 	_plantLayer->setName("PlantLayer");
+
+	this->addChild(_controlLayer, 35);
+	_controlLayer->setName("ControlLayer");
 
 	this->addChild(_sunLayer, 40);
 	_sunLayer->setName("SunLayer");
@@ -128,53 +128,12 @@ void GameScene::createLayers()
 	_bulletLayer->setName("BulletLayer");
 
 	this->addChild(_uiLayer, 100);
+	_uiLayer->setName("GameUILayer");
+
+	
 }
 
-void GameScene::bindLayerSignals()
-{
-	auto cardMgr = CardMgr::getInstance();
 
-#if 0
-	// 1. UI 层 -> 游戏逻辑（暂停/加速）
-	if (_uiLayer) {
-		_uiLayer->onPauseBtnClicked = [this](bool p) { onPause(p); };
-		_uiLayer->onSpeedBtnClicked = [this](float s) { onSpeedChanged(s); };
-	}
-
-	// 2. 僵尸层 -> 游戏结束（失败/胜利）
-	if (_zombieLayer) {
-		_zombieLayer->onZombieReachHouse = [this]() { onZombieEnterHouse(); };
-		_zombieLayer->onAllZombieDead = [this]() { onAllZombieClear(); };
-	}
-
-	// 3. 阳光层 -> 卡牌栏（显示阳光变化）
-	if (_sunLayer && _cardBarLayer) {
-		_sunLayer->onSunChanged = [this](int val) {
-			auto mgr = CardMgr::getInstance();
-			// 更新所有卡牌的可用状态
-			for (size_t i = 0; i < mgr->getDeckSize(); ++i) {
-				_cardBarLayer->updateCardState(i, mgr->canPlant(i));
-			}
-			CCLOG("GameScene: Sun changed to %d", val);
-			};
-	}
-
-	// 4. 卡牌栏 -> 种植处理
-	// CardMgr:: onCardSelected 被 CardBarLayer::onCardClicked 调用
-	cardMgr->onCardSelected = [this](int cardIdx) {
-		CCLOG("GameScene: Card [%d] selected", cardIdx);
-
-		// TODO: 通知 PlantInputLayer 开始种植预览
-		// 如果有 PlantInputLayer，应该在这里调用
-		// if (_plantInput) {
-		//     _plantInput->onCardSelected(cardIdx);
-		// }
-
-		// 种植完成后（在 PlantInputLayer 或其他地方调用）
-		// CardMgr::getInstance()->onPlantConfirmed(cardIdx);
-		};
-#endif
-}
 
 void GameScene::onZombieEnterHouse()
 {

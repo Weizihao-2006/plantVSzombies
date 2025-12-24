@@ -16,8 +16,8 @@ public:
     void addPlant(Plants* plant);
 
     // 移除植物
-    void removePlant(Plants* plant);
-
+    bool removePlant(Plants* plant);
+    bool removePlant(int row, int col);
     // 获取所有植物
     Vector<Plants*>& getAllPlants(){ return _plants; }
 

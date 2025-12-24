@@ -36,7 +36,7 @@ void CherryBomb::explode() {
         Vec2 myPos = this->getPosition();
 
         // 2. 遍历所有僵尸，进行范围检测 3x3区域
-        float explosionRadius = 450.0f;
+        float explosionRadius = 240.0f;
 
         for (int i = allZombies.size() - 1; i >= 0; --i) {
             auto zombie = allZombies.at(i);
@@ -50,10 +50,6 @@ void CherryBomb::explode() {
     }
 
     AudioEngine::play2d("Music/cherrybomb.ogg", false, 1.0f);
-    _mainSprite->setVisible(false);
-}
 
-void CherryBomb::playExplosionEffect() {
-    // 隐藏植物主体
-    
+    handleDeath();
 }

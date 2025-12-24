@@ -28,21 +28,17 @@ public:
 private:
     void createTouchListener(); // 创建触摸监听
 
-
-    bool UpdateTouchPositionIsInMap(); // 判断触摸位置是否在地图内
-    bool judgeTouchPositionIsCanPlant(); // 判断触摸位置是否可以种植植物
-    bool judgeTouchPositionHavePlant(); // 判断触摸位置是否有植物
-
-
+    void showPreview(cocos2d::Sprite* preview, bool& isShowing);
+    void hidePreview(cocos2d::Sprite* preview, bool& isShowing);
+    void updatePreviewPosition(cocos2d::Sprite* preview);//更新预览位置
     // 植物预览相关方法
-    void showPlantPreview();    // 显示植物预览
-    void hidePlantPreview();    // 隐藏植物预览
-    void updatePreviewPosition(); // 更新预览位置
-
+    
     // 植物预览相关变量
     cocos2d::Sprite* _plantPreview = nullptr; // 预览精灵
-    bool _isPreviewShowing = false;           // 预览是否显示
-    bool _isPreviewSpriteCreated = false;     // 检查精灵是否已创建
+    bool _isPlantPreviewShowing = false;           // 预览是否显示
+    Sprite* createPreview(const std::string& filename, float scale = 1.5f, uint8_t opacity = 128);
+    void cancelCurrentAction();
+    void handlePreviewLogic(Sprite*& targetSprite, bool& isShowingFlag, bool canShowCondition);
 
     // 高亮条相关处理
     cocos2d::DrawNode* _highlightRow = nullptr; // 横向高亮条
@@ -53,12 +49,19 @@ private:
     static const PlantType SelectNoPlant;
 
     /*--- 数据成员 ---*/
-    //GameMapInformation _gameMapInformation; // 游戏地图信息
     cocos2d::Vec2 _cur; // 触摸坐标
-    cocos2d::Vec2 _plantsPosition; // 植物种植坐标
+    cocos2d::Vec2 _MapPosition; //地图坐标
     PlantType _selectedPlantType = PlantType::Error;
     MapManager* _mapManager=nullptr;
 
+private:
+    bool _isShovelSelected = false;  // 是否选中了铲子
+    bool _isShovelPreviewShowing = false;           // 预览是否显示
+    cocos2d::Sprite* _shovelPreview = nullptr; // 铲子的预览精灵
+
+public:
+    // 供 UI 层调用的接口
+    void setShovelActive(bool active);
 };
 
 #endif // CONTROL_LAYER_H

@@ -11,7 +11,6 @@ void GameUILayer::update(float dt)
 {
     //目前先只更新阳光
     if (_sunLabel) {
-
         _sunLabel->setString(std::to_string(Global::getInstance()->getSun()));
 
     }
@@ -24,7 +23,7 @@ bool GameUILayer::init() {
     createSunDisplay(); // 创建阳光数量显示
 
     createPauseButton(); // 创建暂停按钮
-    // createShovelButton(); // 创建铲子按钮
+    createShovelButton(); // 创建铲子按钮
     // createProgressBar(); // 创建进度条
     
     this->scheduleUpdate();
@@ -58,15 +57,27 @@ void GameUILayer::createPauseButton() {
 }
 
 void GameUILayer::createShovelButton() {
-    _shovelButton = MenuItemImage::create("shovel_normal.png", "shovel_pressed.png", // 创建铲子按钮
+
+    auto shover_background = Sprite::create("ShovelBack.png");
+    shover_background->setPosition(Vec2(1750.0f, 1300.0f));
+    shover_background->setScaleX(1.1f);
+    shover_background->setScaleY(3.0f);
+    this->addChild(shover_background);
+
+    _shovelButton = MenuItemImage::create("Shovel.png", "Shovel.png", // 创建铲子按钮
         [this](Ref*) {
-            // 铲子按钮的逻辑，例如移除植物
+            auto scene=Director::getInstance()->getRunningScene();
+            auto controlLayer = dynamic_cast<ControlLayer*>(scene->getChildByName("ControlLayer"));
+            if (controlLayer) {
+                controlLayer->setShovelActive(true);//启动铲子
+            }
         });
-    _shovelButton->setPosition(Director::getInstance()->getVisibleSize().width - 120, // 设置位置
-        Director::getInstance()->getVisibleSize().height - 60);
+
+    _shovelButton->setPosition(Vec2(1750.0f, 1300.0f));
+    _shovelButton->setRotation(-45.0f);
     auto menu = Menu::create(_shovelButton, nullptr); // 创建菜单
     menu->setPosition(Vec2::ZERO); // 菜单位置归零
-    addChild(menu); // 添加到当前层
+    this->addChild(menu); // 添加到当前层
 }
 
 void GameUILayer::createProgressBar() {

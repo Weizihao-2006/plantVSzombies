@@ -2,6 +2,7 @@
 #include"scene/GameScene.h"
 #include "manager/PlantMgr.h"
 #include"manager/CardMgr.h"
+#include"GameUILayer.h"
 #include <string>
 #include "AudioEngine.h"
 
@@ -58,55 +59,6 @@ void ControlLayer::createTouchListener() {
         }
         return false;
         };
-
-    //经过测试,下面这一块代码去掉不影响!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#if 0
-    // 触摸移动 (拖动)
-    touchListener->onTouchMoved = [this](Touch* touch, Event* event) {
-        _cur = touch->getLocation(); // 更新当前触摸位置
-        if (_selectedPlantType != SelectNoPlant) {
-            if (UpdateTouchPositionIsInMap()) {
-                showPlantPreview();      // 地图内显示预览
-                updatePreviewPosition(); // 实时更新位置（跟随鼠标/手指）
-            }
-            else {
-                hidePlantPreview(); // 地图外隐藏
-            }
-        }
-        };
-
-    // 触摸结束 (松开)
-    touchListener->onTouchEnded = [this](Touch* touch, Event* event) {
-        _cur = touch->getLocation();
-        hidePlantPreview(); // 结束触摸时隐藏预览
-
-        if (UpdateTouchPositionIsInMap()) {//注重数据成员的修改
-            if (_selectedPlantType != SelectNoPlant && judgeTouchPositionIsCanPlant()) {
-                // 种植植物逻辑
-
-               // _gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantType;
-                //PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // 通知PlantMgr实际创建植物
-
-                _selectedPlantType = SelectNoPlant; // 重置选中状态
-            }
-            else if (judgeTouchPositionHavePlant()) {
-                // 移除植物逻辑
-                _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, SelectNoPlant);
-                //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = -1;
-                // TODO: 通知PlantMgr移除植物
-                _selectedPlantType = SelectNoPlant; // 重置选中状态，防止误操作
-            }
-            else {
-                _selectedPlantType = SelectNoPlant; // 如果只是拖动，结束时重置选中状态
-            }
-        }
-        else {
-            _selectedPlantType = SelectNoPlant; // 如果在地图外松开，重置选中状态
-        }
-        };
-
-#endif
-
     _eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
 
 
@@ -117,106 +69,166 @@ void ControlLayer::createTouchListener() {
     mouseListener->onMouseMove = [this](EventMouse* event) {
         _cur = event->getLocation(); // 获取鼠标当前位置
 
-        // 仅在选中植物且鼠标未按下时，更新预览位置（实现松开状态下的幽灵跟随）
-        //update: 2025/12/19,加入CardMgr::getInstance()->canPlant(_selectedPlantType)判断冷却时间和阳光
-        
+        if (event->getMouseButton() != EventMouse::MouseButton::BUTTON_UNSET) 
+            return;
 
-        if (_selectedPlantType != SelectNoPlant && event->getMouseButton() == EventMouse::MouseButton::BUTTON_UNSET
-            && CardMgr::getInstance()->canPlant(_selectedPlantType)) {
+        if (_selectedPlantType != SelectNoPlant&& CardMgr::getInstance()->IsNotInCoolAndCanAfford(_selectedPlantType)) {
 
-            // 关键新增：如果幽灵精灵还未创建，现在创建它！
-            if (!_isPreviewSpriteCreated) {
-
-                //现在改成从PlantData中获取信息
+            //如果幽灵精灵还未创建，现在创建它！
+            if (!_plantPreview) {
                 auto props = PlantData::getProps(_selectedPlantType);
-                std::string filename = props.previewFrame;
-
-
-                _plantPreview = Sprite::create(filename);
-                if (_plantPreview) {
-                    _plantPreview->setOpacity(128); // 半透明效果
-                    _plantPreview->setScale(1.5f); // 放大1.5倍
-                    this->addChild(_plantPreview, 10);
-                    _isPreviewSpriteCreated = true;
-                    _isPreviewShowing = true;
-                }
+                _plantPreview = createPreview(props.previewFrame, 1.5f);  
             }
-
-            // 只有可种植的情况下才显示预览
-            if (UpdateTouchPositionIsInMap() && judgeTouchPositionIsCanPlant()) {
-                updatePreviewPosition(); // 更新位置
-                showPlantPreview();      // 显示预览（如果之前隐藏了）
-                updateHighlightBars(_plantsPosition.y, _plantsPosition.x);
-            }
-            else {
-                hidePlantPreview();      // 地图外隐藏
-                clearHighlightBars();    // 地图外清除高亮
-            }
+            handlePreviewLogic(_plantPreview, _isPlantPreviewShowing, _mapManager->judgeScreenPositionIsCanPlant(_cur));
         }
+        else if ( _isShovelSelected) {
 
+            //创建或显示铲子预览
+            if (!_shovelPreview) {
+                _shovelPreview = createPreview("Shovel.png", 1.0f, 255);
+                _shovelPreview->setRotation(-45.0f);
+            }
+            auto gameUi = dynamic_cast<GameUILayer*>(Director::getInstance()->getRunningScene()->getChildByName("GameUILayer"));
+            if (gameUi) {
+                gameUi->setShoveButtonVisible(false);
+            }
+            handlePreviewLogic(_shovelPreview, _isShovelPreviewShowing,_mapManager->judgeScreenPositionIsInMap(_cur));
+        }
         };
+
 
     // 鼠标按下 (用于在幽灵模式下点击种植)
     mouseListener->onMouseDown = [this](EventMouse* event) 
     {
-            if (event->getMouseButton() == EventMouse::MouseButton::BUTTON_LEFT) {
-                _cur = event->getLocation();
-
-                // 只有在幽灵模式下点击地图，才执行种植/移除逻辑并退出幽灵模式
-                //update: 2025/12/19,加入CardMgr::getInstance()->canPlant(_selectedPlantType)判断冷却时间和阳光
-                if (_selectedPlantType != SelectNoPlant && UpdateTouchPositionIsInMap()
-                    && CardMgr::getInstance()->canPlant(_selectedPlantType)) {
-                    // calculatePlantPosition 在 schedule 中持续运行，_plantsPosition 应该是最新的
-
-                    if (judgeTouchPositionIsCanPlant()) {
-                        // 种植植物逻辑
-                        _mapManager->setMapCellStatus(_plantsPosition.y, _plantsPosition.x, _selectedPlantType);
-                        //_gameMapInformation.plantsMap[_plantsPosition.y][_plantsPosition.x] = _selectedPlantType;
-                        PlantMgr::getInstance()->createPlantAt(_plantsPosition, _selectedPlantType); // 通知PlantMgr实际创建植物
-                        //确认种植后调用
-                        CardMgr::getInstance()->onPlantConfirmed(_selectedPlantType);
-                        //播放种植音乐
-                        AudioEngine::play2d("Music/plant.ogg", false, 1.0f);
-                    }
-                  
-                    hidePlantPreview();
-                    clearHighlightBars();
-
-                    _selectedPlantType = SelectNoPlant; // 重置选中状态，退出幽灵模式
+            //右键取消
+            if (event->getMouseButton() == EventMouse::MouseButton::BUTTON_RIGHT) {
+                auto gameUi = dynamic_cast<GameUILayer*>(Director::getInstance()->getRunningScene()->getChildByName("GameUILayer"));
+                if (gameUi) {
+                    gameUi->setShoveButtonVisible(true);
                 }
-                _isPreviewSpriteCreated = false;
+                cancelCurrentAction();
+                return;
             }
 
-            else if (event->getMouseButton() == EventMouse::MouseButton::BUTTON_RIGHT) {//新增一个功能,右键取消种植植物
-                hidePlantPreview();
-                clearHighlightBars();
+            if (event->getMouseButton() != EventMouse::MouseButton::BUTTON_LEFT)
+                return;
 
-                _selectedPlantType = SelectNoPlant; // 重置选中状态，退出幽灵模式
-                _isPreviewSpriteCreated = false;
+            _cur = event->getLocation();
+
+            if (_selectedPlantType != SelectNoPlant) {
+                if (_mapManager->judgeScreenPositionIsCanPlant(_cur) &&
+                    CardMgr::getInstance()->IsNotInCoolAndCanAfford(_selectedPlantType)) {
+                    //先更新坐标
+                    _MapPosition = _mapManager->convertScreenPosToMapPos(_cur);
+
+                    // 通知PlantMgr实际创建植物,同时会更新地图系统的植物以及CardMgr的冷却
+                    PlantMgr::getInstance()->createPlantAt(_MapPosition, _selectedPlantType);
+
+                    //播放种植音乐
+                    AudioEngine::play2d("Music/plant.ogg", false, 1.0f);
+                    cancelCurrentAction();
+                }
             }
+            else if (_isShovelSelected) {
 
-            
+                if (_mapManager->judgeScreenPositionIsInMap(_cur)) {
+                    _MapPosition = _mapManager->convertScreenPosToMapPos(_cur);
+
+                    //移除植物
+                    bool success = PlantMgr::getInstance()->removePlantAt(_MapPosition);
+
+                    if (success) {
+                        AudioEngine::play2d("Music/Shovel.ogg", false, 1.0f);
+                        
+                    }
+                    auto gameUi = dynamic_cast<GameUILayer*>(Director::getInstance()->getRunningScene()->getChildByName("GameUILayer"));
+                    if (gameUi) {
+                        gameUi->setShoveButtonVisible(true);
+                    }
+                    cancelCurrentAction(); 
+                }
+            }
     };
-
     _eventDispatcher->addEventListenerWithSceneGraphPriority(mouseListener, this);
 }
 
+
+Sprite* ControlLayer::createPreview(const std::string& filename,float scale, uint8_t opacity)
+{
+    auto preview = Sprite::create(filename);
+    if (preview) {
+        preview->setOpacity(opacity); // 统一半透明
+        preview->setScale(scale); // 统一缩放（如 1.5f）
+        this->addChild(preview, 15); // 确保在顶层
+        preview->setVisible(false);
+    }
+    return preview;
+}
+void ControlLayer::handlePreviewLogic(Sprite*& targetSprite, bool& isShowingFlag, bool canShowCondition) {
+    // 1. 如果不满足基本条件（比如冷却中或鼠标超出），直接隐藏并清理
+    if (!canShowCondition) {
+        if (targetSprite) {
+            hidePreview(targetSprite, isShowingFlag);
+        }
+        clearHighlightBars();
+        return;
+    }
+
+    // 2. 满足条件，开始更新
+    _MapPosition = _mapManager->convertScreenPosToMapPos(_cur);
+
+    updatePreviewPosition(targetSprite); // 复用你之前的函数
+    showPreview(targetSprite, isShowingFlag);
+    updateHighlightBars(_MapPosition.y, _MapPosition.x);
+}
+
+void ControlLayer::cancelCurrentAction() 
+{
+    // 1. 隐藏并清理植物预览
+    if (_plantPreview) {
+        hidePreview(_plantPreview, _isPlantPreviewShowing);
+        _plantPreview->removeFromParent(); // 彻底移除，配合你逻辑中的 nullptr 设置
+        _plantPreview = nullptr;
+    }
+    // 2. 隐藏并清理铲子预览
+    if (_shovelPreview) {
+        hidePreview(_shovelPreview, _isShovelPreviewShowing);
+        _shovelPreview->removeFromParent();
+        _shovelPreview = nullptr;
+    }
+
+    // 3. 状态重置
+    _selectedPlantType = SelectNoPlant;
+    _isShovelSelected = false;
+
+    // 4. 视觉清理
+    clearHighlightBars();
+}
+
+void ControlLayer::setShovelActive(bool active) 
+{
+    _isShovelSelected = active;
+
+    if (_isShovelSelected) {
+        // 1. 取消植物选择
+        this->setSelectedPlantId(SelectNoPlant);
+       
+    }
+    else {
+        if (_shovelPreview) 
+            _shovelPreview->setVisible(false);
+    }
+}
 
 // 设置选中的植物ID（从卡片点击事件调用）
 void ControlLayer::setSelectedPlantId(PlantType plantId) {
     _selectedPlantType = plantId;
 
-    if (plantId != SelectNoPlant) {
-        //// 如果精灵已经存在，显示它（但初始位置可能不正确，会在 onMouseMove 中立即修正）
-        //if (_plantPreview) {
-        //    _plantPreview->setVisible(true);
-        //    _isPreviewShowing = true;
-        //}
-        //// 如果精灵不存在，什么都不做，等待 onMouseMove 创建它。
+    if (plantId == SelectNoPlant) {
+        hidePreview(_plantPreview,_isPlantPreviewShowing);
     }
-    else {
-        hidePlantPreview();
-    }
+
+   
 }
 
 
@@ -269,54 +281,34 @@ void ControlLayer::clearHighlightBars() {
     if (_highlightCol) _highlightCol->clear();
 }
 
-// 显示植物预览
-void ControlLayer::showPlantPreview() {
-    if (_plantPreview && !_isPreviewShowing) {
-        _plantPreview->setVisible(true);
-        _isPreviewShowing = true;
+
+
+void ControlLayer::showPreview(Sprite* preview,bool& isShowing) {
+    if (preview && !isShowing) {
+        preview->setVisible(true);
+        isShowing = true;
     }
 }
 
-// 隐藏植物预览
-void ControlLayer::hidePlantPreview() {
+void ControlLayer::hidePreview(Sprite* preview, bool& isShowing) {
     // 仅隐藏，不移除精灵，以便下次移动时可以立即显示
-    if (_plantPreview && _isPreviewShowing) {
-        _plantPreview->setVisible(false);
-        _isPreviewShowing = false;
+    if (preview && isShowing) {
+        preview->setVisible(false);
+        isShowing = false;
     }
 }
+
+
 
 // 更新预览位置到当前触摸/鼠标位置
-void ControlLayer::updatePreviewPosition() {
-    if (!_plantPreview) return;
-
-    // CCLOG("%f %f", _cur.x, targetY);
-
-    // 可选：限制预览图只能在地图范围内显示
-    // float x = std::max(_gameMapInformation.mapLeft, std::min(_cur.x, _gameMapInformation.mapRight));
-    // float y = std::max(_gameMapInformation.mapBottom, std::min(_cur.y, _gameMapInformation.mapTop));
-    int row = _plantsPosition.y;
-    int col = _plantsPosition.x;
-    _plantPreview->setPosition(_mapManager->getPositionInMap(row,col));
+void ControlLayer::updatePreviewPosition(cocos2d::Sprite* targetSprite) {
+    if (!targetSprite) 
+        return;
+    int row = _MapPosition.y;
+    int col = _MapPosition.x;
+    targetSprite->setPosition(_mapManager->getPositionInMap(row,col));
 
 }
 
-// 兼有更新网络坐标索引的功能
 
-bool ControlLayer::UpdateTouchPositionIsInMap() {
 
-    auto pos = _mapManager->convertScreenPosToMapPos(_cur);
-    if (!pos.equals(MapManager::FalsePosition)) {//位置合法
-        _plantsPosition = pos;
-        return true;
-    }
-    return false;
-}
-
-bool ControlLayer::judgeTouchPositionIsCanPlant() {
-    return _mapManager->judgeScreenPositionIsCanPlant(_cur);
-}
-
-bool ControlLayer::judgeTouchPositionHavePlant() {
-    return _mapManager->judgeScreenPositionHavePlant(_cur);
-}

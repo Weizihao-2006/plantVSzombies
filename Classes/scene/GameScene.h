@@ -54,7 +54,6 @@ public:
 
 private:
     void createLayers();
-    void bindLayerSignals();
 };
 
 #endif // !GAME_SCENE_H
