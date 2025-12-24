@@ -2,6 +2,7 @@
 #include "manager/MapMgr.h"
 #include "layer/PlantLayer.h"
 #include "manager/MapMgr.h"
+#include "AudioEngine.h"
 
 bool CommonZombie::init() {
     // 1. 调用基类的初始化，传入类型，自动加载配置和播放行走动画
@@ -64,5 +65,6 @@ void CommonZombie::eatPlant(float dt, Plants* plant) {
         plant->takeDamage(_props.attackPower);
 
         // 可以在这里播放一个“咔嚓”的声音特效
+        // AudioEngine::play2d("Music/chompsoft.ogg", true, 1.0f);
     }
 }

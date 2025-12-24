@@ -4,6 +4,7 @@
 #include"zombie/Zombie.h"
 #include"plant/PlantData.h"
 #include "layer/ControlLayer.h"
+#include "manager/MapMgr.h"
 
 USING_NS_CC;
 
@@ -57,10 +58,9 @@ public:
         this->setState(PlantState::DYING);
         this->unscheduleUpdate(); //立即停止逻辑更新（如停止产阳光、停止射击）
         
-        // 从ControlLayer里删除植物（因为mapMgr和ControlLayer）挂钩
-        auto scene = cocos2d::Director::getInstance()->getRunningScene();
-        auto controlLayer = dynamic_cast<ControlLayer*>(scene->getChildByName("ControlLayer"));
-        controlLayer->removePlantFromMap(static_cast<int>(_myMapPos.x), static_cast<int>(_myMapPos.y), PlantType::Error);
+        // 从MapManager里删除植物
+        auto MapMgr = MapManager::getInstance();
+        MapMgr->setMapCellStatus(static_cast<int>(_myMapPos.x), static_cast<int>(_myMapPos.y), PlantType::Error);
 
         this->removeFromParent();
     }

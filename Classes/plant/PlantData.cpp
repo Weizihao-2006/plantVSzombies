@@ -97,7 +97,7 @@ const std::map<PlantType, PlantProperties>& PlantData::getAllConfigs()
             PlantType::CherryBomb, "CherryBomb", 150, 35.0f, 1000, 1800, 0.0f,
             "plantCard/CherryBomb.png", "plantCard/CherryBomb_lock.png",
             "cardPreview/CherryBomb_0.png", "image/CherryBomb.plist",
-            "CherryBomb_", 7, 0.12f, "CherryBomb_Anim"
+            "CherryBomb/CherryBomb_", 8, 0.12f, "CherryBomb_Anim"
         );
 
         // 3. Íã¶¹ÉäÊÖ (PeaShooter) - »ù´¡¹¥»÷
@@ -108,13 +108,13 @@ const std::map<PlantType, PlantProperties>& PlantData::getAllConfigs()
             "Peashooter_", 13, 0.1f, "Peashooter_Anim"
         );
 
-        // 4. Ë«·¢ÉäÊÖ (Repeater) - ¹¥»÷¼ä¸ô¼õ°ë
-        _dataConfig[PlantType::ReaPeater] = PlantProperties(
-            PlantType::ReaPeater, "Repeater", 200, 7.5f, 300, 20, 0.75f,
-            "plantCard/Repeater.png", "plantCard/Repeater_lock.png",
-            "cardPreview/Repeater_0.png", "image/Repeater.plist",
-            "Repeater_", 15, 0.08f, "Repeater_Anim"
-        );
+        //// 4. Ë«·¢ÉäÊÖ (Repeater) - ¹¥»÷¼ä¸ô¼õ°ë
+        //_dataConfig[PlantType::ReaPeater] = PlantProperties(
+        //    PlantType::ReaPeater, "Repeater", 200, 7.5f, 300, 20, 0.75f,
+        //    "plantCard/Repeater.png", "plantCard/Repeater_lock.png",
+        //    "cardPreview/Repeater_0.png", "image/Repeater.plist",
+        //    "Repeater_", 15, 0.08f, "Repeater_Anim"
+        //);
 
         // 5. º®±ùÉäÊÖ (SnowPea) - ¸½´ø¼õËÙĞ§¹û
         _dataConfig[PlantType::SnowPea] = PlantProperties(

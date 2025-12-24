@@ -10,7 +10,7 @@ void AnimationHelper::initResources()
     // B. 加载植物图集 (可以从 PlantData 获取当前关卡所有植物的资源路径)
     const auto& configs = PlantData::getAllConfigs();
     for (auto const& [type, props] : configs) {
-        if (!props.plistPath.empty()) { // 建议在 PlantProperties 增加这个字段
+        if (!props.plistPath.empty()) {
             frameCache->addSpriteFramesWithFile(props.plistPath);
         }
         auto specialAnims = PlantData::getSpecialAnimMap(type);//获取对应植物类型的特殊动画

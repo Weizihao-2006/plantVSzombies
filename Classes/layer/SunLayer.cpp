@@ -4,6 +4,8 @@
 #include "AudioEngine.h"
 // --- SunSprite ---
 
+USING_NS_CC;
+
 const int SunSprite::exitSeqTag = 100;
 const float SunSprite::SUN_SCALE = 1.5f;
 
@@ -74,7 +76,7 @@ bool SunLayer::init()
         return false;
 
     SpriteFrameCache::getInstance()->addSpriteFramesWithFile("images/Sun.plist");
-    this->scheduleUpdate();
+    // this->scheduleUpdate();
     return true;
 }
 
@@ -167,4 +169,9 @@ void SunLayer::resumeAllSuns() {
     for (auto sun : _suns) {
         sun->resume(); // 恢复动作
     }
+}
+
+void SunLayer::startSunLogic() {
+    // 把之前写在 init 里的 schedule 移到这里
+    this->scheduleUpdate();
 }

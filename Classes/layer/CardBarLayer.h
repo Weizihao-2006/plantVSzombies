@@ -13,7 +13,7 @@
 /// </summary>
 
 const std::vector<PlantType> CardDeck = {
-    PlantType::SunFlower, PlantType::PeaShooter, PlantType::ReaPeater,
+    PlantType::SunFlower, PlantType::PeaShooter,
     PlantType::CherryBomb, PlantType::SnowPea,PlantType::WallNut
 
 };

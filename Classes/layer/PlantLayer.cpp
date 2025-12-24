@@ -24,6 +24,7 @@ void PlantLayer::update(float dt)
     for (int i = _plants.size() - 1; i >= 0; --i) {
         auto z = _plants.at(i);
         if (z->getParent() == nullptr) {
+
             _plants.erase(i);
         }
     }
