@@ -5,6 +5,7 @@
 #include "plant/PeaShooter.h"
 #include"plant/CherryBomb.h"
 #include"plant/SnowPeaShooter.h"
+#include"plant/ReaPeater.h"
 USING_NS_CC;
 
 PlantMgr* PlantMgr::s_sharedPlantMgr = nullptr;
@@ -29,7 +30,10 @@ bool PlantMgr::init()
 // 在指定位置创建一个植物并且加入到RunningScene中
 // 注意,创建的植物并非加到某一个Layer!
 
-
+bool PlantMgr::removePlantAt(const cocos2d::Vec2& gridPos)
+{
+   return  _plantLayer->removePlant(static_cast<int>(gridPos.y), static_cast<int>(gridPos.x));
+}
 void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType type)
 {
 
@@ -53,23 +57,32 @@ void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType type)
         case PlantType::SnowPea:
             plant = SnowPea::create();
             break;
+        case PlantType::ReaPeater:
+            plant = ReaPeater::create();
+            break;
         default:
             CCLOG("Warning: Unknown PlantType!");
             return;
     }
     if (plant) {
+
+        // 1.地图设置
+        mapManager->setMapCellStatus(rowCol.y, rowCol.x, type);
+
         // 2. 放置
         int col = rowCol.x;
         int row = rowCol.y;
         plant->setPosition(mapManager->getPositionInMap(row, col));
         plant->setPos(Vec2(row, col));
 
-        //放大
         plant->setScale(1.5f);
 
         _plantLayer->addPlant(plant);
 
         plant->scheduleUpdate();
+
+        //3.卡牌进入冷却
+        CardMgr::getInstance()->onPlantConfirmed(type);
     }
 }
 

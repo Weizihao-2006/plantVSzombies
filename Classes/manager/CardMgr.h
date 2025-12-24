@@ -13,7 +13,7 @@ public:
     void updateCoolTime(float dt);
 
     // 检查某种植物是否能种植（阳光充足 且 不在冷却中）
-    bool canPlant(PlantType type) const;
+    bool IsNotInCoolAndCanAfford(PlantType type) const;
 
     // 启动某种植物的冷却计时
     void startCool(PlantType type);

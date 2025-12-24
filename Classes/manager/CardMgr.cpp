@@ -1,4 +1,4 @@
-#include "CardMgr.h"
+#include "manager/CardMgr.h"
 #include "util/Global.h"
 #include "cocos2d.h"
 
@@ -30,7 +30,7 @@ void CardMgr::updateCoolTime(float dt) {
     }
 }
 
-bool CardMgr::canPlant(PlantType type) const {
+bool CardMgr::IsNotInCoolAndCanAfford(PlantType type) const {
     return !isInCoolDown(type) && canAfford(type);
 }
 

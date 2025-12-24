@@ -20,13 +20,12 @@ public:
     }
 
     // 移除植物
-    void removePlantAt(const cocos2d::Vec2& gridPos);
+    bool removePlantAt(const cocos2d::Vec2& gridPos);
 
     // 获取植物
     Plants* getPlantAt(const cocos2d::Vec2& gridPos);
 
     // 更新所有植物
-    void updateAllPlants(float deltaTime);
 
    
     static PlantMgr* getInstance();

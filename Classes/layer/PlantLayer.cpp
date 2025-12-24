@@ -43,6 +43,35 @@ void PlantLayer::pauseAllPlants() {
     }
 }
 
+Plants* PlantLayer::getPlantAtGrid(int row, int col) const {
+    // 遍历当前层级所有的植物
+    for (auto plant : _plants) {
+
+        if (plant->getRow() == row && plant->getCol() == col) {
+            return plant;
+        }
+    }
+    return nullptr;
+}
+
+bool PlantLayer::removePlant(Plants* plant)
+{
+    if (!plant)
+        return false;
+
+    if (plant->getParent() == this) {
+        plant->handleDeath();
+        _plants.eraseObject(plant);
+        return true;
+    }
+    return false;
+}
+
+bool PlantLayer::removePlant(int row, int col)
+{
+    auto plant = getPlantAtGrid(row, col);
+    return removePlant(plant);
+}
 void PlantLayer::resumeAllPlants() {
     this->resume();
     for (auto& plant : _plants) {

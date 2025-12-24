@@ -15,7 +15,7 @@ enum class PlantType
     Error,
     SunFlower,  /* 向日葵 */
     PeaShooter, /* 豌豆射手 */
-    //ReaPeater,  //双射
+    ReaPeater,  //双射
     SnowPea,
     WallNut,    /* 坚果墙 */
     CherryBomb, /* 樱桃炸弹 */

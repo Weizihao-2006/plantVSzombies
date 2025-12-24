@@ -48,7 +48,6 @@ bool GameScene::initWithLevel(int level_id)
 
 	AnimationHelper::initResources();//加载动画资源
 	createLayers();
-	bindLayerSignals();
 
 	// 初始化 CardMgr,确实已经初始化了,写在构造函数了
 	CardMgr::getInstance();
@@ -110,11 +109,12 @@ void GameScene::createLayers()
 	// 按优先级添加
 	this->addChild(_cardBarLayer, 10);
 	
-	this->addChild(_controlLayer, 30);
-	_controlLayer->setName("ControlLayer");
-
+	
 	this->addChild(_plantLayer, 30);
 	_plantLayer->setName("PlantLayer");
+
+	this->addChild(_controlLayer, 35);
+	_controlLayer->setName("ControlLayer");
 
 	this->addChild(_sunLayer, 40);
 	_sunLayer->setName("SunLayer");
@@ -126,12 +126,12 @@ void GameScene::createLayers()
 	_bulletLayer->setName("BulletLayer");
 
 	this->addChild(_uiLayer, 100);
+	_uiLayer->setName("GameUILayer");
+
+	
 }
 
-void GameScene::bindLayerSignals()
-{
-	auto cardMgr = CardMgr::getInstance();
-}
+
 
 void GameScene::onZombieEnterHouse()
 {

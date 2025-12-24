@@ -8,7 +8,7 @@ USING_NS_CC;
 //数据的保存: 阳光的数据
 // 
 
-const int ORIGIN_SUN = 500;
+const int ORIGIN_SUN = 5000;
 
 class Global {
 
