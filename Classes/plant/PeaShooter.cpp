@@ -8,10 +8,6 @@ bool PeaShooter::init() {
         return false;
     }
 
-    // 初始化时确定自己在哪一行
-    auto mapPos = MapManager::getInstance()->convertScreenPosToMapPos(this->getPosition());
-    _myRow = static_cast<int>(mapPos.y);
-
     this->scheduleUpdate();
     return true;
 }
@@ -29,7 +25,7 @@ void PeaShooter::update(float dt) {
         if (zombieLayer) {
             // 2. 检测当前行右侧是否有僵尸
             // 只有当这一行有僵尸，且僵尸在自己右边时才开火
-            if (zombieLayer->hasZombieInRow(_myRow, this->getPositionX())) {
+            if (zombieLayer->hasZombieInRow(static_cast<int>(_myMapPos.x), this->getPositionX())) {
                 this->attack();
                 _timer = 0.0f; // 重置攻击冷却
             }
@@ -37,14 +33,13 @@ void PeaShooter::update(float dt) {
     }
 }
 
-#if 0
 void PeaShooter::attack() {
-    // 1. 视觉：可以给豌豆射手加一个瞬间缩放或闪烁的效果，表示“吐”子弹
-    _mainSprite->runAction(Sequence::create(
-        ScaleTo::create(0.05f, 1.1f * NormalScale, 0.9f * NormalScale),
-        ScaleTo::create(0.05f, NormalScale, NormalScale),
-        nullptr
-    ));
+    //// 1. 视觉：可以给豌豆射手加一个瞬间缩放或闪烁的效果，表示“吐”子弹
+    //_mainSprite->runAction(Sequence::create(
+    //    ScaleTo::create(0.05f, 1.1f * NormalScale, 0.9f * NormalScale),
+    //    ScaleTo::create(0.05f, NormalScale, NormalScale),
+    //    nullptr
+    //));
 
     // 2. 逻辑：在 BulletLayer 中生成子弹
     auto scene = Director::getInstance()->getRunningScene();
@@ -52,11 +47,10 @@ void PeaShooter::attack() {
 
     if (bulletLayer) {
         // 子弹发射位置：通常是植物的头部中心点，略微靠右
-        Vec2 firePos = this->getPosition() + Vec2(40, 20);
-        bulletLayer->spawnBullet(firePos, _myRow, _properties.attackPower);
+        Vec2 firePos = this->getPosition() + Vec2(40, 30);
+        bulletLayer->spawnBullet(firePos, static_cast<int>(_myMapPos.x), _properties.attackPower,_properties.type);
 
         // 3. 音效：发射声音
         // AudioEngine::play2d("sound/throw.mp3", false, 0.6f);
     }
 }
-#endif

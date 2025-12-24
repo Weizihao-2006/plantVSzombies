@@ -1,7 +1,6 @@
 #include"Plant.h"
+#include "layer/PlantLayer.h"
 USING_NS_CC;
-
-
 
 bool Plants::initWithPlantType(PlantType type)
 {

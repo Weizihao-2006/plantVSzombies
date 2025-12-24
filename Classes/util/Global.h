@@ -8,6 +8,7 @@ USING_NS_CC;
 //数据的保存: 阳光的数据
 // 
 
+const int ORIGIN_SUN = 500;
 
 class Global {
 
@@ -49,14 +50,14 @@ public:
 
 	// 重置游戏状态
 	void reset() {
-		_sun = 50;
+		_sun = ORIGIN_SUN;
 		CCLOG("Global: Game state reset");
 	}
 
 private:
 	Global() = default;
 	int _levelID = 1;
-	int _sun = 50;
+	int _sun = ORIGIN_SUN;
 };
 
 

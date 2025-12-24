@@ -18,7 +18,6 @@ public:
     //玩家点击了阳光时调用,操作阳光本身向destPos飞去
     void collect(Vec2 destPos);
 
-
     int getAmount() const { return _amount; }
 private:
     int _amount = 25;
@@ -42,6 +41,8 @@ public:
 
     void pauseAllSuns();
     void resumeAllSuns();
+
+    void startSunLogic();
 
 private:
     void update(float dt) override;

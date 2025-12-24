@@ -30,7 +30,7 @@ PlantProperties::PlantProperties(PlantType t, const std::string& n, int sun, flo
 {
 
     if (!animPrefix.empty()) {
-        this->spriteFrameName = animPrefix + "0.png";
+        this->spriteFrameName = animPrefix + "1.png";
     }
 }
 
@@ -65,6 +65,8 @@ PlantProperties& PlantProperties::operator=(const PlantProperties& other) {
 
 // --- PlantData 实现 ---
 
+std::map<PlantType, std::map<PlantState, SpecialAnimData>> PlantData::_specialAnimConfig;
+
 PlantProperties PlantData::getProps(PlantType type) 
 {
     const auto& config = getAllConfigs();
@@ -95,7 +97,7 @@ const std::map<PlantType, PlantProperties>& PlantData::getAllConfigs()
             PlantType::CherryBomb, "CherryBomb", 150, 35.0f, 1000, 1800, 0.0f,
             "plantCard/CherryBomb.png", "plantCard/CherryBomb_lock.png",
             "cardPreview/CherryBomb_0.png", "image/CherryBomb.plist",
-            "CherryBomb_", 7, 0.12f, "CherryBomb_Anim"
+            "CherryBomb/CherryBomb_", 8, 0.12f, "CherryBomb_Anim"
         );
 
         // 3. 豌豆射手 (PeaShooter) - 基础攻击
@@ -110,7 +112,7 @@ const std::map<PlantType, PlantProperties>& PlantData::getAllConfigs()
         _dataConfig[PlantType::ReaPeater] = PlantProperties(
             PlantType::ReaPeater, "Repeater", 200, 7.5f, 300, 20, 0.75f,
             "plantCard/Repeater.png", "plantCard/Repeater_lock.png",
-            "cardPreview/Repeater_0.png", "image/Repeater.plist",
+            "cardPreview/Repeater_0.png", "",
             "Repeater_", 15, 0.08f, "Repeater_Anim"
         );
 
@@ -132,4 +134,28 @@ const std::map<PlantType, PlantProperties>& PlantData::getAllConfigs()
         // ... 其他植物配置 ...
     }
     return _dataConfig;
+}
+
+
+
+
+void PlantData::initSpecialAnims() 
+{
+    // 坚果墙的特殊状态
+    _specialAnimConfig[PlantType::WallNut][PlantState::DAMAGED] = { "Wallnut_cracked_1","Wallnut_cracked1_", 10, 0.15f, "image/WallNut_Cracked1.plist" };
+    _specialAnimConfig[PlantType::WallNut][PlantState::CRITICAL] = { "Wallnut_cracked_2","Wallnut_cracked2_", 10, 0.15f, "image/WallNut_Cracked2.plist" };
+
+    // 以后可以加其他的，比如大嘴花
+    // _specialAnimConfig[PlantType::Chomper]["Digesting"] = { "Chomper_Digest_", 8, 0.2f, "" };
+}
+
+const std::map<PlantState, SpecialAnimData> PlantData::getSpecialAnimMap(PlantType type)
+{
+    if (_specialAnimConfig.empty()) 
+        initSpecialAnims();
+    if (_specialAnimConfig.find(type)!=_specialAnimConfig.end()) {
+        return _specialAnimConfig.at(type);
+    }
+    return std::map<PlantState, SpecialAnimData>();
+    
 }

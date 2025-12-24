@@ -1,4 +1,5 @@
 #include"layer/PlantLayer.h"
+#include "layer/ControlLayer.h"
 USING_NS_CC;
 
 
@@ -7,6 +8,7 @@ bool PlantLayer::init()
 {
 	if (!Layer::init())
 		return false;
+    this->scheduleUpdate();
     return true;
 }
 
@@ -19,7 +21,13 @@ void PlantLayer::addPlant(Plants* plant)
 //¸üÐÂÖ²Îï×´Ì¬
 void PlantLayer::update(float dt)
 {
+    for (int i = _plants.size() - 1; i >= 0; --i) {
+        auto z = _plants.at(i);
+        if (z->getParent() == nullptr) {
 
+            _plants.erase(i);
+        }
+    }
 }
 
 void PlantLayer::pauseAllPlants() {

@@ -1,6 +1,8 @@
 #include "zombie/CommonZombie.h"
 #include "manager/MapMgr.h"
 #include "layer/PlantLayer.h"
+#include "manager/MapMgr.h"
+#include "AudioEngine.h"
 
 bool CommonZombie::init() {
     // 1. 调用基类的初始化，传入类型，自动加载配置和播放行走动画
@@ -16,55 +18,53 @@ bool CommonZombie::init() {
 }
 
 void CommonZombie::update(float dt) {
-    if (_state == ZombieState::DIE) return;
+    if (_state == ZombieState::DYING || _state == ZombieState::DEAD) return;
 
-    // 1. 检测前方是否有植物
     auto scene = Director::getInstance()->getRunningScene();
     auto plantLayer = dynamic_cast<PlantLayer*>(scene->getChildByName("PlantLayer"));
 
     bool findPlant = false;
     if (plantLayer) {
-        // 获取所有植物进行范围检测 (简单的矩形碰撞)
         auto& allPlants = plantLayer->getAllPlants();
         for (auto plant : allPlants) {
-            // 必须在同一行，且植物在僵尸左侧的很近范围内
             float dist = this->getPositionX() - plant->getPositionX();
-            // 获取僵尸行号 (基类定义的 _row)
-            // 这里假设你的植物类也能通过坐标拿到 row，或者在种植时已经存了 row
-            // 简单处理：判断 Y 坐标是否接近
-            if (abs(this->getPositionY() - plant->getPositionY()) < 50.0f) {
-                if (dist > 0 && dist < 60.0f) { // 触碰距离
+            auto mapPos = MapManager::getInstance()->getPositionInMap(this->getRow(), 0);
+            if (abs(mapPos.y - plant->getPositionY()) < 50.0f) {
+                if (dist > 0 && dist < 60.0f) {
                     findPlant = true;
                     if (_state != ZombieState::ATTACK) {
                         _state = ZombieState::ATTACK;
-                        // 这里可以切换到“啃咬动画”，如果你的 ZombieData 配了的话
-                        // _mainSprite->runAction(...)
+                        // 切换到啃咬动画
+                        auto anims = ZombieData::getSpecialAnimMap(_props.type);
+                        if (anims.count(ZombieState::ATTACK)) {
+                            this->changeAnimation(anims.at(ZombieState::ATTACK).animationName);
+                        }
                     }
-                    this->eatPlant(dt); // 执行啃咬逻辑
+                    this->eatPlant(dt, plant); // 传入植物对象以便扣血
                     break;
                 }
             }
         }
     }
 
-    // 2. 如果没发现植物，继续行走
-    if (!findPlant) {
-        if (_state == ZombieState::ATTACK) {
-            _state = ZombieState::WALK;
-            // 恢复行走动画逻辑（此处可根据需要重新播放行走动画）
-        }
-        // 调用基类的移动逻辑
+    if (!findPlant && _state == ZombieState::ATTACK) {
+        _state = ZombieState::WALK;
+        this->changeAnimation(_props.animationName); // 恢复行走动画
+    }
+
+    if (_state == ZombieState::WALK) {
         Zombie::update(dt);
     }
 }
 
-void CommonZombie::eatPlant(float dt) {
+void CommonZombie::eatPlant(float dt, Plants* plant) {
     _eatTimer += dt;
     if (_eatTimer >= _props.attackInterval) {
-        // 执行伤害
-        // 注意：这里需要根据坐标通过 MapManager 找到对应的植物对象并调用 takeDamage
-        // 为了演示简单，我们在 update 循环里已经找到了植物
         _eatTimer = 0.0f;
-        // CCLOG("Zombie is eating plant!");
+        // 假设你的植物基类 Plants 有 takeDamage 方法
+        plant->takeDamage(_props.attackPower);
+
+        // 可以在这里播放一个“咔嚓”的声音特效
+        // AudioEngine::play2d("Music/chompsoft.ogg", true, 1.0f);
     }
 }

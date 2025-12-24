@@ -2,6 +2,10 @@
 #include"manager/CardMgr.h" //g_cardAtlas 
 #include "layer/ControlLayer.h"
 #include"manager/MapMgr.h"
+#include "plant/PeaShooter.h"
+#include"plant/CherryBomb.h"
+#include"plant/SnowPeaShooter.h"
+#include"plant/ReaPeater.h"
 USING_NS_CC;
 
 PlantMgr* PlantMgr::s_sharedPlantMgr = nullptr;
@@ -37,32 +41,32 @@ void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType type)
         case PlantType::SunFlower:
             plant = SunFlower::create();
             break;
-#if 0
-        case PlantType::PeaShooter:
-            plant = PeaShooter::create();
-            break;
-        case PlantType::ReaPeater:
-            plant = Repeater::create();
-            break;
-        case PlantType::SnowPea:
-            plant = SnowPea::create();
-            break;
+
         case PlantType::WallNut:
             plant = WallNut::create();
+            break;
+        case PlantType::PeaShooter:
+            plant = PeaShooter::create();
             break;
         case PlantType::CherryBomb:
             plant = CherryBomb::create();
             break;
+        case PlantType::SnowPea:
+            plant = SnowPea::create();
+            break;
+        case PlantType::ReaPeater:
+            plant = ReaPeater::create();
+            break;
         default:
             CCLOG("Warning: Unknown PlantType!");
             return;
-#endif
     }
     if (plant) {
         // 2. ·ÅÖÃ
         int col = rowCol.x;
         int row = rowCol.y;
         plant->setPosition(mapManager->getPositionInMap(row, col));
+        plant->setPos(Vec2(row, col));
 
         //·Å´ó
         plant->setScale(1.5f);
@@ -71,4 +75,18 @@ void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType type)
 
         plant->scheduleUpdate();
     }
+}
+
+void PlantMgr::reset() {
+
+    _plantLayer = nullptr;
+
+
+    if (s_sharedPlantMgr) {
+        delete s_sharedPlantMgr;
+        s_sharedPlantMgr = nullptr;
+
+    }
+
+    CCLOG("PlantMgr Reset Complete.");
 }

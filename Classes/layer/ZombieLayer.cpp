@@ -14,6 +14,7 @@ void ZombieLayer::addZombie(Zombie* zombie) {
     _allZombies.pushBack(zombie);
 }
 
+//row:通常是植物所在行,minX通常是植物的X坐标
 bool ZombieLayer::hasZombieInRow(int row, float minX) {
     for (auto zombie : _allZombies) {
         // 必须在同一行，且在植物右侧
