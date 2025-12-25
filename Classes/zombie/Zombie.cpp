@@ -142,6 +142,7 @@ void Zombie::onDie(ZombieState dieType)
 {
     if (_state == ZombieState::DEAD)
         return;
+
     _state = dieType; // 设置为 DYING 或 BOOMDIE
 
     _mainSprite->stopAllActions();
@@ -170,11 +171,12 @@ void Zombie::onDie(ZombieState dieType)
                         }),
                     nullptr
                 ));
+                //this->removeFromParent();
+                _state = ZombieState::DEAD;
+                return;
             }
         }
-        //this->removeFromParent();
-        _state = ZombieState::DEAD;
-        return;
+        
     }
 
     // --- 逻辑分支：如果是普通死亡 (DYING) ---

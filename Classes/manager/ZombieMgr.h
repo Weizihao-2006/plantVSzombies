@@ -4,7 +4,7 @@
 #include "zombie/CommonZombie.h"
 #include "zombie/ConeZombie.h"
 #include "zombie/BucketZombie.h"
-
+#include"zombie/GiantZombie.h"
 class ZombieMgr : public cocos2d::Ref {
 public:
     static ZombieMgr* getInstance();

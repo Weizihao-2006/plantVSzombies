@@ -6,15 +6,15 @@ std::map<ZombieType, std::map<ZombieState, ZombieSpecialAnimData>> ZombieData::_
 // 修复错误 1：默认构造函数
 ZombieProperties::ZombieProperties()
     : type(ZombieType::Error), name(""), health(0), speed(0),
-    attackPower(0), attackInterval(0), animFrameCount(0), animDelay(0)
+    attackPower(0), attackInterval(0), animFrameCount(0), animDelay(0),filename("")
 {
 }
 
 // 修复错误 4：全参数构造函数
 ZombieProperties::ZombieProperties(ZombieType t, std::string n, int hp, float spd, int atk, float interval,
-    std::string plist, std::string prefix, int count, float delay, std::string animN)
+    std::string plist, std::string prefix, int count, float delay, std::string animN, std::string fName)
     : type(t), name(n), health(hp), speed(spd), attackPower(atk), attackInterval(interval),
-    plistPath(plist), animPrefix(prefix), animFrameCount(count), animDelay(delay), animationName(animN)
+    plistPath(plist), animPrefix(prefix), animFrameCount(count), animDelay(delay), animationName(animN),filename(fName)
 {
     if (!animPrefix.empty()) {
         this->spriteFrameName = animPrefix + "1.png";
@@ -63,6 +63,20 @@ const std::map<ZombieState, ZombieSpecialAnimData> ZombieData::getSpecialAnimMap
         bucket[ZombieState::HEAD_LOSS] = normal[ZombieState::HEAD_LOSS];
         bucket[ZombieState::HEADLESS_WALK] = normal[ZombieState::HEADLESS_WALK];
         bucket[ZombieState::DYING] = normal[ZombieState::DYING];
+
+        // --- 巨人僵尸特殊动画 ---
+        auto& giant = _specialAnimConfig[ZombieType::Giant];
+        // 正常攻击
+        giant[ZombieState::ATTACK] = { "GiantAttack_Normal", "giant_attack_normal_", 33, 0.12f, "", "GiantAttack", "image/giant_attack_normal/giant_attack_normal_%d.png" };
+        // 抛出小鬼 (用自定义状态或借用已有的)
+        giant[ZombieState::ARMOR_LOSS] = { "GiantThrow", "giant_throw_", 34, 0.12f, "", "GiantThrow", "image/giant_throw/giant_throw_%d.png" };
+        // 丢出小鬼后的攻击 (受伤态攻击)
+        giant[ZombieState::LOST_ARMOR] = { "GiantAttack_Damaged", "giant_attack_damaged_", 33, 0.12f, "", "GiantAttack_Damaged", "image/giant_attack_damaged/giant_attack_damaged_%d.png" };
+        // 受伤行走
+        giant[ZombieState::HEADLESS_WALK] = { "GiantWalk_Damaged", "giant_walk_damaged_", 49, 0.15f, "", "GiantWalk_Damaged", "image/giant_walk_damaged/giant_walk_damaged_%d.png" };
+        // 死亡
+        giant[ZombieState::DYING] = { "GiantDie", "giant_die_", 59, 0.15f, "", "GiantDie", "image/giant_die/giant_die_%d.png" };
+
     }
 
     auto it = _specialAnimConfig.find(type);
@@ -100,6 +114,10 @@ void ZombieData::init() {
     _dataConfig[ZombieType::Buckethead] = ZombieProperties(
         ZombieType::Buckethead, "BucketheadZombie", 1370, 30.0f, 20, 1.0f,
         "image/BucketheadZombie_default.plist", "BucketheadZombie", 15, 0.15f, "BucketheadZombieWalk_Default"
+    );
+
+    _dataConfig[ZombieType::Giant] = ZombieProperties(
+        ZombieType::Giant,"GiantZombie",9999,20.0f,50,1.0f,"","giant_walk_normal_",49,0.15f,"giant_walk_normal","image/giant_walk_normal/giant_walk_normal_%d.png"
     );
 
 

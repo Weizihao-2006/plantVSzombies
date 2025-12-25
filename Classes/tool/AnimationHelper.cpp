@@ -27,10 +27,13 @@ void AnimationHelper::initResources()
     // 2. 加载僵尸图集
     const auto& zombieConfigs = ZombieData::getAllConfigs();
     for (auto const& [type, props] : zombieConfigs) {
+
+        if (type == ZombieType::Error)
+            continue;
         if (!props.plistPath.empty()) {
             frameCache->addSpriteFramesWithFile(props.plistPath);
         }
-        auto specialAnims = ZombieData::getSpecialAnimMap(type);//获取对应植物类型的特殊动画
+        const auto specialAnims = ZombieData::getSpecialAnimMap(type);//获取对应植物类型的特殊动画
         for (auto const& [stateName, anim] : specialAnims) {
             // 如果有独立的 plist，先载入
             if (!anim.plistPath.empty()) {
@@ -55,7 +58,7 @@ void AnimationHelper::loadAllAnimations()
         if (!props.plistPath.empty()) {
             createAndCache(props.animPrefix, props.animFrameCount, props.animDelay, props.animationName);
         }
-        else {
+        else{
             // 如果没有 plist，说明是张单图，构造路径格式：image/Repeater/Repeater_%d.png
             std::string pathFormat = "image/" + props.name + "/" + props.animPrefix+"%d.png";
             createAndCacheFromFiles(pathFormat, props.animFrameCount, props.animDelay, props.animationName);
@@ -75,14 +78,24 @@ void AnimationHelper::loadAllAnimations()
 
     // 新增对僵尸动画的加载
     for (auto const& [type, props] : ZombieData::getAllConfigs()) {
-        if (!props.animPrefix.empty()) {
+
+
+
+        if (!props.plistPath.empty()) {
             createAndCache(props.animPrefix, props.animFrameCount, props.animDelay, props.animationName);
         }
+        else if(!props.filename.empty()){//使用文件
+            createAndCacheFromFiles(props.filename, props.animFrameCount, props.animDelay, props.animationName);
+        }
+
         auto specialAnims = ZombieData::getSpecialAnimMap(type);//获取对应僵尸类型的特殊动画
         for (auto const& [stateName, anim] : specialAnims) {//遍历可能的僵尸特殊动画
 
-            if (!anim.prefix.empty() && anim.frameCount > 0) {
+            if (!anim.plistPath.empty()) {
                 createAndCache(anim.prefix, anim.frameCount, anim.delay, anim.animationName);
+            }
+            else if(!anim.filename.empty()){//使用文件
+                createAndCacheFromFiles(anim.filename, anim.frameCount, anim.delay, anim.animationName);
             }
         }
 

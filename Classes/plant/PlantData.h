@@ -36,6 +36,7 @@ enum class PlantState {
  */
 struct PlantProperties {
     // --- 1. UI 与 视觉 ---
+
     std::string plistPath;       // .plist 路径，如 "image/SunFlower.plist",植物种下去之后晃来晃去
     std::string cardIcon;        // 卡槽内显示的图片路径 (例如: "plantCard/SunFlower.png")
     std::string cardIcon_locked; // 卡槽点击后的冷却图片路径
@@ -66,9 +67,6 @@ struct PlantProperties {
         const std::string& cIcon, const std::string& cIconLocked, const std::string& preview, const std::string& plist,
         const std::string& aPrefix, int aCount, float aDelay, const std::string& aName);
 
-    // 拷贝与赋值重载
-    PlantProperties(const PlantProperties& other);
-    PlantProperties& operator=(const PlantProperties& other);
 };
 
 //update:专门存放特殊状态动画的配方

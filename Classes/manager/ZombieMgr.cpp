@@ -107,10 +107,24 @@ void ZombieMgr::spawnHugeWave(int waveIndex) {
         }
     }
 }
+//这里稍微测试一下!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 ZombieType ZombieMgr::getRandomZombieTypeByWave(int waveIndex) {
+
+#if 0
     int r = rand() % 100;
     if (waveIndex < 3) return ZombieType::Normal;
+    if (waveIndex < 8) {
+        return (r < 35) ? ZombieType::Conehead : ZombieType::Normal;
+    }
+    // 8波以后加入铁桶
+    if (r < 20) return ZombieType::Buckethead;
+    if (r < 50) return ZombieType::Conehead;
+    return ZombieType::Normal;
+#endif
+    int r = rand() % 100;
+    if (waveIndex < 3) return ZombieType::Giant;
     if (waveIndex < 8) {
         return (r < 35) ? ZombieType::Conehead : ZombieType::Normal;
     }
@@ -129,7 +143,7 @@ void ZombieMgr::spawnZombie(ZombieType type, int row) {
     if (type == ZombieType::Normal) zombie = CommonZombie::create();
     else if (type == ZombieType::Conehead) zombie = ConeheadZombie::create();
     else if (type == ZombieType::Buckethead) zombie = BucketheadZombie::create();
-
+    else if (type == ZombieType::Giant) zombie = GiantZombie::create();
     if (zombie) {
         zombie->setRow(row);
         float y = MapManager::getInstance()->getPositionInMap(row, 0).y - 70;

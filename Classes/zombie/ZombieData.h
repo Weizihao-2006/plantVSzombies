@@ -6,8 +6,8 @@ enum class ZombieType {
     Error, 
     Normal, 
     Conehead, 
-    Buckethead 
-
+    Buckethead,
+    Giant
 };
 
 // 确保枚举在基类可见
@@ -38,6 +38,8 @@ struct ZombieSpecialAnimData {
     int frameCount;
     float delay;
     std::string plistPath;
+    std::string name;
+    std::string filename = "";
 };
 
 struct ZombieProperties {
@@ -49,6 +51,7 @@ struct ZombieProperties {
     float attackInterval;
 
     // 动画资源
+    std::string filename;        //如果.plist为空,则这个是文件夹名字
     std::string plistPath;
     std::string animPrefix;
     int animFrameCount;
@@ -58,7 +61,7 @@ struct ZombieProperties {
 
     ZombieProperties();
     ZombieProperties(ZombieType t, std::string n, int hp, float spd, int atk, float interval,
-        std::string plist, std::string prefix, int count, float delay, std::string animN);
+        std::string plist, std::string prefix, int count, float delay, std::string animN,std::string fName="");
 };
 
 class ZombieData {

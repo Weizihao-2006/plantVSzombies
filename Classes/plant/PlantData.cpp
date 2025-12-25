@@ -35,34 +35,6 @@ PlantProperties::PlantProperties(PlantType t, const std::string& n, int sun, flo
 }
 
 
-PlantProperties::PlantProperties(const PlantProperties& other) {
-    *this = other;
-}
-
-PlantProperties& PlantProperties::operator=(const PlantProperties& other) {
-    if (this != &other) {
-        this->sunCost = other.sunCost;
-        this->coolDownTime = other.coolDownTime;
-        this->health = other.health;
-        this->attackPower = other.attackPower;
-        this->attackInterval = other.attackInterval;
-        this->type = other.type;
-        this->name = other.name;
-        // 视觉与路径
-        this->plistPath = other.plistPath;
-        this->cardIcon = other.cardIcon;
-        this->cardIcon_locked = other.cardIcon_locked;
-        this->previewFrame = other.previewFrame;
-        // 动画
-        this->spriteFrameName = other.spriteFrameName;
-        this->animationName = other.animationName;
-        this->animPrefix = other.animPrefix;
-        this->animFrameCount = other.animFrameCount;
-        this->animDelay = other.animDelay;
-    }
-    return *this;
-}
-
 // --- PlantData 实现 ---
 
 std::map<PlantType, std::map<PlantState, SpecialAnimData>> PlantData::_specialAnimConfig;
