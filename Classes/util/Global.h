@@ -2,7 +2,7 @@
 #define GLOBAL_H
 
 #include"cocos2d.h"
-#include"util/Util.h"
+#include"util/LevelConfig.h"
 USING_NS_CC;
 
 

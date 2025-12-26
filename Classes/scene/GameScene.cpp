@@ -14,7 +14,7 @@
 #include "cocos2d.h"
 #include "AudioEngine.h"
 #include "manager/ZombieMgr.h"
-#include "util/Util.h"
+#include "util/LevelConfig.h"
 #include "MainMenu.h"
 USING_NS_CC;
 

@@ -6,7 +6,7 @@
 #include "zombie/BucketZombie.h"
 #include"zombie/GiantZombie.h"
 #include"layer/ZombieLayer.h"
-#include "util/Util.h"
+#include "util/LevelConfig.h"
 
 struct PendingZombie {
     ZombieType type;
