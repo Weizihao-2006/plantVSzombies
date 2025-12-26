@@ -369,7 +369,7 @@ void GameScene::playStartAnimation() {
 // 新增一个统一启动函数
 void GameScene::startGameLogic() {
 	// 1. 启动僵尸生成
-	ZombieMgr::getInstance()->startLevel(Global::getInstance()->getGameMode(), 1);
+	ZombieMgr::getInstance()->startLevel(Global::getInstance()->getGameMode(), _levelID);
 
 	// 2. 启动阳光产生（假设 SunLayer 有这个方法）
 	auto sunLayer = dynamic_cast<SunLayer*>(getChildByName("SunLayer"));
