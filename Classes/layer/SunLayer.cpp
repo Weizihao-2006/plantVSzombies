@@ -75,7 +75,7 @@ bool SunLayer::init()
     if (!Layer::init()) 
         return false;
 
-    SpriteFrameCache::getInstance()->addSpriteFramesWithFile("images/Sun.plist");
+    SpriteFrameCache::getInstance()->addSpriteFramesWithFile("image/Sun.plist");
     // this->scheduleUpdate();
     return true;
 }
