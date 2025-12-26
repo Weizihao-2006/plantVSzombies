@@ -251,5 +251,6 @@ void ZombieMgr::reset() {
     _currentWave = 0;
     _waveTimer = 0.0f;
     _pendingZombies.clear(); // 核心：清理队列
+    _zombieLayer = nullptr;
     CCLOG("ZombieMgr Reset Complete.");
 }
