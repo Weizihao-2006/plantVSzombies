@@ -48,7 +48,14 @@ public:
     BulletLayer* getBulletLayer() const { return _bulletLayer; }
     BgLayer* getBgLayer() const { return _bgLayer; }
     GameUILayer* getUILayer() const { return _uiLayer; }
+
+    // 显示开始动画
     void playStartAnimation();
+    // 显示一大波僵尸来临的动画
+    void showHugeWaveAlert();
+    // 显示最后一波僵尸来临的动画
+    void showLastWaveAlert();
+
     void startGameLogic();
 
 

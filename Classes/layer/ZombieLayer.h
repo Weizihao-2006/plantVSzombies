@@ -5,6 +5,10 @@
 class ZombieLayer : public cocos2d::Layer {
 public:
     CREATE_FUNC(ZombieLayer);
+
+    // 定义一个回调函数类型
+    std::function<void()> onZombieReachHouse;
+
     virtual bool init() override;
 
     // 添加僵尸到层级并按行管理

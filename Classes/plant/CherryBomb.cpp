@@ -41,16 +41,12 @@ void CherryBomb::explode() {
 
         for (int i = allZombies.size() - 1; i >= 0; --i) {
             auto zombie = allZombies.at(i);
-
-            // --- 修改点 2：获取僵尸的世界坐标 ---
-            // 同样将僵尸的局部位置转为世界位置
-            Vec2 zombieWorldPos = zombie->getParent()->convertToWorldSpace(zombie->getPosition());
-
-            // --- 修改点 3：使用世界坐标计算距离 ---
-            float dist = myWorldPos.distance(zombieWorldPos);
-
-            if (dist <= explosionRadius) {
-                zombie->takeDamage(_properties.attackPower, _properties.type);
+            // float dist = myPos.distance(zombie->getPosition());
+            if (abs(zombie->getRow() - this->getRow()) <= 1) {
+                if (abs(this->getPositionX() - zombie->getPositionX()) <= explosionRadius) {
+                    // 造成巨额伤害（配置表中的 attackPower）
+                    zombie->takeDamage(_properties.attackPower, _properties.type);
+                }
             }
         }
     }

@@ -2,13 +2,13 @@
 #define GLOBAL_H
 
 #include"cocos2d.h"
+#include"util/Util.h"
 USING_NS_CC;
 
 
 //数据的保存: 阳光的数据
-// 
 
-const int ORIGIN_SUN = 5000;
+const int ORIGIN_SUN = 50;
 
 class Global {
 
@@ -19,7 +19,11 @@ public:
 	}
 
 	void setLevelID(int level_id) { _levelID = level_id; }
+	void setGameMode(GameMode mode) { _myGameMode = mode; }
+
 	int getLevelID() const { return _levelID; }
+
+	GameMode getGameMode() const{ return _myGameMode; }
 
 	// 获取阳光值（引用，允许直接修改）
 	int& getSun() { return _sun; }
@@ -54,10 +58,17 @@ public:
 		CCLOG("Global: Game state reset");
 	}
 
+	// 返回最多关卡数
+	int getMaxLevel() {
+		return MaxLevel;
+	}
 private:
 	Global() = default;
 	int _levelID = 1;
 	int _sun = ORIGIN_SUN;
+	GameMode _myGameMode = GameMode::ADVENTURE;
+	int _currentLevel;
+	int MaxLevel = 2; // 最大关卡数量
 };
 
 
