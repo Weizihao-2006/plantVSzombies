@@ -41,11 +41,12 @@ void CherryBomb::explode() {
 
         for (int i = allZombies.size() - 1; i >= 0; --i) {
             auto zombie = allZombies.at(i);
-            float dist = myPos.distance(zombie->getPosition());
-
-            if (dist <= explosionRadius) {
-                // 造成巨额伤害（配置表中的 attackPower）
-                zombie->takeDamage(_properties.attackPower,_properties.type);
+            // float dist = myPos.distance(zombie->getPosition());
+            if (abs(zombie->getRow() - this->getRow()) <= 1) {
+                if (abs(this->getPositionX() - zombie->getPositionX()) <= explosionRadius) {
+                    // 造成巨额伤害（配置表中的 attackPower）
+                    zombie->takeDamage(_properties.attackPower, _properties.type);
+                }
             }
         }
     }
