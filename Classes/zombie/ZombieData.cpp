@@ -142,7 +142,7 @@ void ZombieData::init() {
     // 参数含义：类型, 名字, 血量(50), 速度(45), 攻击力(10), 攻击间隔(0.5s), 
    // Plist路径(空), 前缀, 帧数, 帧间隔, 默认动画名, 文件夹路径
     _dataConfig[ZombieType::Imp] = ZombieProperties(
-        ZombieType::Imp, "Imp", 50, 45.0f, 10, 0.5f,
+        ZombieType::Imp, "Imp", 300, 45.0f, 10, 0.5f,
         "", "imp_walk_", 10, 0.1f, "ImpWalk", "image/imp_walk/imp_walk_%d.png"
     );
     // 错误占位

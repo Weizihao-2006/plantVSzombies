@@ -39,8 +39,9 @@ void ImpZombie::flyTo(float targetPosX)
     auto landCallback = CallFunc::create([this,&anim]() {
         _isFlying = false;
         this->resume(); // 恢复 update
-        this->changeAnimation(anim.animationName); // 切换为正常行走
         _state = ZombieState::WALK;
+        this->changeAnimation(anim.animationName); // 切换为正常行走
+       
         //AudioEngine::play2d("Music/imp_land.ogg");
         });
 
@@ -49,10 +50,7 @@ void ImpZombie::flyTo(float targetPosX)
 
 void ImpZombie::update(float dt) 
 {
-    // 1. 如果在飞行，跳过所有逻辑（包括 CommonZombie 的啃咬检测）
-    if (_isFlying) 
-        return;
-
+   
     // 2. 如果没在飞行，执行父类 CommonZombie 的逻辑（检测植物、啃咬等）
     CommonZombie::update(dt);
 }
