@@ -37,7 +37,7 @@ void CherryBomb::explode() {
         // convertToWorldSpace(Vec2::ZERO) 获取当前节点原点在屏幕上的绝对位置
         Vec2 myWorldPos = this->convertToWorldSpace(Vec2::ZERO);
 
-        float explosionRadius = 290.0f;
+        float explosionRadius = 240.0f;
 
         for (int i = allZombies.size() - 1; i >= 0; --i) {
             auto zombie = allZombies.at(i);

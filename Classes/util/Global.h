@@ -8,7 +8,7 @@ USING_NS_CC;
 
 //数据的保存: 阳光的数据
 
-const int ORIGIN_SUN = 5000;
+const int ORIGIN_SUN = 50;
 
 class Global {
 
@@ -68,8 +68,7 @@ private:
 	int _sun = ORIGIN_SUN;
 	GameMode _myGameMode = GameMode::ADVENTURE;
 	int _currentLevel;
-	int MaxLevel = 2; // 最大关卡数量
+	int MaxLevel = 3; // 最大关卡数量
 };
-
 
 #endif // !GLOBAL_H

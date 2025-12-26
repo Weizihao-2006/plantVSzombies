@@ -116,33 +116,33 @@ void ZombieData::init() {
     // 普通僵尸
     // 资源名: Zombie_default.plist
     _dataConfig[ZombieType::Normal] = ZombieProperties(
-        ZombieType::Normal, "Zombie", 200, 30.0f, 20, 1.0f,
+        ZombieType::Normal, "Zombie", 100, 30.0f, 20, 1.0f,
         "image/Zombie_default.plist", "Zombie", 22, 0.12f, "ZombieWalk_Default"
     );
 
     // 2. 路障僵尸 (Conehead)
     // 资源名: ConeheadZombie_default.plist
     _dataConfig[ZombieType::Conehead] = ZombieProperties(
-        ZombieType::Conehead, "ConeheadZombie", 640, 30.0f, 20, 1.0f,
+        ZombieType::Conehead, "ConeheadZombie", 200, 30.0f, 20, 1.0f,
         "image/ConeheadZombie_default.plist", "ConeheadZombie", 21, 0.15f, "ConeheadZombieWalk_Default"
     );
 
     // 3. 铁桶僵尸 (Buckethead)
     // 资源名: BucketheadZombie_default.plist
     _dataConfig[ZombieType::Buckethead] = ZombieProperties(
-        ZombieType::Buckethead, "BucketheadZombie", 1370, 30.0f, 20, 1.0f,
+        ZombieType::Buckethead, "BucketheadZombie", 350, 30.0f, 20, 1.0f,
         "image/BucketheadZombie_default.plist", "BucketheadZombie", 15, 0.15f, "BucketheadZombieWalk_Default"
     );
 
     _dataConfig[ZombieType::Giant] = ZombieProperties(
-        ZombieType::Giant,"GiantWalk_Normal",9999,90.0f,500,1.0f,"","giant_walk_normal_",49,0.15f,"GiantWalk_Normal","image/giant_walk_normal/giant_walk_normal_%d.png"
+        ZombieType::Giant,"GiantWalk_Normal",1500,15.0f,10000,1.0f,"","giant_walk_normal_",49,0.15f,"GiantWalk_Normal","image/giant_walk_normal/giant_walk_normal_%d.png"
     );
 
-     // 5. 小鬼僵尸 (Imp)
-    // 参数含义：类型, 名字, 血量(50), 速度(45), 攻击力(10), 攻击间隔(0.5s), 
-   // Plist路径(空), 前缀, 帧数, 帧间隔, 默认动画名, 文件夹路径
+    // 5. 小鬼僵尸 (Imp)
+    // 参数含义：类型, 名字, 血量(40), 速度(45), 攻击力(30), 攻击间隔(0.5s), 
+    // Plist路径(空), 前缀, 帧数, 帧间隔, 默认动画名, 文件夹路径
     _dataConfig[ZombieType::Imp] = ZombieProperties(
-        ZombieType::Imp, "Imp", 300, 45.0f, 10, 0.5f,
+        ZombieType::Imp, "Imp", 40, 45.0f, 30, 0.5f,
         "", "imp_walk_", 10, 0.1f, "ImpWalk", "image/imp_walk/imp_walk_%d.png"
     );
     // 错误占位

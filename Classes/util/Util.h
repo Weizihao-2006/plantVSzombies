@@ -52,6 +52,19 @@ public:
                 { 3, {WaveType::HUGE_WAVE, {{{ZombieType::Normal, 4},{ZombieType::Conehead, 2}}}}},
                 { 4, {WaveType::NORMAL, {{{ZombieType::Normal, 2}, {ZombieType::Buckethead, 1}}}}},
                 { 5, {WaveType::FINAL_WAVE, {{{ZombieType::Conehead, 2}, {ZombieType::Normal, 2}, {ZombieType::Buckethead, 3}}}}}
+            }}},
+            { 3, { 10, {
+                // 第三关共 10 波示例
+                { 1, {WaveType::NORMAL, {{{ZombieType::Normal, 1}}}}},
+                { 2, {WaveType::NORMAL, {{{ZombieType::Normal, 2}}}}},
+                { 3, {WaveType::NORMAL, {{{ZombieType::Normal, 2}, {ZombieType::Conehead, 1}}}}},
+                { 4, {WaveType::NORMAL, {{{ZombieType::Conehead, 1}, {ZombieType::Buckethead, 1}}}}},
+                { 5, {WaveType::HUGE_WAVE, {{{ZombieType::Normal, 3},{ZombieType::Buckethead, 1}, {ZombieType::Conehead, 1}, {ZombieType::Giant, 1}}}}},
+                { 6, {WaveType::NORMAL, {{{ZombieType::Normal, 2}, {ZombieType::Conehead, 2}}}}},
+                { 7, {WaveType::NORMAL, {{{ZombieType::Normal, 1}, {ZombieType::Conehead, 2}, {ZombieType::Buckethead, 1}}}}},
+                { 8, {WaveType::NORMAL, {{{ZombieType::Conehead, 2},{ZombieType::Buckethead, 2}}}}},
+                { 9, {WaveType::NORMAL, {{{ZombieType::Normal, 2}, {ZombieType::Buckethead, 1}}}}},
+                { 10, {WaveType::FINAL_WAVE, {{{ZombieType::Conehead, 2}, {ZombieType::Normal, 2}, {ZombieType::Buckethead, 3}, {ZombieType::Giant, 2}}}}}
             }}}
         };
         return adventureLevels;

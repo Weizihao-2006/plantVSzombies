@@ -109,11 +109,15 @@ void ZombieMgr::generateNextWave(int waveIndex) {
         // 假设你在 GameScene 有一个 showHugeWaveAlert()
         auto scene = dynamic_cast<GameScene*>(Director::getInstance()->getRunningScene());
         scene->showHugeWaveAlert();
+        _nextWaveInterval = 35.0f;
     }
     else if (waveConfig.type == WaveType::FINAL_WAVE) {
         AudioEngine::play2d("Music/hugewave.ogg", false, 1.0f);
         auto scene = dynamic_cast<GameScene*>(Director::getInstance()->getRunningScene());
         scene->showLastWaveAlert();
+    }
+    else {
+        _nextWaveInterval = 15.0f;
     }
 
     int totalInWave = 0;
@@ -177,31 +181,34 @@ void ZombieMgr::spawnHugeWave(int waveIndex) {
     }
     _waveDelay = delay;
 }
-//这里稍微测试一下!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 
 ZombieType ZombieMgr::getRandomZombieTypeByWave(int waveIndex) {
+    int r = rand() % 100;
 
-#if 0
-    int r = rand() % 100;
-    if (waveIndex < 3) return ZombieType::Normal;
+    // 1. 游戏前期 (1-3波)：纯普通僵尸
+    if (waveIndex < 3) {
+        return ZombieType::Normal;
+    }
+
+    // 2. 游戏中前期 (3-8波)：引入路障，无铁桶
     if (waveIndex < 8) {
         return (r < 35) ? ZombieType::Conehead : ZombieType::Normal;
     }
-    // 8波以后加入铁桶
-    if (r < 20) return ZombieType::Buckethead;
-    if (r < 50) return ZombieType::Conehead;
-    return ZombieType::Normal;
-#endif
-    int r = rand() % 100;
-    if (waveIndex < 3) return ZombieType::Giant;
-    if (waveIndex < 8) {
-        return (r < 35) ? ZombieType::Conehead : ZombieType::Normal;
+
+    // 3. 游戏中期 (8-20波)：引入铁桶
+    if (waveIndex < 20) {
+        if (r < 20) return ZombieType::Buckethead; // 20% 铁桶
+        if (r < 50) return ZombieType::Conehead;   // 30% 路障
+        return ZombieType::Normal;                 // 50% 普通
     }
-    // 8波以后加入铁桶
-    if (r < 20) return ZombieType::Buckethead;
-    if (r < 50) return ZombieType::Conehead;
-    return ZombieType::Normal;
+
+    // 4. 游戏后期 (20波以后)：正式引入巨人僵尸
+    // 概率分配建议：巨人 10%，铁桶 25%，路障 30%，普通 35%
+    if (r < 10) return ZombieType::Giant;          // 10% 概率出巨人
+    if (r < 35) return ZombieType::Buckethead;     // 25% 概率出铁桶 (10+25=35)
+    if (r < 65) return ZombieType::Conehead;       // 30% 概率出路障 (35+30=65)
+
+    return ZombieType::Normal;                     // 剩下的 35% 概率出普通
 }
 
 void ZombieMgr::spawnZombie(ZombieType type, int row) {
