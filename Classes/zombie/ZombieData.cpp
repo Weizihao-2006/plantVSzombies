@@ -77,6 +77,24 @@ const std::map<ZombieState, ZombieSpecialAnimData> ZombieData::getSpecialAnimMap
         // 死亡
         giant[ZombieState::DYING] = { "GiantDie", "giant_die_", 59, 0.15f, "", "GiantDie", "image/giant_die/giant_die_%d.png" };
 
+        // --- 小鬼僵尸 (Imp) 特殊动画 ---
+        auto& imp = _specialAnimConfig[ZombieType::Imp];
+
+        // 1. 行走 (其实在基础属性已配，这里配特殊状态供切换)
+        imp[ZombieState::WALK] = { "ImpWalk", "imp_walk_", 10, 0.1f, "", "ImpWalk", "image/imp_walk/imp_walk_%d.png" };
+
+        // 2. 攻击
+        imp[ZombieState::ATTACK] = { "ImpAttack", "imp_attack_", 10, 0.1f, "", "ImpAttack", "image/imp_attack/imp_attack_%d.png" };
+
+        // 3. 飞行状态 (被巨人抛出时使用)
+        // 这里我们映射到LOST_ARMOR
+        imp[ZombieState::LOST_ARMOR] = { "ImpThrow", "imp_throw_", 10, 0.1f, "", "ImpThrow", "image/imp_throw/imp_throw_%d.png" };
+
+        // 4. 普通死亡 (倒地)
+        imp[ZombieState::DYING] = { "ImpDie", "imp_die_", 10, 0.1f, "", "ImpDie", "image/imp_die/imp_die_%d.png" };
+
+        // 5. 爆炸死亡 (被樱桃炸弹炸碎)
+        imp[ZombieState::BOOMDIE] = { "ImpBoomDie", "imp_boomdie_", 10, 0.1f, "", "ImpBoomDie", "image/imp_boomdie/imp_boomdie_%d.png" };
     }
 
     auto it = _specialAnimConfig.find(type);
@@ -117,10 +135,16 @@ void ZombieData::init() {
     );
 
     _dataConfig[ZombieType::Giant] = ZombieProperties(
-        ZombieType::Giant,"GiantZombie",9999,20.0f,50,1.0f,"","giant_walk_normal_",49,0.15f,"giant_walk_normal","image/giant_walk_normal/giant_walk_normal_%d.png"
+        ZombieType::Giant,"GiantWalk_Normal",9999,30.0f,500,1.0f,"","giant_walk_normal_",49,0.15f,"GiantWalk_Normal","image/giant_walk_normal/giant_walk_normal_%d.png"
     );
 
-
+     // 5. 小鬼僵尸 (Imp)
+    // 参数含义：类型, 名字, 血量(50), 速度(45), 攻击力(10), 攻击间隔(0.5s), 
+   // Plist路径(空), 前缀, 帧数, 帧间隔, 默认动画名, 文件夹路径
+    _dataConfig[ZombieType::Imp] = ZombieProperties(
+        ZombieType::Imp, "Imp", 50, 45.0f, 10, 0.5f,
+        "", "imp_walk_", 10, 0.1f, "ImpWalk", "image/imp_walk/imp_walk_%d.png"
+    );
     // 错误占位
     _dataConfig[ZombieType::Error] = ZombieProperties(ZombieType::Error, "Error", 0, 0, 0, 0, "", "", 0, 0, "");
 }

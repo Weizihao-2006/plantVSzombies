@@ -28,29 +28,33 @@ bool CherryBomb::init()
 }
 
 void CherryBomb::explode() {
-    // 1. 查找场景中的僵尸层
     auto scene = Director::getInstance()->getRunningScene();
     auto zombieLayer = dynamic_cast<ZombieLayer*>(scene->getChildByName("ZombieLayer"));
 
     if (zombieLayer) {
         auto& allZombies = zombieLayer->getAllZombies();
-        Vec2 myPos = this->getPosition();
 
-        // 2. 遍历所有僵尸，进行范围检测 3x3区域
-        float explosionRadius = 240.0f;
+        // convertToWorldSpace(Vec2::ZERO) 获取当前节点原点在屏幕上的绝对位置
+        Vec2 myWorldPos = this->convertToWorldSpace(Vec2::ZERO);
+
+        float explosionRadius = 290.0f;
 
         for (int i = allZombies.size() - 1; i >= 0; --i) {
             auto zombie = allZombies.at(i);
-            float dist = myPos.distance(zombie->getPosition());
+
+            // --- 修改点 2：获取僵尸的世界坐标 ---
+            // 同样将僵尸的局部位置转为世界位置
+            Vec2 zombieWorldPos = zombie->getParent()->convertToWorldSpace(zombie->getPosition());
+
+            // --- 修改点 3：使用世界坐标计算距离 ---
+            float dist = myWorldPos.distance(zombieWorldPos);
 
             if (dist <= explosionRadius) {
-                // 造成巨额伤害（配置表中的 attackPower）
-                zombie->takeDamage(_properties.attackPower,_properties.type);
+                zombie->takeDamage(_properties.attackPower, _properties.type);
             }
         }
     }
 
     AudioEngine::play2d("Music/cherrybomb.ogg", false, 1.0f);
-
     handleDeath();
 }

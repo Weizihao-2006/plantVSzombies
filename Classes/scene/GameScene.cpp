@@ -29,6 +29,9 @@ GameScene* GameScene::createWithLevel(int level_id)
 
 bool GameScene::initWithLevel(int level_id)
 {
+
+
+
 	// 先重置所有manager
 	Global::getInstance()->reset();
 	CardMgr::getInstance()->reset();
@@ -49,9 +52,7 @@ bool GameScene::initWithLevel(int level_id)
 	AnimationHelper::initResources();//加载动画资源
 	createLayers();
 
-	// 初始化 CardMgr,确实已经初始化了,写在构造函数了
-	CardMgr::getInstance();
-
+	
 	// 启动僵尸管理器
 	ZombieMgr::getInstance()->startLevel();
 

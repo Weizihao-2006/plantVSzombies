@@ -135,10 +135,7 @@ ZombieType ZombieMgr::getRandomZombieTypeByWave(int waveIndex) {
 }
 
 void ZombieMgr::spawnZombie(ZombieType type, int row) {
-    auto scene = Director::getInstance()->getRunningScene();
-    auto zLayer = dynamic_cast<ZombieLayer*>(scene->getChildByName("ZombieLayer"));
-    if (!zLayer) return;
-
+    
     Zombie* zombie = nullptr;
     if (type == ZombieType::Normal) zombie = CommonZombie::create();
     else if (type == ZombieType::Conehead) zombie = ConeheadZombie::create();
@@ -146,13 +143,22 @@ void ZombieMgr::spawnZombie(ZombieType type, int row) {
     else if (type == ZombieType::Giant) zombie = GiantZombie::create();
     if (zombie) {
         zombie->setRow(row);
-        float y = MapManager::getInstance()->getPositionInMap(row, 0).y - 70;
+        float y;
+        if (type == ZombieType::Giant) {
+            y = MapManager::getInstance()->getPositionInMap(row, 0).y-200.f;
+        }
+        else {
+            y = MapManager::getInstance()->getPositionInMap(row, 0).y - 70;
+        }
+       
         float x = Director::getInstance()->getWinSize().width + (rand() % 50); // ÆÁÄ»ÍâËæ»úÆ«ÒÆ
         zombie->setPosition(Vec2(x, y));
         zombie->setScale(1.5f);
 
-        zLayer->addChild(zombie);
-        zLayer->getAllZombies().pushBack(zombie);
+        addZombie(zombie);
+#if 0
+        zombie->setDebugRectVisible(true);
+#endif
     }
 }
 
@@ -166,6 +172,7 @@ int ZombieMgr::getAliveZombieCount() {
 }
 
 void ZombieMgr::reset() {
+    
     if (_instance) {
         delete _instance;
         _instance = nullptr;

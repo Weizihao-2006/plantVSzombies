@@ -49,7 +49,28 @@ void BulletLayer::update(float dt) {
         auto& allZombies = zombieLayer->getAllZombies();
         for (auto z : allZombies) {
             // 只有同一行才检测
-            if (z->getRow() == b->getRow()) {
+
+
+            bool isHit = false;
+
+            // 逻辑 A：普通僵尸，必须行号完全一致
+            if (z->getType() != ZombieType::Giant) {
+                if (z->getRow() == b->getRow()) {
+                    isHit = true;
+                }
+            }
+            // 逻辑 B：巨人僵尸，判定当前行以及上下相邻行
+            else {
+                int zRow = z->getRow();
+                int bRow = b->getRow();
+                // 如果子弹在巨人的本行、上一行或下一行，都视为可能碰撞
+                if (bRow == zRow || bRow == zRow - 1 || bRow == zRow + 1) {
+                    isHit = true;
+                }
+            }
+
+
+            if (isHit) {
                 float dist = b->getPositionX() - z->getPositionX();
                 // 根据僵尸图片的宽度调整碰撞判定范围 (例如 40 像素)
                 if (dist > -20 && dist < 20) {

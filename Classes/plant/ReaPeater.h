@@ -1,9 +1,9 @@
 #pragma once
 #include "plant/PeaShooter.h"
 
-class ReaPeater : public PeaShooter {
+class RePeater : public PeaShooter {
 public:
-    CREATE_FUNC(ReaPeater);
+    CREATE_FUNC(RePeater);
     virtual bool init() override;
 
 protected:

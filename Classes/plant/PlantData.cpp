@@ -66,7 +66,7 @@ const std::map<PlantType, PlantProperties>& PlantData::getAllConfigs()
 
         // 2. ”£Ã“’®µØ (CherryBomb) - ∏ﬂ…À∫¶£¨≥§CD
         _dataConfig[PlantType::CherryBomb] = PlantProperties(
-            PlantType::CherryBomb, "CherryBomb", 150, 35.0f, 1000, 1800, 0.0f,
+            PlantType::CherryBomb, "CherryBomb", 150, 1.0f, 1000, 4000, 0.0f,
             "plantCard/CherryBomb.png", "plantCard/CherryBomb_lock.png",
             "cardPreview/CherryBomb_0.png", "image/CherryBomb.plist",
             "CherryBomb/CherryBomb_", 8, 0.12f, "CherryBomb_Anim"

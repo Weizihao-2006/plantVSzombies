@@ -58,7 +58,7 @@ void PlantMgr::createPlantAt(const Vec2& rowCol, PlantType type)
             plant = SnowPea::create();
             break;
         case PlantType::ReaPeater:
-            plant = ReaPeater::create();
+            plant = RePeater::create();
             break;
         default:
             CCLOG("Warning: Unknown PlantType!");

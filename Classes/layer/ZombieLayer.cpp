@@ -16,13 +16,15 @@ void ZombieLayer::addZombie(Zombie* zombie) {
 
 //row:通常是植物所在行,minX通常是植物的X坐标
 bool ZombieLayer::hasZombieInRow(int row, float minX) {
-    for (auto zombie : _allZombies) {
-        // 必须在同一行，且在植物右侧
-        if (zombie->getRow() == row && zombie->getPositionX() > minX) {
-            return true;
+    bool isHit = false;
+    for (auto z : _allZombies) {
+
+        if (z->getRow() == row) {
+            isHit = true;
+            break;
         }
     }
-    return false;
+    return isHit;
 }
 
 void ZombieLayer::update(float dt) {

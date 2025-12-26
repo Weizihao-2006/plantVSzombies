@@ -7,18 +7,18 @@ enum class ZombieType {
     Normal, 
     Conehead, 
     Buckethead,
-    Giant
+    Giant,
+    Imp
 };
 
 // 确保枚举在基类可见
 enum class ZombieState {
     WALK,           // 正常行走
     ATTACK,         // 啃咬
-
+    STAY,
     //帽子/头动画状态
     HEAD_LOSS,      //头的掉落
     ARMOR_LOSS,      //护具的掉落
-
     //身体动画
     LOST_ARMOR,     // 失去防具（例如路障、铁桶刚掉的一瞬间）
     LOST_HEAD,

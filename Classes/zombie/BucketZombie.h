@@ -11,7 +11,7 @@ public:
 protected:
     void eatPlant(float dt, Plants* plant);
     void convertToNormal(); // 铁桶掉落后转为普通僵尸
-
+    virtual ZombieType getType() { return ZombieType::Buckethead; }
 private:
     float _eatTimer = 0.0f;
     bool _isArmorBroken = false;

@@ -2,7 +2,30 @@
 #include "manager/MapMgr.h"
 #include "layer/PlantLayer.h"
 #include "manager/MapMgr.h"
+#include"zombie/ImpZombie.h"
+#include"manager/ZombieMgr.h"
 #include "AudioEngine.h"
+
+Rect GiantZombie::getHitbox() const {
+    if (!_mainSprite) return Rect::ZERO;
+
+    // 获取巨人的世界位置
+    Vec2 worldPos = this->convertToWorldSpace(_mainSprite->getPosition());
+
+    // 手动定义巨人的“肉身”宽度和高度
+    // 假设一格的高度是 140 像素，两格高就是 280
+    float customWidth = 100.0f * this->getScale();
+    float customHeight = 200.0f * this->getScale();
+
+    // 我们可以通过偏移量，让受击框更贴合身体中心
+    // 比如：x 向左偏移一半宽度，y 从脚底（origin）向上延伸
+    return Rect(
+        worldPos.x - customWidth / 2,
+        worldPos.y,
+        customWidth,
+        customHeight
+    );
+}
 
 bool GiantZombie::init() {
     if (!Zombie::initWithZombieType(ZombieType::Giant)) return false;
@@ -11,84 +34,141 @@ bool GiantZombie::init() {
 }
 
 void GiantZombie::update(float dt) {
-    if (_state == ZombieState::DYING || _state == ZombieState::DEAD) return;
+    if (_state == ZombieState::DYING || _state == ZombieState::DEAD||
+        _state==ZombieState::ATTACK||_state==ZombieState::HEADLESS_ATTACK||
+        _state == ZombieState::ARMOR_LOSS)//这些状态都不更新
+        return;
 
     handleStateSwitch();
 
-    // 1. 寻找攻击目标
+    // 1. 获取植物层
     auto scene = Director::getInstance()->getRunningScene();
     auto plantLayer = dynamic_cast<PlantLayer*>(scene->getChildByName("PlantLayer"));
+    if (!plantLayer)
+        return;
 
-    bool targetInFront = false;
-    if (plantLayer) {
-        auto& allPlants = plantLayer->getAllPlants();
-        for (auto plant : allPlants) {
-            // 巨人攻击距离稍远 (约80像素)
-            float dist = this->getPositionX() - plant->getPositionX();
-            if (abs(this->getPositionY() - plant->getPositionY()) < 50.0f) {
-                if (dist > 0 && dist < 100.0f) {
-                    targetInFront = true;
-                    if (_state != ZombieState::ATTACK && _attackCooldown <= 0) {
-                        _state = ZombieState::ATTACK;
-                        _mainSprite->stopAllActions();
+    auto& allPlants = plantLayer->getAllPlants();
 
-                        // 根据是否丢过小鬼决定用哪套攻击动画
-                        auto animName = _hasThrownImp ? "GiantAttack_Damaged" : "GiantAttack_Normal";
-                        auto anim = AnimationCache::getInstance()->getAnimation(animName);
+    for (auto plant : allPlants) {
 
-                        // 砸击动画逻辑：动画到一半时产生伤害
-                        auto hitEffect = CallFunc::create([plant]() {
-                            plant->takeDamage(9999); // 秒杀植物
-                            AudioEngine::play2d("Music/giant_thump.ogg");
-                            });
+        if (plant->getRow() != this->getRow())
+            continue;
+        
+        // 计算水平距离（巨人坐标 - 植物坐标）
+        float dist = this->getPositionX() - plant->getPositionX();
+        if (dist < 0 || dist > 110.0f)
+            continue;
 
-                        auto finish = CallFunc::create([this]() {
-                            _state = ZombieState::WALK;
-                            _attackCooldown = _props.attackInterval;
-                            // 恢复行走动画
-                            this->changeAnimation(_hasThrownImp ? "GiantWalk_Damaged" : "GiantWalk_Normal");
-                            });
-
-                        _mainSprite->runAction(Sequence::create(Animate::create(anim), hitEffect, finish, nullptr));
-                    }
-                    break;
-                }
-            }
+        // 攻击冷却递减
+        if (_attackCooldown > 0) {
+            _attackCooldown -= dt;
+            _state = ZombieState::STAY;
+            break;
         }
+        //可以攻击
+        _state = ZombieState::ATTACK;
+        _mainSprite->stopAllActions();
+
+        auto animName = _hasThrownImp ? "GiantAttack_Damaged" : "GiantAttack_Normal";
+        auto anim = AnimationCache::getInstance()->getAnimation(animName);
+        if (!anim)
+            return;
+
+        float totalDuration = anim->getDuration(); // 获取动画总时长
+        float hitDelay = totalDuration * 0.7f;    // 假设第 70% 帧是砸下的瞬间
+
+        // 1. 伤害逻辑：延迟执行
+        auto delayToHit = DelayTime::create(hitDelay);
+        auto doDamage = CallFunc::create([plant, this]() {
+            // 二次确认：植物还活着且巨人在攻击态（没被控死或炸死）
+            if (plant && !plant->isDead() && _state == ZombieState::ATTACK) {
+                plant->takeDamage(ZombieData::getProps(ZombieType::Giant).attackPower);
+
+                CCLOG("Giant hit the plant at mid-animation!");
+            }
+            });
+
+        // 2. 完成逻辑：动画播完后恢复行走
+        auto delayToFinish = DelayTime::create(totalDuration - hitDelay);
+        auto finish = CallFunc::create([plant, this]() {
+            if (plant) {
+                _state = _hasThrownImp ? ZombieState::HEADLESS_WALK : ZombieState::WALK;
+                _attackCooldown = _props.attackInterval;
+                this->changeAnimation(_hasThrownImp ? "GiantWalk_Damaged" : "GiantWalk_Normal");
+            }
+            });
+
+        // 让主精灵运行动画
+        _mainSprite->runAction(Animate::create(anim));
+
+        // 让自身（Node）运行逻辑序列，确保即使 _mainSprite 切换了动画，逻辑依然按时执行
+        this->runAction(Sequence::create(delayToHit, doDamage, delayToFinish, finish, nullptr));
     }
 
-    // 2. 移动逻辑
-    if (_state == ZombieState::WALK) {
-        this->setPositionX(this->getPositionX() - _props.speed * dt);
-        if (_attackCooldown > 0) _attackCooldown -= dt;
+    // 2. 移动与冷却逻辑
+    if (_state == ZombieState::WALK||_state==ZombieState::HEADLESS_WALK) {
+
+        // 攻击冷却递减
+        if (_attackCooldown > 0) {
+            _attackCooldown -= dt;
+        }
+        Zombie::update(dt);
     }
+   
 }
 
 void GiantZombie::handleStateSwitch() {
     // 半血判定
+   
     if (!_hasThrownImp && _currentHealth < (_props.health / 2)) {
-        _hasThrownImp = true;
-        _state = ZombieState::ARMOR_LOSS; // 借用状态触发抛出小鬼动画
-        _mainSprite->stopAllActions();
-
-        const auto special_map = ZombieData::getSpecialAnimMap(ZombieType::Giant);
-        const auto& armor_loss_data = special_map.at(_state);
-        const auto& headless_walk_data = special_map.at(ZombieState::HEADLESS_WALK);
-        auto throwAnim = AnimationCache::getInstance()->getAnimation(armor_loss_data.animationName);
-        auto spawnImp = CallFunc::create([this]() {
-            // 这里可以添加生成小鬼僵尸的代码并给它一个抛物线动作
-            CCLOG("Gargantuar: Imp Thrown!");
-            });
-
-        auto backToWalk = CallFunc::create([this, headless_walk_data]() {
-            _state = ZombieState::HEADLESS_WALK;
-            this->changeAnimation(headless_walk_data.animationName);
-            });
-
-        _mainSprite->runAction(Sequence::create(Animate::create(throwAnim), spawnImp, backToWalk, nullptr));
+        this->throwImp();
     }
 }
+void GiantZombie::throwImp() {
+    _hasThrownImp = true;
+    _state = ZombieState::ATTACK; // 借用攻击状态来暂停移动
+    _mainSprite->stopAllActions();
 
+    auto anim = AnimationCache::getInstance()->getAnimation("GiantThrow");
+    if (!anim)
+        return;
+
+    // 2. 在动画播放到一半（手挥出去）时生成小鬼
+    float totalTime = anim->getDuration();
+    auto delay = DelayTime::create(totalTime * 0.7f);
+
+    auto spawnAction = CallFunc::create([this]() {
+        // 创建小鬼
+        auto imp = ImpZombie::create();
+        imp->setScale(1.6f);
+        imp->setRow(this->getRow());
+
+        // 初始位置
+        imp->setPosition(this->getPosition()+Vec2(0,400));
+        imp->setPositionY(MapManager::getInstance()->getPositionInMap(imp->getRow(), 0).y-70.0f);
+        ZombieMgr::getInstance()->addZombie(imp);
+
+        // 计算落点：通常投掷到左侧 3-4 格位置（约 300 像素）
+        float targetX = this->getPositionX() - 350.0f;
+        auto MaxEndPos=MapManager::getInstance()->getPositionInMap(0, 0);
+
+        targetX < MaxEndPos.x ? MaxEndPos.x : targetX;
+        // 调用小鬼自己的飞行方法
+        imp->flyTo(targetX);
+        });
+
+    // 3. 投掷动作结束后的回调
+    auto finish = CallFunc::create([this]() {
+        _state = ZombieState::WALK;
+        // 切换到“受伤版”的行走动画
+        this->changeAnimation("GiantWalk_Damaged");
+        });
+
+    if (anim) {
+        _mainSprite->runAction(Animate::create(anim));
+    }
+    this->runAction(Sequence::create(delay, spawnAction, DelayTime::create(totalTime * 0.6f), finish, nullptr));
+}
 void GiantZombie::onDie(ZombieState dieType) 
 {
     // 强制将死亡类型转为普通倒地，因为巨人没有 BOOMDIE 素材

@@ -9,7 +9,7 @@ public:
 
     // 重写更新逻辑：处理“移动”与“啃咬”状态的切换
     virtual void update(float dt) override;
-
+    virtual ZombieType getType() override{ return ZombieType::Normal; }
 protected:
     // 啃咬逻辑
     void eatPlant(float dt, Plants* plant);

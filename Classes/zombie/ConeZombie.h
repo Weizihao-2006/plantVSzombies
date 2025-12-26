@@ -11,7 +11,7 @@ public:
 
     // 重写 update 以处理啃咬逻辑（逻辑与 CommonZombie 一致）
     virtual void update(float dt) override;
-
+    virtual ZombieType getType() { return ZombieType::Conehead; }
 protected:
     // 啃咬逻辑
     void eatPlant(float dt, Plants* plant);

@@ -5,9 +5,21 @@
 #include "zombie/ConeZombie.h"
 #include "zombie/BucketZombie.h"
 #include"zombie/GiantZombie.h"
+#include"layer/ZombieLayer.h"
 class ZombieMgr : public cocos2d::Ref {
 public:
     static ZombieMgr* getInstance();
+
+    void addZombie(Zombie* zombie) {
+        if (!_zombieLayer) {
+            auto scene = Director::getInstance()->getRunningScene();
+            _instance->_zombieLayer = dynamic_cast<ZombieLayer*>(scene->getChildByName("ZombieLayer"));
+        }
+       
+        _zombieLayer->addChild(zombie);
+        _zombieLayer->getAllZombies().pushBack(zombie);
+        
+    }
 
     // 每一帧由 GameScene 调用，驱动波次逻辑
     void update(float dt);
@@ -33,6 +45,8 @@ private:
     ZombieType getRandomZombieTypeByWave(int waveIndex);
 
     // 成员变量
+    ZombieLayer* _zombieLayer = nullptr;
+
     int _currentWave = 0;
     float _waveTimer = 0.0f;
     float _nextWaveInterval = 15.0f; // 第一波前的准备时间

@@ -21,11 +21,18 @@ public:
     bool isDead()const { return _state == ZombieState::DEAD; }
     // 增加参数，默认为普通死亡 (DYING)
     virtual void onDie(ZombieState dieType = ZombieState::DYING);
-
+    virtual ZombieType getType() { return ZombieType::Error; }
     //新增
     // 施加减速效果：duration 为持续时间，percent 为速度缩放比例（默认0.5倍速）
     void applySlowDown(float duration, float percent = 0.5f);
     void restoreFromSlowDown(float dt);
+
+    virtual cocos2d::Rect getHitbox() const;
+    // 开启/关闭外轮廓显示
+    void setDebugRectVisible(bool visible);
+    // 更新外轮廓
+    void updateDebugRect();
+
 protected: // 必须是 protected 子类才能访问 _state
     ZombieProperties _props;
     ZombieState _state = ZombieState::WALK;
@@ -39,4 +46,7 @@ protected: // 必须是 protected 子类才能访问 _state
 
     // 音效
     int _soundID;
+
+    cocos2d::DrawNode* _debugDrawNode = nullptr;
+    bool _showDebugRect = false;
 };

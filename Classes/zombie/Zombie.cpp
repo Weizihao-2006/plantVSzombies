@@ -6,6 +6,32 @@
 
 using namespace cocos2d;
 
+void Zombie::setDebugRectVisible(bool visible) {
+    _showDebugRect = visible;
+    if (_showDebugRect) {
+        if (!_debugDrawNode) {
+            _debugDrawNode = DrawNode::create();
+            // 将 DrawNode 添加到自身，坐标系就对齐了
+            this->addChild(_debugDrawNode, 999);
+        }
+    }
+    else if (_debugDrawNode) {
+        _debugDrawNode->clear();
+    }
+}
+
+void Zombie::updateDebugRect() {
+    if (!_showDebugRect || !_debugDrawNode) return;
+    _debugDrawNode->clear();
+
+    // 绘制逻辑受击框 (转换回本地坐标进行绘制)
+    Rect hitbox = getHitbox();
+    Vec2 origin = this->convertToNodeSpace(hitbox.origin);
+
+    _debugDrawNode->drawRect(origin,
+        origin + Vec2(hitbox.size.width, hitbox.size.height),
+        Color4F(0, 1, 0, 1.0f)); // 绿色代表逻辑受击区
+}
 void Zombie::applySlowDown(float duration, float percent)
 {
     if (_state == ZombieState::DYING || _state == ZombieState::DEAD || _state == ZombieState::BOOMDIE)
@@ -99,6 +125,23 @@ void Zombie::update(float dt) {
             _headSprite->setColor(Color3B(100, 100, 255));
         }
     }
+
+    if (_showDebugRect) {
+        updateDebugRect();
+    }
+}
+
+Rect Zombie::getHitbox() const 
+{
+    if (!_mainSprite) 
+        return Rect::ZERO;
+
+    // 获取世界坐标下的位置
+    Vec2 worldPos = this->convertToWorldSpace(_mainSprite->getPosition());
+    Size size = _mainSprite->getContentSize() * this->getScale(); // 考虑节点缩放
+
+    // 默认返回以当前坐标为底边中心的矩形
+    return Rect(worldPos.x - size.width / 2, worldPos.y, size.width, size.height);
 }
 
 void Zombie::changeAnimation(const std::string& animName) {
