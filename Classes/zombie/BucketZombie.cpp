@@ -53,7 +53,8 @@ void BucketheadZombie::update(float dt) {
                     if (_state != ZombieState::ATTACK) {
                         _state = ZombieState::ATTACK;
                         // 切换到铁桶僵尸的啃咬动画（带铁桶音效感的那种）
-                        auto anims = ZombieData::getSpecialAnimMap(_props.type);
+                        
+                        auto anims = ZombieData::getSpecialAnimMap(_isArmorBroken?ZombieType::Normal:_props.type);
                         if (anims.count(ZombieState::ATTACK)) {
                             this->changeAnimation(anims.at(ZombieState::ATTACK).animationName);
                         }

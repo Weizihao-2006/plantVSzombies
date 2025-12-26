@@ -56,7 +56,7 @@ void ConeheadZombie::update(float dt) {
                     if (_state != ZombieState::ATTACK) {
                         _state = ZombieState::ATTACK;
                         // ÇÐ»»µ½Â·ÕÏ½©Ê¬µÄ¿ÐÒ§¶¯»­
-                        auto anims = ZombieData::getSpecialAnimMap(_props.type);
+                        auto anims = ZombieData::getSpecialAnimMap(_isConeBroken?ZombieType::Normal:_props.type);
                         if (anims.count(ZombieState::ATTACK)) {
                             this->changeAnimation(anims.at(ZombieState::ATTACK).animationName);
                         }
