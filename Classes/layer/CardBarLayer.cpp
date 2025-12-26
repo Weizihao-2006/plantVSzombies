@@ -41,7 +41,7 @@ bool CardBarLayer::init() {
         auto props = PlantData::getProps(type);
 
         // 1. 创建卡牌按钮 (使用 PlantData 中的图标路径)
-        auto btn = MenuItemImage::create(props.cardIcon, props.cardIcon,
+        auto btn = MenuItemImage::create(props.cardIcon, props.cardIcon_locked,
             [this, type](Ref*) {
                 // 点击后直接通知管理器，由管理器分发给 ControlLayer
                 if (_cardMgr->IsNotInCoolAndCanAfford(type)) {//只有不在冷却期且阳光足够,才发送信息给ControlLayer,这样可以防止阳光收集不到
