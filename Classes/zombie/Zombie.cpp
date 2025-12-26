@@ -113,6 +113,9 @@ bool Zombie::initWithZombieType(ZombieType type) {
 }
 
 void Zombie::update(float dt) {
+    if (_state == ZombieState::DYING || _state == ZombieState::DEAD||_state==ZombieState::BOOMDIE) 
+        return;
+
     if (_state != ZombieState::ATTACK) {
         // 向左走
         this->setPositionX(this->getPositionX() - _currentSpeed * dt);//修改,使用_currentSpeed

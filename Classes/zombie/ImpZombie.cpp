@@ -16,7 +16,7 @@ bool ImpZombie::init() {
 }
 
 
-void ImpZombie::flyTo(float targetPosX) 
+void ImpZombie::flyTo(float startY) 
 {
     _isFlying = true;
     _state = ZombieState::ARMOR_LOSS;
@@ -24,28 +24,32 @@ void ImpZombie::flyTo(float targetPosX)
     // 禁用碰撞和更新，防止飞行过程中吃植物或被打
     this->pause();
 
-    // 计算跳跃高度和持续时间
-    float distance = abs(this->getPositionX() - targetPosX);
-    float duration = 1.0f + (distance / 500.0f); // 根据距离动态计算时间
+    this->changeAnimation("ImpThrow");
 
-    // 创建抛物线动作：JumpTo(时长, 目标点, 跳跃高度, 跳跃次数)
-    auto jump = JumpTo::create(duration, Vec2(targetPosX, this->getPositionY()), 150.0f, 1);
-
-    // 落地后的回调
+    // 获取动画时长
+    auto animation = AnimationCache::getInstance()->getAnimation("ImpThrow");
+    float duration = animation->getDuration();
 
     auto& anim = ZombieData::getProps(ZombieType::Imp);
 
-
-    auto landCallback = CallFunc::create([this,&anim]() {
+    // 落地后的动作序列
+    auto landEffect = CallFunc::create([this]() {
         _isFlying = false;
-        this->resume(); // 恢复 update
         _state = ZombieState::WALK;
-        this->changeAnimation(anim.animationName); // 切换为正常行走
+        this->resume(); // 真正开始工作（CommonZombie::update 会接管）
+        this->changeAnimation("ImpWalk"); // 落地后切回行走
        
-        //AudioEngine::play2d("Music/imp_land.ogg");
+        // 可以在这里加一个震屏或尘土效果
+        AudioEngine::play2d("Music/imp_land.ogg");
         });
 
-    this->runAction(Sequence::create(jump, landCallback, nullptr));
+    //修正y坐标
+    auto correctY = CallFunc::create([this]() {
+        this->setPositionY(this->getPositionY() - 70.0f);
+
+        });
+    // 运行动作：只等待动画播完，不移动位置（因为动画自带位移）
+    this->runAction(Sequence::create(DelayTime::create(duration), landEffect, correctY, nullptr));
 }
 
 void ImpZombie::update(float dt) 

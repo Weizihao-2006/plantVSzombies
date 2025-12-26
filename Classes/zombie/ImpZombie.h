@@ -9,7 +9,7 @@ public:
     virtual ZombieType getType() override { return ZombieType::Imp; }
     virtual void update(float dt) override;
     // ´¦ÀíÅ×³öÂß¼­
-    void flyTo(float targetX);
+    void flyTo(float startY);
 protected:
     bool _isFlying = false;
 };

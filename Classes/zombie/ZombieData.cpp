@@ -135,7 +135,7 @@ void ZombieData::init() {
     );
 
     _dataConfig[ZombieType::Giant] = ZombieProperties(
-        ZombieType::Giant,"GiantWalk_Normal",9999,30.0f,500,1.0f,"","giant_walk_normal_",49,0.15f,"GiantWalk_Normal","image/giant_walk_normal/giant_walk_normal_%d.png"
+        ZombieType::Giant,"GiantWalk_Normal",9999,90.0f,500,1.0f,"","giant_walk_normal_",49,0.15f,"GiantWalk_Normal","image/giant_walk_normal/giant_walk_normal_%d.png"
     );
 
      // 5. Ð¡¹í½©Ê¬ (Imp)
