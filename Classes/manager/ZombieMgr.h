@@ -4,6 +4,7 @@
 #include "zombie/CommonZombie.h"
 #include "zombie/ConeZombie.h"
 #include "zombie/BucketZombie.h"
+#include "util/Util.h"
 
 class ZombieMgr : public cocos2d::Ref {
 public:
@@ -13,7 +14,7 @@ public:
     void update(float dt);
 
     // 启动关卡
-    void startLevel();
+    void startLevel(GameMode mode, int levelId);
 
     // 核心刷怪函数
     void spawnZombie(ZombieType type, int row);
@@ -23,12 +24,18 @@ public:
 
     // 重置manager
     void reset();
+
+    // 设置是否出怪
+    void setIsLevelStarted(bool flag) { _isLevelStarted = flag; }
+
 private:
     ZombieMgr();
     static ZombieMgr* _instance;
 
     // 波次管理逻辑
     void generateNextWave(int waveIndex);
+    void EndlessNextWave(int waveIndex);
+
     void spawnHugeWave(int waveIndex);
     ZombieType getRandomZombieTypeByWave(int waveIndex);
 
@@ -37,6 +44,8 @@ private:
     float _waveTimer = 0.0f;
     float _nextWaveInterval = 15.0f; // 第一波前的准备时间
     bool _isLevelStarted = false;
-    bool _isSpawningWave;
-    float _waveDelay; // 每一波的渲染时间
+    float _waveDelay; // 一波的渲染时间
+
+    GameMode _currentMode;
+    LevelData _currentLevelData; // 直接存储当前关卡的结构体副本
 };

@@ -26,11 +26,24 @@ bool ZombieLayer::hasZombieInRow(int row, float minX) {
 }
 
 void ZombieLayer::update(float dt) {
-    // 清理已经死亡从父节点移除的僵尸
+    // 记录是否已经触发过失败，防止一帧内多次触发
+    bool houseReached = false;
+
     for (int i = _allZombies.size() - 1; i >= 0; --i) {
         auto z = _allZombies.at(i);
+
+        // 1. 如果僵尸已被移除，安全删除索引并继续下一个循环
         if (z->getParent() == nullptr) {
             _allZombies.erase(i);
+            continue; // 必须 continue，跳过后续对 z 的操作
+        }
+
+        // 2. 判定失败逻辑
+        if (!houseReached && z->getPositionX() < 500.0f && !z->isDead()) {
+            houseReached = true;
+            if (onZombieReachHouse) {
+                onZombieReachHouse();
+            }
         }
     }
 }

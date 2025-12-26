@@ -1,6 +1,7 @@
 #include "MainMenu.h"
 #include"scene/GameScene.h"
 #include "AudioEngine.h"
+#include "util/Global.h"
 USING_NS_CC;
 
 Scene* MainMenu::createScene()
@@ -58,17 +59,33 @@ bool MainMenu::init()
         // 关闭音乐
         AudioEngine::stop(MainMenuBgmID);
 
+        // 模式写为冒险模式
+        Global::getInstance()->setGameMode(GameMode::ADVENTURE);
+
+        Director::getInstance()->replaceScene(TransitionCrossFade::create(0.5f, GameScene::createWithLevel(1)));
+        });
+
+    auto EndlessGameItem = MenuItemImage::create("Level2.1.png", "Level2.2.png", [MainMenuBgmID](Ref* pSender) {
+        // 关闭音乐
+        AudioEngine::stop(MainMenuBgmID);
+
+        // 模式写为无尽模式
+        Global::getInstance()->setGameMode(GameMode::ENDLESS);
+
         Director::getInstance()->replaceScene(TransitionCrossFade::create(0.5f, GameScene::createWithLevel(1)));
         });
 
     StartGameItem->setScale(4.6f);
 
     // 创建 Menu 容器，将菜单项放入其中
-    auto menu = Menu::create(ExitItem, StartGameItem, nullptr); // 多个菜单项用逗号分隔，末尾加 nullptr
+    auto menu = Menu::create(ExitItem, StartGameItem, EndlessGameItem, nullptr); // 多个菜单项用逗号分隔，末尾加 nullptr
     menu->setPosition(Vec2::ZERO); // Menu 容器位置设为原点(后续调整菜单项位置)
     ExitItem->setPosition(1898, 275);
     StartGameItem->setPosition(1440, 1100);
 
+    EndlessGameItem->setRotation(-3.0f);
+    EndlessGameItem->setScale(5.0f);
+    EndlessGameItem->setPosition(1420, 840);
 
 
     // 将 menu 加入图层
