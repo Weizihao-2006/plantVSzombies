@@ -6,6 +6,12 @@
 #include "zombie/BucketZombie.h"
 #include "util/Util.h"
 
+struct PendingZombie {
+    ZombieType type;
+    int row;
+    float delay; // 剩余等待生成的秒数
+};
+
 class ZombieMgr : public cocos2d::Ref {
 public:
     static ZombieMgr* getInstance();
@@ -48,4 +54,6 @@ private:
 
     GameMode _currentMode;
     LevelData _currentLevelData; // 直接存储当前关卡的结构体副本
+
+    std::vector<PendingZombie> _pendingZombies; // 待生成队列
 };

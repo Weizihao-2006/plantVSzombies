@@ -306,10 +306,22 @@ void GameScene::playStartAnimation() {
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 center = Vec2(visibleSize.width / 2, visibleSize.height / 2);
 
-	// --- 新增：半透明黑色遮罩层 ---
-	auto mask = LayerColor::create(Color4B(0, 0, 0, 50)); // 150 为透明度
-	// 放在所有界面之上
-	this->addChild(mask, 110);
+	// 1. 创建遮罩
+	auto mask = LayerColor::create(Color4B(0, 0, 0, 50));
+	this->addChild(mask, 200);
+
+	// --- 核心修复：添加触摸拦截逻辑 ---
+	auto listener = EventListenerTouchOneByOne::create();
+	// 设置为吞噬触摸，这样点击就不会传给底层的按钮
+	listener->setSwallowTouches(true);
+
+	listener->onTouchBegan = [](Touch* touch, Event* event) {
+		// 返回 true 表示我们要消耗掉这个触摸
+		return true;
+		};
+
+	// 将监听器绑定到 mask 上
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, mask);
 
 	// 1. 创建精灵
 	auto ready = Sprite::create("ready.png");
