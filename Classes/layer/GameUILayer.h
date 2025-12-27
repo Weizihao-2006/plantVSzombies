@@ -25,14 +25,18 @@ public:
         if (_shovelButton)
             _shovelButton->setVisible(visible);
     }
-
+    
+        
+    void toggleGameSpeed();
 private:
     /*--- 节点 ---*/
     cocos2d::Label* _sunLabel = nullptr; // 阳光数量显示
+    cocos2d::Label* _speedLabel = nullptr; //倍速按钮
     cocos2d::ProgressTimer* _progress = nullptr; // 进度条
     cocos2d::MenuItemImage* _pauseButton = nullptr; // 暂停按钮
     cocos2d::MenuItemImage* _shovelButton = nullptr; // 铲子按钮
 
+    void createSpeedButton();
     void createSunDisplay(); // 创建阳光数量显示
     void createPauseButton(); // 创建暂停按钮
     void createShovelButton(); // 创建铲子按钮

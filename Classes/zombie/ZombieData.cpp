@@ -135,14 +135,14 @@ void ZombieData::init() {
     );
 
     _dataConfig[ZombieType::Giant] = ZombieProperties(
-        ZombieType::Giant,"GiantWalk_Normal",1500,15.0f,10000,1.0f,"","giant_walk_normal_",49,0.15f,"GiantWalk_Normal","image/giant_walk_normal/giant_walk_normal_%d.png"
+        ZombieType::Giant,"GiantWalk_Normal",2500,15.0f,10000,1.0f,"","giant_walk_normal_",49,0.15f,"GiantWalk_Normal","image/giant_walk_normal/giant_walk_normal_%d.png"
     );
 
     // 5. 小鬼僵尸 (Imp)
     // 参数含义：类型, 名字, 血量(40), 速度(45), 攻击力(30), 攻击间隔(0.5s), 
     // Plist路径(空), 前缀, 帧数, 帧间隔, 默认动画名, 文件夹路径
     _dataConfig[ZombieType::Imp] = ZombieProperties(
-        ZombieType::Imp, "Imp", 40, 45.0f, 30, 0.5f,
+        ZombieType::Imp, "Imp", 100, 45.0f, 30, 0.8f,
         "", "imp_walk_", 10, 0.1f, "ImpWalk", "image/imp_walk/imp_walk_%d.png"
     );
     // 错误占位
