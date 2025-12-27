@@ -211,7 +211,6 @@ void GameScene::onAllZombieClear()
 		winLabel->setPosition(center.x, center.y + 150);
 		mask->addChild(winLabel);
 
-		// 奖杯掉落动画 (即使目前没有图，代码逻辑先留好)
 		auto trophy = Sprite::create("trophy.png");
 		if (trophy) {
 			trophy->setPosition(center.x, visibleSize.height + 100);

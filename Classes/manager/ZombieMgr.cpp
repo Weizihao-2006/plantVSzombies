@@ -19,6 +19,37 @@ ZombieMgr* ZombieMgr::getInstance() {
 
 ZombieMgr::ZombieMgr() : _isLevelStarted(false), _currentWave(0), _waveTimer(0.0f) {}
 
+
+Vector<Zombie*> ZombieMgr::getZombiesInRow(int row) 
+{
+    Vector<Zombie*> result;
+    auto scene = Director::getInstance()->getRunningScene();
+    if (!scene) return result;
+
+    auto currentLayer = dynamic_cast<ZombieLayer*>(scene->getChildByName("ZombieLayer"));
+
+    // 3. 安全校验：如果找不到层，或者层已经标记为即将销毁，则跳过
+    if (!currentLayer || currentLayer->getReferenceCount() <= 0) {
+        return result;
+    }
+
+    // 4. 获取僵尸列表
+    auto& allZombies = currentLayer->getAllZombies();
+
+    // 5. 遍历。为了极致安全，我们使用索引遍历，避免迭代器失效
+    ssize_t size = allZombies.size();
+    for (ssize_t i = 0; i < size; ++i) {
+        auto zombie = allZombies.at(i);
+
+        // 增加健壮性检查
+        if (zombie && !zombie->isDead() && zombie->getRow() == row) {
+            result.pushBack(zombie);
+        }
+    }
+
+    return result;
+}
+
 void ZombieMgr::startLevel(GameMode mode, int levelId) {
     _currentMode = mode;
     _currentWave = 0;

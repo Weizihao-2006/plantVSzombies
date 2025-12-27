@@ -144,7 +144,7 @@ void GiantZombie::throwImp() {
         float targetX = this->getPositionX() - 350.0f;
         float MaxLeft = MapManager::getInstance()->getPositionInMap(0, 0).x + 130.0f;
 
-        targetX < MaxLeft ? MaxLeft : targetX;
+        targetX=(targetX < MaxLeft ? MaxLeft : targetX);
 
 
         imp->setPositionY(MapManager::getInstance()->getPositionInMap(imp->getRow(), 0).y);

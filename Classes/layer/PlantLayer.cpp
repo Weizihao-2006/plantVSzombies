@@ -1,5 +1,7 @@
 #include"layer/PlantLayer.h"
 #include "layer/ControlLayer.h"
+#include"manager/MapMgr.h"
+#include"tool/LawnMower.h"
 USING_NS_CC;
 
 
@@ -8,8 +10,34 @@ bool PlantLayer::init()
 {
 	if (!Layer::init())
 		return false;
+
+
+    createLawnMowers();
+
     this->scheduleUpdate();
     return true;
+}
+
+void PlantLayer::createLawnMowers() {
+  
+    // 假设你的地图有 5 行
+    int row = MapManager::getInstance()->getRowNumbers();
+
+    for (int i = 0; i < row; ++i) {
+        auto mower = LawnMower::create(i);
+        mower->setScale(1.6f);
+        // 1. 获取该行第 0 列的中心坐标
+        Vec2 rowPos = MapManager::getInstance()->getPositionInMap(i, 0);
+
+        // 2. 设置初始位置：X 设在草坪左侧边缘（比如 70），Y 与该行中心对齐
+        // 注意：setPosition 是相对于父节点 PlantLayer 的坐标
+        mower->setPosition(Vec2(rowPos.x-110.0f, rowPos.y));
+
+        // 3. 添加到 PlantLayer，ZOrder 设为 5
+        this->addChild(mower, 5);
+
+        CCLOG("LawnMower created at Row %d, Pos(%.1f, %.1f)", i, mower->getPositionX(), mower->getPositionY());
+    }
 }
 
 void PlantLayer::addPlant(Plants* plant)
@@ -31,8 +59,10 @@ void PlantLayer::update(float dt)
 }
 
 void PlantLayer::pauseAllPlants() {
+    auto items = this->getChildren();
     this->pause();
-    for (auto& plant : _plants) {
+    
+    for (auto& plant : items) {
         // 1. 暂停植物容器
         plant->pause();
 
@@ -73,8 +103,9 @@ bool PlantLayer::removePlant(int row, int col)
     return removePlant(plant);
 }
 void PlantLayer::resumeAllPlants() {
+    auto items = this->getChildren();
     this->resume();
-    for (auto& plant : _plants) {
+    for (auto& plant : items) {
         plant->resume();
         for (auto& child : plant->getChildren()) {
             child->resume();

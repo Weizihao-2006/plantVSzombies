@@ -42,7 +42,7 @@ void ZombieLayer::update(float dt) {
         }
 
         // 2. ÅÐ¶¨Ê§°ÜÂß¼­
-        if (!houseReached && z->getPositionX() < 500.0f && !z->isDead()) {
+        if (!houseReached && z->getPositionX() < 400.0f && !z->isDead()) {
             houseReached = true;
             if (onZombieReachHouse) {
                 onZombieReachHouse();

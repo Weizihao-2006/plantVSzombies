@@ -11,7 +11,7 @@ class PlantLayer : public Layer {
 public:
     CREATE_FUNC(PlantLayer);
     virtual bool init() override;
-
+    void createLawnMowers();
     // 添加植物,并且加入渲染
     void addPlant(Plants* plant);
 
