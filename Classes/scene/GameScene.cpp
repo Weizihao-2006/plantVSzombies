@@ -32,7 +32,8 @@ GameScene* GameScene::createWithLevel(int level_id)
 bool GameScene::initWithLevel(int level_id)
 {
 
-
+	// 初始化按钮文字
+	Director::getInstance()->getScheduler()->setTimeScale(1.0f);
 
 	// 先重置所有manager
 	Global::getInstance()->reset();

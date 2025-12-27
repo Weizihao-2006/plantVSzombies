@@ -16,15 +16,65 @@ void GameUILayer::update(float dt)
     }
 }
 
+void GameUILayer::toggleGameSpeed()
+{
+    auto scheduler = Director::getInstance()->getScheduler();
+    float currentScale = scheduler->getTimeScale();
+    float nextScale = 1.0f;
 
+    // 简单的循环切换逻辑：1x -> 2x -> 3x -> 1x
+    if (currentScale >= 1.0f && currentScale < 2.0f) {
+        nextScale = 2.0f;
+    }
+    else if (currentScale >= 2.0f && currentScale < 3.0f) {
+        nextScale = 3.0f;
+    }
+    else {
+        nextScale = 1.0f;
+    }
+
+    // 设置全局时间缩放 [参考全局调度器机制]
+    scheduler->setTimeScale(nextScale);
+
+    // 更新文本内容
+    auto label = dynamic_cast<Label*>(this->getChildByName("SpeedLabel"));
+    if (_speedLabel) {
+        _speedLabel->setString(StringUtils::format("%.1fx", nextScale));
+    }
+}
+void GameUILayer::createSpeedButton() {
+    // 1. 创建按钮背景
+    auto speedBtn = MenuItemImage::create(
+        "btn_common_normal.png", // 正常状态图片
+        "btn_common_disable.png", // 点击状态图片
+        [this](Ref* sender) {
+            this->toggleGameSpeed();
+        }
+    );
+
+    // 2. 创建文字标签显示当前倍速
+    _speedLabel = Label::createWithTTF("1.0x", "fonts/arial.ttf", 24);
+    _speedLabel->setPosition(speedBtn->getContentSize() / 2);
+    _speedLabel->setName("SpeedLabel");
+    speedBtn->setScale(0.8f);
+    speedBtn->addChild(_speedLabel);
+
+    // 3. 创建菜单并添加到 UI 层
+    auto menu = Menu::create(speedBtn, nullptr);
+    menu->setPosition(1767.0f, 1210.0f);
+    this->addChild(menu, 100);
+}
 
 bool GameUILayer::init() {
     if (!Layer::init()) return false;
+
+    Director::getInstance()->getScheduler()->setTimeScale(1.0f);
+
     createSunDisplay(); // 创建阳光数量显示
 
     createPauseButton(); // 创建暂停按钮
     createShovelButton(); // 创建铲子按钮
-    // createProgressBar(); // 创建进度条
+    createSpeedButton();
     
     this->scheduleUpdate();
     return true;
