@@ -1,32 +1,21 @@
-# 1. 忽略 build 文件夹下的所有内容
-build/*
+# 忽略整个 build 目录及其所有内容
+build/
 
-# 2. 排除（即允许上传）特定的工程描述文件
-!build/*.sln
-!build/*.vcxproj
-!build/*.filters
+# 忽略 Visual Studio 产生的本地隐藏配置
+.vs/
+*.user
+*.suo
+*.db
+*.opendb
 
-# 3. 再次屏蔽 build 文件夹下的具体编译垃圾
-build/bin/
-build/obj/
-build/.vs/
-build/CMakeFiles/
-build/Win32/
-build/x64/
-build/Debug/
-build/Release/
-
-# 屏蔽编译产生的具体后缀
-build/*.exe
-build/*.pdb
-build/*.user
-build/*.suo
-build/*.ilk
-build/*.log
-build/*.tlog
-build/*.recipe
-
-# 其他冗余文件
+# 忽略编译产生的临时文件
 *.log
 *.tmp
 *.cache
+*.pdb
+*.obj
+*.exe
+*.ilk
+
+# 排除 cocos2d 引擎内部的编译产物（如果引擎在项目内）
+cocos2d/build/
