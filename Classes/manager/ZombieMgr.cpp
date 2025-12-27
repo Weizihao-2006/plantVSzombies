@@ -19,6 +19,31 @@ ZombieMgr* ZombieMgr::getInstance() {
 
 ZombieMgr::ZombieMgr() : _isLevelStarted(false), _currentWave(0), _waveTimer(0.0f) {}
 
+
+Vector<Zombie*> ZombieMgr::getZombiesInRow(int row) 
+{
+    Vector<Zombie*> result;
+
+    // 1. 安全检查：确保 ZombieLayer 存在
+    if (!_zombieLayer) {
+        auto scene = Director::getInstance()->getRunningScene();
+        _zombieLayer = dynamic_cast<ZombieLayer*>(scene->getChildByName("ZombieLayer"));
+    }
+
+    if (!_zombieLayer) return result;
+
+    // 2. 遍历所有僵尸
+    auto& allZombies = _zombieLayer->getAllZombies();
+    for (auto zombie : allZombies) {
+        // 3. 判断行号是否匹配，且僵尸是否还活着
+        if (zombie->getRow() == row && !zombie->isDead()) {
+            result.pushBack(zombie);
+        }
+    }
+
+    return result;
+}
+
 void ZombieMgr::startLevel(GameMode mode, int levelId) {
     _currentMode = mode;
     _currentWave = 0;

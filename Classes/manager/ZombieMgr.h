@@ -18,6 +18,9 @@ class ZombieMgr : public cocos2d::Ref {
 public:
     static ZombieMgr* getInstance();
 
+    // 获取特定行中的所有存活僵尸
+    cocos2d::Vector<Zombie*> getZombiesInRow(int row);
+
     void addZombie(Zombie* zombie) {
         if (!_zombieLayer) {
             auto scene = Director::getInstance()->getRunningScene();
