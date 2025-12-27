@@ -39,8 +39,8 @@ void Zombie::applySlowDown(float duration, float percent)
 
 
     _isSlowed = true;
-    _currentSpeed = _props.speed * percent; // 设置减速后的速度
-
+    _currentSpeed = _props.speed * percent;
+    _currentSpeed < 15.0f ? 15.0f : _currentSpeed;//设置一下最低时速
     // 视觉反馈：变为蓝色
     if (_mainSprite) {
         _mainSprite->setColor(Color3B(100, 100, 255));
