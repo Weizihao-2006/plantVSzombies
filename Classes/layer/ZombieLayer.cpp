@@ -1,4 +1,5 @@
 #include "layer/ZombieLayer.h"
+#include "AudioEngine.h"
 
 USING_NS_CC;
 
@@ -53,6 +54,8 @@ void ZombieLayer::update(float dt) {
 void ZombieLayer::pauseAllZombies() {
     this->pause();
     for (auto z : _allZombies) {
+        int soundID = z->getSoundID();
+        if (soundID != AudioEngine::INVALID_AUDIO_ID)AudioEngine::pause(soundID);
         z->pause();
         for (auto c : z->getChildren()) c->pause(); // µİ¹éÔİÍ£¶¯»­¾«Áé
     }
@@ -61,6 +64,8 @@ void ZombieLayer::pauseAllZombies() {
 void ZombieLayer::resumeAllZombies() {
     this->resume();
     for (auto z : _allZombies) {
+        int soundID = z->getSoundID();
+        if (soundID != AudioEngine::INVALID_AUDIO_ID)AudioEngine::resume(soundID);
         z->resume();
         for (auto c : z->getChildren()) c->resume();
     }
