@@ -95,6 +95,7 @@ bool Zombie::initWithZombieType(ZombieType type) {
     _props = ZombieData::getProps(type);
     _currentHealth = _props.health;
     _currentSpeed = _props.speed;
+    _soundID = AudioEngine::INVALID_AUDIO_ID;
     // 1. 创建视觉主体 (类似 Plant.cpp)
     _mainSprite = cocos2d::Sprite::createWithSpriteFrameName(_props.spriteFrameName);
     if (_mainSprite) {

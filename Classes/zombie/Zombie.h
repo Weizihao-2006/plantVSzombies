@@ -33,6 +33,8 @@ public:
     // 更新外轮廓
     void updateDebugRect();
 
+    int getSoundID() { return _soundID; }
+
 protected: // 必须是 protected 子类才能访问 _state
     ZombieProperties _props;
     ZombieState _state = ZombieState::WALK;
