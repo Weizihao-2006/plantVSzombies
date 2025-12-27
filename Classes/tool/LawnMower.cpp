@@ -51,7 +51,7 @@ void LawnMower::update(float dt) {
         }
 
         // 4. ·É³öÆÁÄ»ºó×Ô»Ù
-        float maxRight = 1500.0f;
+        float maxRight = 2000.0f;
 
         if (this->getPositionX() > maxRight) {
             CCLOG("LAWNMOVER DELETE");

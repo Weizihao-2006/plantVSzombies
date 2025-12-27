@@ -23,20 +23,26 @@ ZombieMgr::ZombieMgr() : _isLevelStarted(false), _currentWave(0), _waveTimer(0.0
 Vector<Zombie*> ZombieMgr::getZombiesInRow(int row) 
 {
     Vector<Zombie*> result;
+    auto scene = Director::getInstance()->getRunningScene();
+    if (!scene) return result;
 
-    // 1. 安全检查：确保 ZombieLayer 存在
-    if (!_zombieLayer) {
-        auto scene = Director::getInstance()->getRunningScene();
-        _zombieLayer = dynamic_cast<ZombieLayer*>(scene->getChildByName("ZombieLayer"));
+    auto currentLayer = dynamic_cast<ZombieLayer*>(scene->getChildByName("ZombieLayer"));
+
+    // 3. 安全校验：如果找不到层，或者层已经标记为即将销毁，则跳过
+    if (!currentLayer || currentLayer->getReferenceCount() <= 0) {
+        return result;
     }
 
-    if (!_zombieLayer) return result;
+    // 4. 获取僵尸列表
+    auto& allZombies = currentLayer->getAllZombies();
 
-    // 2. 遍历所有僵尸
-    auto& allZombies = _zombieLayer->getAllZombies();
-    for (auto zombie : allZombies) {
-        // 3. 判断行号是否匹配，且僵尸是否还活着
-        if (zombie->getRow() == row && !zombie->isDead()) {
+    // 5. 遍历。为了极致安全，我们使用索引遍历，避免迭代器失效
+    ssize_t size = allZombies.size();
+    for (ssize_t i = 0; i < size; ++i) {
+        auto zombie = allZombies.at(i);
+
+        // 增加健壮性检查
+        if (zombie && !zombie->isDead() && zombie->getRow() == row) {
             result.pushBack(zombie);
         }
     }

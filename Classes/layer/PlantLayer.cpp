@@ -59,8 +59,10 @@ void PlantLayer::update(float dt)
 }
 
 void PlantLayer::pauseAllPlants() {
+    auto items = this->getChildren();
     this->pause();
-    for (auto& plant : _plants) {
+    
+    for (auto& plant : items) {
         // 1. ÔİÍ£Ö²ÎïÈİÆ÷
         plant->pause();
 
@@ -101,8 +103,9 @@ bool PlantLayer::removePlant(int row, int col)
     return removePlant(plant);
 }
 void PlantLayer::resumeAllPlants() {
+    auto items = this->getChildren();
     this->resume();
-    for (auto& plant : _plants) {
+    for (auto& plant : items) {
         plant->resume();
         for (auto& child : plant->getChildren()) {
             child->resume();
