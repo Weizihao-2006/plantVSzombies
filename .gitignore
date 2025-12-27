@@ -1,13 +1,30 @@
-# 屏蔽 build 里的编译垃圾（保留 .sln）
+# 1. 忽略 build 文件夹下的所有内容
+build/*
+
+# 2. 排除（即允许上传）特定的工程描述文件
+!build/*.sln
+!build/*.vcxproj
+!build/*.filters
+
+# 3. 再次屏蔽 build 文件夹下的具体编译垃圾
 build/bin/
 build/obj/
+build/.vs/
+build/CMakeFiles/
+build/Win32/
+build/x64/
+build/Debug/
+build/Release/
+
+# 屏蔽编译产生的具体后缀
 build/*.exe
 build/*.pdb
-build/.vs/
 build/*.user
 build/*.suo
-build/CMakeFiles/  # 之前推上去的垃圾文件夹
-build/ALL_BUILD.vcxproj  # 冗余编译文件
+build/*.ilk
+build/*.log
+build/*.tlog
+build/*.recipe
 
 # 其他冗余文件
 *.log
